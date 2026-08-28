@@ -1,0 +1,62 @@
+@use 'index' as *;
+@use '@angular/material' as mat;
+
+.card-container {
+  @include mat.card-overrides((
+    elevated-container-shape: $space-xs,
+    elevated-container-color: white
+  ));
+
+  .card-content-container {
+    display: flex;
+    flex-direction: column;
+
+    .response-info-container {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      padding: $space-md;
+
+      .number-of-response {
+        font-size: 28px;
+        font-weight: 400;
+        line-height: 36px;
+        color: #1f1f1f;
+      }
+    }
+
+    .tab-container.show-border {
+      //border-bottom: 1px solid #dadada;
+    }
+
+    .response-by-question-container, .response-by-individual-container {
+      display: flex;
+      flex-direction: row;
+      padding: $space-lg;
+      align-items: center;
+    }
+
+    .response-by-individual-container {
+      justify-content: space-between;
+
+      .response-by-individual-container-actions {
+        display: flex;
+        flex-direction: row;
+      }
+    }
+
+    .no-response-text {
+      font-family: Roboto, Arial, sans-serif;
+      font-size: $space-sm;
+      font-weight: 400;
+      letter-spacing: .3px;
+      line-height: $space-md;
+      color: #757575;
+      background-color: #fff;
+      border: 1px solid #dadada;
+      border-radius: $space-xs;
+      padding: $space-lg;
+      text-align: center;
+    }
+  }
+}

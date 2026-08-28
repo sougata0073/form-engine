@@ -1,0 +1,49 @@
+@if (formStateService.isFocused(parentComponentId())) {
+  <div class="parent-container">
+    <div class="file-type-container">
+      <div class="label-input-container">
+        <p>Allow only specific file types</p>
+        <mat-slide-toggle
+          [checked]="!!this.question().allowedFileTypes.length"
+          (change)="onShowFileCategoriesCheckChange($event.checked)"
+        />
+      </div>
+      @if (showFileCategories()) {
+        <ul>
+          @for (fileType of fileTypes(); track fileType.category) {
+            <li>
+              <mat-checkbox
+                [checked]="toCheckFileTypeCheckbox(fileType)"
+                (change)="onFileTypeCheckChange($event.checked, fileType)"
+              >
+                {{ fileType.category }}
+              </mat-checkbox>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+    <div class="label-input-container">
+      <p>Maximum file size</p>
+      <form [formGroup]="formGroup">
+        <mat-form-field class="decorated-mat-input form-field">
+          <mat-select panelClass="decorated-select-option" formControlName="fileUploadSize"
+          >
+            @for (size of allowedFileUploadSizes(); track size) {
+              <mat-option [value]="size">
+                {{ size + ' MB' }}
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </form>
+    </div>
+  </div>
+} @else {
+  <div class="preview-container">
+    <button matButton="outlined" class="add-file-button" disabled>
+      <mat-icon fontIcon="attach_file"/>
+      Add file
+    </button>
+  </div>
+}

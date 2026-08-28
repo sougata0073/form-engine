@@ -1,0 +1,39 @@
+@use "index" as *;
+
+.template {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+  margin: 0 $space-md $space-lg 0;
+
+  &.recently-used-template {
+    margin: 0 19px 0 0;
+  }
+
+  .photo {
+    height: 159px;
+    width: 212px;
+    border: 1px solid #c4c7c5;
+    border-radius: $space-xxs;
+    cursor: pointer;
+
+    &.recently-used-template {
+      height: 123px;
+      width: 164px;
+    }
+  }
+
+  .photo:hover {
+    border-color: var(--mat-button-text-label-text-color, var(--mat-sys-primary));
+  }
+
+  .title {
+    font-weight: 500;
+    color: #1f1f1f;
+    font-size: 14px;
+    cursor: default;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis
+  }
+}

@@ -1,0 +1,10 @@
+<form [formGroup]="formGroup" class="horizontal">
+  <mat-form-field class="decorated-mat-input form-field" hideRequiredMarker>
+    <mat-label>Your answer</mat-label>
+    <textarea cdkTextareaAutosize
+              cdkAutosizeMinRows="1"
+              cdkAutosizeMaxRows="20" matInput formControlName="paragraph"
+              (focusout)="onFocusOut(formGroup.controls.paragraph)"></textarea>
+    <mat-error>{{ formError() }}</mat-error>
+  </mat-form-field>
+</form>

@@ -1,0 +1,12 @@
+@use 'index' as *;
+
+.validation-and-label {
+  align-self: center;
+}
+
+.validation-value-container {
+  display: flex;
+  flex-direction: row;
+  gap: $space-xl;
+  width: 50%;
+}

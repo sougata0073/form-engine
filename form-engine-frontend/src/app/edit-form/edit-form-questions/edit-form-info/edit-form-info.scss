@@ -1,0 +1,10 @@
+@use 'index' as *;
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: $space-xl;
+}

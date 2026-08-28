@@ -1,0 +1,17 @@
+<form>
+  <ul class="rating-list">
+    @for (rating of ratings(); track rating) {
+      <li class="rating">
+        <p>{{ rating }}</p>
+        <img
+          [ngSrc]="ratingIconToPath(
+              question().ratingIcon, !!response()?.rating && rating <= response()!.rating
+            )"
+          height="24"
+          width="24"
+          class="rating-icon"
+        >
+      </li>
+    }
+  </ul>
+</form>

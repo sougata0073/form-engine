@@ -1,0 +1,34 @@
+@let selectedRating = formGroup.value.rating;
+<div class="parent-container">
+  <form [formGroup]="formGroup">
+    <ul class="rating-list">
+      @for (rating of ratings(); track rating) {
+        <li class="rating">
+          <p (click)="onRatingIconClick(rating)">{{ rating }}</p>
+          <img
+            [ngSrc]="ratingIconToPath(
+              question().ratingIcon, !!selectedRating && rating <= selectedRating
+            )"
+            height="24"
+            width="24"
+            class="rating-icon"
+            [class]="{'scale': rating <= currentHoveredRating()}"
+            (click)="onRatingIconClick(rating)"
+            (mouseenter)="currentHoveredRating.set(rating)"
+            (mouseleave)="currentHoveredRating.set(0)"
+          >
+        </li>
+      }
+    </ul>
+  </form>
+  @if (!question().required) {
+    <button
+      matButton
+      class="view-form-clear-selection-button"
+      [class]="{'hidden': !selectedRating}"
+      (click)="formGroup.controls.rating.patchValue(null)"
+    >
+      Clear selection
+    </button>
+  }
+</div>

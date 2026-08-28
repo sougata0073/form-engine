@@ -1,0 +1,116 @@
+<h2 mat-dialog-title>Published options</h2>
+<mat-divider/>
+<mat-dialog-content class="no-scroll">
+  <form [formGroup]="formGroup">
+    <mat-radio-group formControlName="radioGroup">
+      <div class="radio-group">
+        <div class="radio-button-content-pair">
+          <mat-radio-button value="date" #dateRadioButton/>
+          <div class="radio-button-content-container">
+            <label [for]="dateRadioButton.id + '-input'">On a date</label>
+            @if (formGroup.value.radioGroup === 'date') {
+              @if (selectedDateTime()) {
+                <div class="date-time-container">
+                  <p>{{ selectedDateTime() | date:'full' }}</p>
+                  <button matIconButton matTooltip="Edit date and time" [matMenuTriggerFor]="menu">
+                    <mat-icon fontIcon="edit"/>
+                  </button>
+                </div>
+              } @else {
+                <button
+                  class="blue-button choose-date-time-button"
+                  matButton
+                  (click)="chooseDateTimeClicked.set(true)"
+                  [matMenuTriggerFor]="menu"
+                >
+                  Choose date and time
+                </button>
+              }
+              <mat-menu #menu="matMenu" yPosition="above">
+                <form class="date-time-form" [formGroup]="formGroup" (click)="$event.stopPropagation()">
+                  <mat-card>
+                    <mat-calendar [(selected)]="selectedDate"></mat-calendar>
+                  </mat-card>
+                  @if (showDateError()) {
+                    <mat-error>Date is required</mat-error>
+                  }
+                  <mat-form-field subscriptSizing="dynamic">
+                    <mat-label>Select time</mat-label>
+                    <input matInput [matTimepicker]="timepicker" formControlName="time">
+                    <mat-timepicker #timepicker/>
+                    <mat-timepicker-toggle [for]="timepicker" matSuffix/>
+                    @if (formGroup.controls.time.touched && formGroup.controls.time.hasError('required')) {
+                      <mat-error>Time is required</mat-error>
+                    }
+                  </mat-form-field>
+                  <button
+                    type="button"
+                    matButton="filled"
+                    class="blue-button"
+                    (click)="onDateTimeOkClick(menu)">
+                    Ok
+                  </button>
+                </form>
+              </mat-menu>
+            }
+          </div>
+        </div>
+        <div class="radio-button-content-pair">
+          <mat-radio-button value="response-limit" #responseLimitRadioButton/>
+          <div class="radio-button-content-container">
+            <label [for]="responseLimitRadioButton.id + '-input'">After a number of responses</label>
+            @if (formGroup.value.radioGroup === 'response-limit') {
+              <div class="response-limit-input-container">
+                <div class="main-input-container">
+                  <input type="number" placeholder="#" formControlName="responseLimit">
+                  <p>responses</p>
+                </div>
+                @if (formGroup.controls.responseLimit.touched && formGroup.controls.responseLimit.hasError('required')) {
+                  <mat-error>Response limit is required</mat-error>
+                } @else if (formGroup.controls.responseLimit.touched && formGroup.controls.responseLimit.hasError('min')) {
+                  <mat-error>The limit cannot be less than 1 response</mat-error>
+                } @else if (formGroup.controls.responseLimit.touched && formGroup.controls.responseLimit.hasError('max')) {
+                  <mat-error>The limit cannot exceed 1,000 responses</mat-error>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </mat-radio-group>
+  </form>
+</mat-dialog-content>
+<mat-divider class="content-divider"/>
+<mat-dialog-content class="no-scroll">
+  <div class="not-accepting-response-message-container">
+    <div class="label-container">
+      <p>Responders will see this message as the form is closed for responses</p>
+      @if (editClicked()) {
+        <form class="vertical" [formGroup]="formGroup">
+          <mat-form-field subscriptSizing="dynamic">
+            <input
+              matInput
+              formControlName="notAcceptingResponseMessage"
+              [placeholder]="formInfo()!.notAcceptingResponseMessage ?? ''"
+            >
+          </mat-form-field>
+        </form>
+      } @else {
+        <p>"{{ formGroup.value.notAcceptingResponseMessage }}"</p>
+      }
+    </div>
+    @if (!editClicked()) {
+      <button matButton class="blue-button" (click)="editClicked.set(true)">Edit</button>
+    }
+  </div>
+</mat-dialog-content>
+<mat-divider class="content-divider"/>
+<mat-dialog-actions>
+  <button matButton class="blue-button" mat-dialog-close>Cancel</button>
+  <button
+    matButton="filled"
+    (click)="onSaveClick()"
+    [disabled]="!canSave()"
+  >Save
+  </button>
+</mat-dialog-actions>

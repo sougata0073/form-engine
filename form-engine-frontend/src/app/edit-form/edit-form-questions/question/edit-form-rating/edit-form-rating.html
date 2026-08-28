@@ -1,0 +1,43 @@
+<div class="parent-container">
+  @if (formStateService.isFocused(parentComponentId())) {
+    <form class="horizontal" [formGroup]="formGroup">
+      <mat-form-field class="decorated-mat-input form-field">
+        <mat-select panelClass="decorated-select-option" formControlName="ratingNumber"
+        >
+          @for (num of ratingNumbers(); track num) {
+            <mat-option [value]="num">{{ num }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field class="decorated-mat-input form-field">
+        <mat-select panelClass="decorated-select-option" formControlName="ratingIcon"
+        >
+          @let defaultIcon = formGroup.value.ratingIcon;
+          @if (defaultIcon) {
+            <mat-select-trigger>
+              <img [ngSrc]="ratingIconToPath(defaultIcon, 'activated')" height="24" width="24">
+            </mat-select-trigger>
+          }
+          @for (ratingIcon of ratingIcons(); track ratingIcon) {
+            <mat-option [value]="ratingIcon">
+              <img [ngSrc]="ratingIconToPath(ratingIcon, 'activated')" height="24" width="24">
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </form>
+  }
+  <div class="preview-container">
+    @let selectedIcon = formGroup.value.ratingIcon;
+    @if (selectedIcon) {
+      <ul>
+        @for (rating of previewRatings(); track rating) {
+          <li>
+            <p>{{ rating }}</p>
+            <img [ngSrc]="ratingIconToPath(selectedIcon, 'deactivated')" height="24" width="24">
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>

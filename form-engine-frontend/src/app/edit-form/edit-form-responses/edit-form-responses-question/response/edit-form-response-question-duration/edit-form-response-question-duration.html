@@ -1,0 +1,52 @@
+<div class="parent-container">
+  <mat-card appearance="raised" class="card-container">
+    <mat-card-content class="question-card-content no-padding-card">
+      <p class="question">{{ questionDetails().question ?? 'Question' }}</p>
+    </mat-card-content>
+  </mat-card>
+  <app-infinite-scroll-list [listStyle]="listStyle()"
+                            [showItemLoader]="true"
+                            [isNextItemsLoading]="isNextPageLoading()"
+                            (lastItemVisible)="loadNextPage()"
+  >
+    @for (response of response()?.responses; track response.formResponsesIdentifier) {
+      <app-edit-form-response-question-response-container
+        [formId]="formId()"
+        [response]="response"
+      >
+        <div class="response-content">
+          @if (response.hours === null && response.minutes === null && response.seconds === null) {
+            <p class="question-left-blank">Question left blank</p>
+          } @else {
+            <div class="duration-container">
+              <div class="duration-part-container">
+                <p class="part">Hr</p>
+                <div class="duration-value-container">
+                  <p class="value">{{ response.hours }}</p>
+                </div>
+              </div>
+              <div class="duration-divider">
+                <p class="divider">:</p>
+              </div>
+              <div class="duration-part-container">
+                <p class="part">Min</p>
+                <div class="duration-value-container">
+                  <p class="value">{{ response.minutes }}</p>
+                </div>
+              </div>
+              <div class="duration-divider">
+                <p class="divider">:</p>
+              </div>
+              <div class="duration-part-container">
+                <p class="part">Sec</p>
+                <div class="duration-value-container">
+                  <p class="value">{{ response.seconds }}</p>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </app-edit-form-response-question-response-container>
+    }
+  </app-infinite-scroll-list>
+</div>

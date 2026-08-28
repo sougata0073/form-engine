@@ -1,0 +1,87 @@
+<h2 mat-dialog-title>Published options</h2>
+<mat-divider/>
+<mat-dialog-content class="no-scroll">
+  <div class="icon-action-pair">
+    <mat-icon [fontIcon]="formGroup.value.acceptingResponse ? 'edit_note' : 'edit_off'"/>
+    <div class="accepting-response-container">
+      <div class="accepting-response-label-container">
+        @if (formGroup.value.acceptingResponse) {
+          <p>Accepting responses</p>
+        } @else {
+          <p>Not accepting responses</p>
+        }
+        <form [formGroup]="formGroup">
+          <mat-slide-toggle formControlName="acceptingResponse"/>
+        </form>
+      </div>
+      @if (formGroup.value.acceptingResponse && (formInfo()!.stopAcceptingResponseOn || formInfo()!.stopAcceptingResponseAfterResponse !== null)) {
+        <div class="accepting-response-config-container">
+          @if (formInfo()!.stopAcceptingResponseOn) {
+            <p>Responses accepted until {{ formInfo()!.stopAcceptingResponseOn | date:'full' }}</p>
+          } @else if (formInfo()!.stopAcceptingResponseAfterResponse !== null) {
+            <p>Responses accepted until {{ formInfo()!.stopAcceptingResponseAfterResponse }} responses have been
+              received</p>
+          }
+          <button matButton (click)="openStopAcceptingResponseDialog()">Manage</button>
+        </div>
+      }
+      @if (formGroup.value.acceptingResponse && !formInfo()!.stopAcceptingResponseOn && formInfo()!.stopAcceptingResponseAfterResponse === null) {
+        <div class="close-response-limit-button-container">
+          <button matButton (click)="openStopAcceptingResponseDialog()">Set close date or response limit</button>
+        </div>
+      } @else {
+        <div class="not-accepting-response-message-container">
+          <div class="label-container">
+            <p>Responders will see this message as the form is closed for responses</p>
+            @if (editClicked()) {
+              <form class="vertical" [formGroup]="formGroup">
+                <mat-form-field subscriptSizing="dynamic">
+                  <input
+                    matInput
+                    formControlName="notAcceptingResponseMessage"
+                    [placeholder]="formInfo()!.notAcceptingResponseMessage ?? ''"
+                  >
+                </mat-form-field>
+              </form>
+            } @else {
+              <p>"{{ formGroup.value.notAcceptingResponseMessage }}"</p>
+            }
+          </div>
+          @if (!editClicked()) {
+            <button matButton (click)="editClicked.set(true)">Edit</button>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</mat-dialog-content>
+<mat-divider/>
+<mat-dialog-content class="no-scroll">
+  <div class="icon-action-pair">
+    <mat-icon fontIcon="person_add"/>
+    <div class="responder-manage-action-container">
+      <p>Responders</p>
+      <div class="responder-manage-action">
+        <div class="responder-manage-action-label-container">
+          <mat-icon fontIcon="public"/>
+          <p>Anyone with the link</p>
+        </div>
+        <button matButton>Manage</button>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+<mat-divider/>
+<div class="action-buttons-container">
+  <button matButton="outlined" [matMenuTriggerFor]="copyResponderLinkMenu">
+    <mat-icon fontIcon="link"/>
+    Copy responder link
+  </button>
+  <mat-menu #copyResponderLinkMenu="matMenu" class="decorated-menu wide" yPosition="above">
+    <app-copy-responder-link-menu-content [formInfo]="formInfo()!"/>
+  </mat-menu>
+  <div class="main-action-buttons-container">
+    <button matButton mat-dialog-close>Cancel</button>
+    <button matButton="filled" (click)="onSaveClick()" [disabled]="!canSave()">Save</button>
+  </div>
+</div>

@@ -1,0 +1,47 @@
+@let formError = isNotFormValid();
+<div class="parent-container">
+  @if (formStateService.isFocused(parentComponentId())) {
+    <form class="horizontal" [formGroup]="formGroup">
+      <mat-form-field class="decorated-mat-input form-field">
+        <mat-select panelClass="decorated-select-option" formControlName="fromNumber"
+        >
+          @for (num of fromNumbers(); track num) {
+            <mat-option [value]="num">{{ num }}</mat-option>
+          }
+        </mat-select>
+        @let fromNumberError = isNotFromNumberValid();
+        @if (fromNumberError) {
+          <mat-error>{{ fromNumberError }}</mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field class="decorated-mat-input form-field">
+        <mat-select panelClass="decorated-select-option" formControlName="toNumber"
+        >
+          @for (num of toNumbers(); track num) {
+            <mat-option [value]="num">{{ num }}</mat-option>
+          }
+        </mat-select>
+        @let toNumberError = isNotToNumberValid();
+        @if (toNumberError) {
+          <mat-error>{{ toNumberError }}</mat-error>
+        }
+      </mat-form-field>
+    </form>
+  } @else {
+    @if (!formError) {
+      <div class="preview-container">
+        <ul>
+          @for (num of previewNumbers(); track num) {
+            <li>
+              <p>{{ num }}</p>
+              <mat-icon fontIcon="radio_button_unchecked"/>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  }
+  @if (formError) {
+    <mat-error>{{ formError }}</mat-error>
+  }
+</div>

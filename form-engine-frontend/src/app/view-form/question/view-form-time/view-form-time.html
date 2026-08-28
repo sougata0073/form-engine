@@ -1,0 +1,18 @@
+<form [formGroup]="formGroup" class="horizontal">
+  <mat-form-field class="decorated-mat-input form-field" hideRequiredMarker>
+    <mat-label>Pick a time</mat-label>
+    <input matInput [matTimepicker]="picker" formControlName="time"
+           (focusout)="onFocusOut(formGroup.controls.time)">
+    <mat-error>
+      {{
+        formControlError(
+          formGroup.controls.time, [
+            {errorCode: 'matTimepickerParse', message: 'Invalid time format'}
+          ]
+        )
+      }}
+    </mat-error>
+    <mat-timepicker-toggle matIconSuffix [for]="picker"/>
+    <mat-timepicker #picker/>
+  </mat-form-field>
+</form>

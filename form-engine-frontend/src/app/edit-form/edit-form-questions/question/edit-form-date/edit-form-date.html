@@ -1,0 +1,8 @@
+<form class="vertical">
+  <mat-form-field class="decorated-mat-input">
+    <mat-label>Select date</mat-label>
+    <input matInput [matDatepicker]="picker" disabled>
+    <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker touchUi #picker></mat-datepicker>
+  </mat-form-field>
+</form>

@@ -1,0 +1,13 @@
+@if (chartOptions) {
+  <div class="column-chart-container">
+    <apx-chart
+      [series]="chartOptions.series!"
+      [chart]="chartOptions.chart!"
+      [plotOptions]="chartOptions.plotOptions!"
+      [dataLabels]="chartOptions.dataLabels!"
+      [xaxis]="chartOptions.xaxis!"
+      [yaxis]="chartOptions.yaxis!"
+      [title]="chartOptions.title!"
+    ></apx-chart>
+  </div>
+}

@@ -1,0 +1,29 @@
+<h2 mat-dialog-title>Publish form</h2>
+<mat-divider/>
+<mat-dialog-content class="no-scroll">
+  <div class="icon-action-pair">
+    <mat-icon fontIcon="person_add"/>
+    <div class="responder-manage-action-container">
+      <p>Responders</p>
+      <div class="responder-manage-action">
+        <div class="responder-manage-action-label-container">
+          <mat-icon fontIcon="public"/>
+          <p>Anyone with the link</p>
+        </div>
+        <button matButton>Manage</button>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+<mat-divider class="content-divider"/>
+<mat-dialog-content class="no-scroll">
+  <div class="icon-action-pair align-items-center">
+    <mat-icon fontIcon="notifications"/>
+    <p>Nobody will be notified when publishing the form</p>
+  </div>
+</mat-dialog-content>
+<mat-divider class="content-divider"/>
+<mat-dialog-actions>
+  <button matButton mat-dialog-close>Dismiss</button>
+  <button matButton="filled" (click)="onPublishClick()">Publish</button>
+</mat-dialog-actions>

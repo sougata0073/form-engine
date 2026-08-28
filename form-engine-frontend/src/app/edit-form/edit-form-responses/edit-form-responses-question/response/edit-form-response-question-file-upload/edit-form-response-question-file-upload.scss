@@ -1,0 +1,72 @@
+@use 'index' as *;
+@use '@angular/material' as mat;
+
+.parent-container {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+
+  .card-container {
+    @include mat.card-overrides((
+      elevated-container-shape: $space-xs,
+      elevated-container-color: white
+    ));
+  }
+
+  .square-text-button {
+    @include mat.button-overrides((
+      text-container-shape: $space-xxs
+    ));
+  }
+
+  .question-card-content {
+    padding: $space-lg;
+
+    .question {
+      font-weight: 400;
+      font-size: $space-md;
+      line-height: 1.5;
+      letter-spacing: 0;
+    }
+  }
+
+  .response-content {
+    .question-left-blank {
+      padding: $space-lg;
+      font-family: Roboto, Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: .2px;
+      line-height: 20px;
+      color: #757575;
+      font-style: italic;
+    }
+
+    .file-container {
+      padding: $space-lg;
+
+      .file {
+        max-width: 120px;
+        align-items: center;
+        font-family: Roboto, Arial, sans-serif;
+        font-size: 14px;
+        font-weight: 400;
+        letter-spacing: .2px;
+        color: #1f1f1f;
+        border: 1px solid #dadada;
+        border-radius: 4px;
+        line-height: 36px;
+        min-height: 36px;
+        padding: 0 $space-xs;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .file:hover {
+        cursor: pointer;
+        text-decoration: underline;
+      }
+    }
+  }
+}

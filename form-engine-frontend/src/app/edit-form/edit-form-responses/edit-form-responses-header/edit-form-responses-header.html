@@ -1,0 +1,27 @@
+<mat-card appearance="raised" class="card-container">
+  <mat-card-content class="card-content-container no-padding-card">
+
+    <div class="response-info-container">
+      <p class="number-of-response">{{ formResponseCount()?.count }} responses</p>
+      <button matIconButton matTooltip="More options for responses">
+        <mat-icon fontIcon="more_vert"/>
+      </button>
+    </div>
+
+    @if (formResponseCount()?.count !== '0') {
+      <div class="tab-container">
+        <nav class="edit-form-response-tab" mat-tab-nav-bar [tabPanel]="tabPanel">
+          @for (tab of tabs(); track $index) {
+            <a mat-tab-link
+               (click)="onTabClick(tab.link)"
+               [active]="activatedLink() === tab.link">
+              {{ tab.label }}
+            </a>
+          }
+        </nav>
+        <mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
+      </div>
+    }
+
+  </mat-card-content>
+</mat-card>

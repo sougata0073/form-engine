@@ -1,0 +1,10 @@
+@if (chartOptions) {
+  <div class="pie-chart-container">
+    <apx-chart
+      [series]="chartOptions.series!"
+      [chart]="chartOptions.chart!"
+      [labels]="chartOptions.labels!"
+      [responsive]="chartOptions.responsive!"
+    ></apx-chart>
+  </div>
+}

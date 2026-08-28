@@ -1,0 +1,10 @@
+<form [formGroup]="formGroup" class="linear-scale-form">
+  <mat-radio-group class="radio-group" formControlName="linearScale">
+    @for (button of buttons(); track button) {
+      <div class="radio-button">
+        <label [for]="`mat-radio-${$index}-input`">{{ button }}</label>
+        <mat-radio-button [value]="button"/>
+      </div>
+    }
+  </mat-radio-group>
+</form>

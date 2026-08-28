@@ -1,0 +1,25 @@
+@use "index" as *;
+
+form {
+  margin: $space-md 0 $space-md 0;
+  padding: 0 $space-lg 0 $space-lg;
+
+  .rating-list {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .rating {
+    display: flex;
+    flex-direction: column;
+    gap: $space-xl;
+    align-items: center;
+
+    p {
+      font-size: $space-md;
+      cursor: default;
+    }
+  }
+}

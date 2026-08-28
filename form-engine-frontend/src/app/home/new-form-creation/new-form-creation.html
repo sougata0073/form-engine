@@ -1,0 +1,39 @@
+<div class="new-form-container">
+  <div class="controls">
+
+    <p class="message">{{ headerTitle() }}</p>
+
+    <div class="buttons-container" [class.hide]="!showControlButtons()">
+      <button matButton (click)="onTemplateGalleryClick()">
+        Template gallery
+        <mat-icon matIconPrefix fontIcon="unfold_more"/>
+      </button>
+      <div class="divider"></div>
+      <button matIconButton [matMenuTriggerFor]="moreMenu">
+        <mat-icon fontIcon="more_vert"/>
+      </button>
+      <mat-menu #moreMenu="matMenu" class="white-background-menu">
+        <button mat-menu-item (click)="onHideTemplateGalleryClick()">Hide all templates</button>
+      </mat-menu>
+    </div>
+
+  </div>
+
+  <div class="template-container">
+    @if (showBlankFormCreation()) {
+      <app-form-template
+        photo="https://ssl.gstatic.com/docs/templates/thumbnails/forms-blank-googlecolors.png"
+        [template]="{id: 'Blank form', name: 'Blank form', categoryName: 'Recently used'}"
+        [isRecentlyUsedTemplate]="isRecentlyUsedTemplates()"
+        (onClick)="createBlankForm()"
+      />
+    }
+
+    @for (t of templates(); track t.id) {
+      <app-form-template
+        [template]="t"
+        [isRecentlyUsedTemplate]="isRecentlyUsedTemplates()"
+        (onClick)="buildFormFromTemplate(t.id)"/>
+    }
+  </div>
+</div>

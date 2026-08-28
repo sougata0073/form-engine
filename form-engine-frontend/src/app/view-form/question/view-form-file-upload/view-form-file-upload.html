@@ -1,0 +1,28 @@
+<div class="parent-container">
+  <p class="file-upload-message">Upload 1 supported file. Max {{ question().maxFileSize / 1024 / 1024 }} MB</p>
+  @if (selectedFile === null) {
+    <button matButton="outlined" class="add-file-button" (click)="fileInput.click()">
+      <mat-icon fontIcon="attach_file"/>
+      Add file
+    </button>
+    <form hidden [formGroup]="formGroup">
+      <input
+        #fileInput
+        type="file"
+        formControlName="file"
+        [accept]="allowedFileMimes()"
+        (change)="onFileChange(fileInput.files)"/>
+    </form>
+  } @else {
+    <div class="selected-file-container">
+      <p class="file-name">{{ selectedFile.name }}</p>
+      <button matIconButton matTooltip="Remove file" (click)="clearForm()">
+        <mat-icon fontIcon="close"/>
+      </button>
+    </div>
+  }
+  @let fileInputError = formControlError(formGroup.controls.file, []);
+  @if (fileInputError) {
+    <mat-error>{{ fileInputError }}</mat-error>
+  }
+</div>

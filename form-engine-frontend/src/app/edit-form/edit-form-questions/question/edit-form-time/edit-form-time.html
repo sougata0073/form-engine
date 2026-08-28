@@ -1,0 +1,8 @@
+<form class="vertical">
+  <mat-form-field class="decorated-mat-input">
+    <mat-label>Pick a time</mat-label>
+    <input matInput [matTimepicker]="picker" disabled>
+    <mat-timepicker-toggle matIconSuffix [for]="picker"/>
+    <mat-timepicker #picker/>
+  </mat-form-field>
+</form>

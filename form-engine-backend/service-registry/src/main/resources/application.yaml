@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: service-registry
+  config:
+    import: configserver:${CONFIGURATION_SERVICE_URL}
+
+eureka:
+  client:
+    fetch-registry: false
+    register-with-eureka: false

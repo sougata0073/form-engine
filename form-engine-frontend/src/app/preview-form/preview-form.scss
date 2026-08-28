@@ -1,0 +1,167 @@
+@use "index" as *;
+@use "@angular/material" as mat;
+
+.parent-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+
+  .header-container {
+    box-shadow: 0 1px 3px 0 rgba(60, 64, 67, .3), 0 4px 8px 3px rgba(60, 64, 67, .15);
+
+    @include mat.card-overrides((
+      elevated-container-shape: 0,
+      elevated-container-color: white
+    ));
+
+    .header-content-container {
+      display: flex;
+      flex-direction: column;
+      gap: $space-sm;
+
+      .header-content {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        .navigation-container, .form-state-container {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+
+          p {
+            font-size: $space-md;
+          }
+
+          .title {
+            font-size: $space-lg;
+            margin-left: $space-sm;
+          }
+
+          .copy-responder-link {
+            @include mat.button-overrides((
+              outlined-container-shape: $space-xs,
+              outlined-label-text-color: rgb(26, 115, 232),
+              outlined-ripple-color: rgb(210, 227, 252),
+              outlined-state-layer-color: rgb(210, 227, 252),
+              outlined-hover-state-layer-opacity: 0.3,
+            ));
+          }
+
+          .publish-state-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: $space-xs;
+            margin-right: $space-lg;
+
+            .published {
+              color: #34a853;
+
+              @include mat.icon-overrides((
+                color: #34a853
+              ));
+            }
+          }
+        }
+      }
+
+      .not-accepting-response-container {
+        background-color: #fffade;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: $space-xxs $space-md;
+        border-radius: $space-sm;
+
+        .not-accepting-response-message-container {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          gap: $space-sm;
+
+          p {
+            color: black;
+          }
+
+          .edit-off-icon {
+            @include mat.icon-overrides((
+              color: #DA883F,
+            ));
+          }
+        }
+
+        button {
+          @include mat.button-overrides((
+            text-container-shape: $space-xs,
+            text-label-text-color: rgb(95, 99, 104),
+            text-ripple-color: #DBD7BF,
+            text-state-layer-color: #DBD7BF,
+            text-hover-state-layer-opacity: 0.3
+          ))
+        }
+      }
+    }
+  }
+
+  .main-content-container {
+    flex: 1;
+    justify-items: center;
+    margin-top: 2px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    .main-content {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      margin-top: $space-md;
+
+      .question-list {
+        li {
+          list-style: none;
+          margin: $space-md 0 $space-md 0;
+        }
+      }
+
+      .buttons-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        .submit-button {
+          @include mat.button-overrides((
+            filled-container-shape: $space-xs,
+          ));
+        }
+
+        .clear-button {
+          @include mat.button-overrides((
+            text-container-shape: $space-xs
+          ));
+        }
+      }
+
+      .footer-container {
+        display: flex;
+        flex-direction: column;
+        gap: $space-md;
+        margin: $space-md 0 $space-md 0;
+
+        .never-submit-password-warning {
+          color: rgba(0, 0, 0, 0.66);
+        }
+      }
+    }
+  }
+
+  .loader-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+}

@@ -1,0 +1,19 @@
+<form [formGroup]="formGroup" class="horizontal">
+  <mat-form-field class="decorated-mat-input form-field" hideRequiredMarker>
+    <mat-label>Select a date</mat-label>
+    <input matInput [matDatepicker]="picker" formControlName="date"
+           (focusout)="onFocusOut(formGroup.controls.date)">
+    <mat-hint>MM/DD/YYYY</mat-hint>
+    <mat-error>
+      {{
+        formControlError(
+          formGroup.controls.date, [
+            {errorCode: 'matDatepickerParse', message: 'Invalid date format'}
+          ]
+        )
+      }}
+    </mat-error>
+    <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker touchUi #picker></mat-datepicker>
+  </mat-form-field>
+</form>

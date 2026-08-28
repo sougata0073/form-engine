@@ -1,0 +1,53 @@
+<div class="parent-container">
+  <mat-card appearance="raised" class="card-container">
+    <mat-card-content class="question-card-content no-padding-card">
+      <div class="question-container">
+        <p class="question">{{ questionDetails().question ?? 'Question' }}</p>
+        @if (isOptionsVisible()) {
+          <button class="square-text-button" matButton (click)="isOptionsVisible.set(!isOptionsVisible())">
+            Hide options
+            <mat-icon fontIcon="keyboard_arrow_up"/>
+          </button>
+        } @else {
+          <button class="square-text-button" matButton (click)="isOptionsVisible.set(!isOptionsVisible())">
+            View options
+            <mat-icon fontIcon="keyboard_arrow_down"/>
+          </button>
+        }
+      </div>
+      @if (isOptionsVisible()) {
+        <div class="options-container">
+          @for (option of questionDetails().options; track option.id) {
+            <div class="option">
+              <p class="name">{{ ($index + 1) + '. ' + option.option }}</p>
+            </div>
+          }
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+  <app-infinite-scroll-list [listStyle]="listStyle()"
+                            [showItemLoader]="true"
+                            [isNextItemsLoading]="isNextPageLoading()"
+                            (lastItemVisible)="loadNextPage()"
+  >
+    @for (response of response()?.responses; track response.formResponsesIdentifier) {
+      <app-edit-form-response-question-response-container
+        [formId]="formId()"
+        [response]="response"
+      >
+        <div class="response-content">
+          @if (response.optionId === null) {
+            <p class="question-left-blank">Question left blank</p>
+          } @else {
+            <div class="options-container">
+              <div class="option">
+                <p class="name">{{ getOptionFromId(response.optionId)?.option }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      </app-edit-form-response-question-response-container>
+    }
+  </app-infinite-scroll-list>
+</div>

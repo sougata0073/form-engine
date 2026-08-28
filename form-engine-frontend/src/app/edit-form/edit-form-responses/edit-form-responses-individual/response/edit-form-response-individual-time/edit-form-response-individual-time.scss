@@ -1,0 +1,52 @@
+@use "index" as *;
+
+.time-parent {
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+
+  .time-label {
+    font-family: Roboto, Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: .3px;
+    line-height: 16px;
+    color: #757575;
+    word-break: keep-all;
+  }
+
+  .time-container {
+    display: flex;
+    flex-direction: row;
+
+    .time-value-container {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+      padding: 0 0 2px 0;
+
+      .value {
+        color: rgba(0, 0, 0, .87);
+        font-family: Roboto, Arial, sans-serif;
+        font-size: 14px;
+        font-weight: 400;
+        letter-spacing: .2px;
+        line-height: 20px;
+      }
+    }
+
+    .time-divider {
+      padding: 0 0 4px 0;
+
+      .divider {
+        font-family: Roboto, Arial, sans-serif;
+        font-size: 14px;
+        letter-spacing: .2px;
+        line-height: 20px;
+        color: #1f1f1f;
+        display: inline-block;
+        font-weight: 700;
+        width: 12px;
+        text-align: center;
+      }
+    }
+  }
+}

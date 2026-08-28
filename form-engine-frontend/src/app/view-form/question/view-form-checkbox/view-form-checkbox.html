@@ -1,0 +1,26 @@
+<div class="parent-container">
+  <form [formGroup]="formGroup">
+    @for (option of options(); track option.value) {
+      <mat-checkbox
+        [value]="option.value"
+        [formControl]="option.control"
+      >
+        {{ option.label }}
+      </mat-checkbox>
+    }
+  </form>
+  @let error = formError();
+  @if (error) {
+    <mat-error class="error-container">{{ error }}</mat-error>
+  }
+  @if (!question().required) {
+    <button
+      matButton
+      class="view-form-clear-selection-button"
+      [class]="{'hidden': !showClearSelection()}"
+      (click)="onClearSelectionClick()"
+    >
+      Clear selection
+    </button>
+  }
+</div>

@@ -1,0 +1,215 @@
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+@use "index" as *;
+
+html {
+  height: 100%;
+  @include mat.theme((
+    color: (
+      primary: mat.$magenta-palette,
+      tertiary: mat.$violet-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+}
+
+body {
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  scrollbar-width: thin;
+}
+
+.mat-mdc-form-field.decorated-mat-input {
+  .mdc-text-field {
+    background-color: transparent;
+    padding: $space-xxs;
+
+    .mat-mdc-form-field-focus-overlay {
+      background-color: transparent;
+    }
+
+    .mdc-line-ripple::after {
+      transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1), opacity 300ms cubic-bezier(0.4, 0, 0.2, 1);
+      border-bottom-width: var(--mat-form-field-filled-focus-active-indicator-height, 3px);
+    }
+  }
+
+  .mat-mdc-form-field-hint-wrapper,
+  .mat-mdc-form-field-error-wrapper {
+    padding: 0 $space-xxs 0 $space-xxs;
+  }
+
+  .mdc-text-field--outlined {
+    .mat-mdc-form-field-flex {
+      .mat-mdc-form-field-infix {
+        padding-left: $space-sm;
+        padding-right: $space-sm;
+
+        .mat-mdc-select {
+          .mat-mdc-select-arrow-wrapper {
+            margin-left: $space-xs;
+          }
+        }
+      }
+    }
+  }
+}
+
+.mat-mdc-form-field.no-required-marker {
+  .mat-mdc-form-field-required-marker {
+    display: none;
+  }
+}
+
+form.vertical {
+  display: flex;
+  flex-direction: column;
+}
+
+.horizontal {
+  display: flex;
+  flex-direction: row;
+  gap: $space-xxl;
+
+  .form-field {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .horizontal {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+.mat-mdc-card-content.no-padding-card {
+  padding: 0;
+
+  &:first-child {
+    padding: 0;
+  }
+
+  &:last-child {
+    padding: 0;
+  }
+}
+
+.mat-mdc-menu-panel.white-background-menu {
+  background-color: white;
+}
+
+.mat-mdc-menu-content {
+  .mat-mdc-menu-item.stretched-menu-item {
+    padding-right: $space-xxl * 2;
+  }
+
+  .mat-mdc-menu-item.selected-menu-item {
+    background-color: rgba(26, 115, 232, .04)
+  }
+
+  .mat-mdc-menu-item.selected-menu-item:hover {
+    background-color: rgba(26, 115, 232, .08)
+  }
+}
+
+.mdc-menu-surface.mat-mdc-select-panel.decorated-select-option {
+  max-height: 100%;
+  @include mat.select-overrides((
+    panel-background-color: white
+  ))
+}
+
+.view-form-clear-selection-button {
+  align-self: end;
+  margin-right: $space-md;
+  transition: height .2s cubic-bezier(.4, 0, .2, 1);
+
+  @include mat.button-overrides((
+    text-container-shape: $space-xs
+  ))
+}
+
+.view-form-clear-selection-button.hidden {
+  height: 0;
+  overflow: hidden;
+}
+
+.parent-container.edit-form-header {
+  @include mat.card-overrides((
+    elevated-container-shape: 0,
+    elevated-container-color: white
+  ));
+
+  .mat-mdc-card-content:last-child {
+    padding-bottom: 0;
+  }
+}
+
+.edit-form-tabs {
+  .mat-mdc-tab-link-container {
+    justify-content: center;
+    border-bottom: none;
+
+    .mat-mdc-tab-list {
+      flex-grow: 0;
+    }
+
+    .mat-mdc-tab-links .mat-mdc-tab-link.mdc-tab--active .mdc-tab__text-label {
+      color: var(--mat-tab-active-indicator-color, var(--mat-sys-primary));
+    }
+  }
+}
+
+.edit-form-response-tab {
+  .mat-mdc-tab-link-container {
+
+    .mat-mdc-tab-links {
+      .mdc-tab--active {
+        .mdc-tab-indicator {
+          .mdc-tab-indicator__content--underline {
+            width: 58px;
+          }
+        }
+      }
+    }
+  }
+}
+
+.decorated-menu {
+  @include mat.menu-overrides((
+    container-color: white
+  ));
+}
+
+.decorated-menu.wide {
+  min-width: 400px;
+}
+
+.mat-mdc-dialog-content.no-scroll {
+  overflow: visible;
+}
+
+.mat-mdc-paginator.decorated-paginator {
+  background-color: transparent;
+}

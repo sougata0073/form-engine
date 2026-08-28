@@ -1,0 +1,73 @@
+server:
+  port: ${SERVER_PORT}
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+      connection-timeout: 60000
+      max-lifetime: 1800000
+      idle-timeout: 600000
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        jdbc:
+          batch_size: 100
+        order_inserts: true
+        order_updates: true
+  devtools:
+    restart:
+      enabled: true
+      poll-interval: 200ms
+      quiet-period: 100ms
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+      username: ${REDIS_USERNAME}
+      database: ${REDIS_DATABASE}
+      ssl:
+        enabled: ${REDIS_SSL_ENABLED}
+      timeout: ${REDIS_TIMEOUT}
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_URL}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    shutdown:
+      access: unrestricted
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: Form service
+    description: Form service to manage dynamic form structures
+
+app:
+  cache:
+    default-ttl-minutes: ${CACHE_DEFAULT_TTL_MINUTES}

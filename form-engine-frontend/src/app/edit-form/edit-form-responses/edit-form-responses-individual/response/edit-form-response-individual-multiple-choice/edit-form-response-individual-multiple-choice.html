@@ -1,0 +1,11 @@
+<form [formGroup]="formGroup">
+  <mat-radio-group class="radio-group" formControlName="multipleChoice">
+    @for (option of question().options; track option.id) {
+      <mat-radio-button
+        [value]="option.id"
+      >
+        {{ option.option }}
+      </mat-radio-button>
+    }
+  </mat-radio-group>
+</form>

@@ -1,0 +1,48 @@
+<div class="options-container">
+  <ul [class]="{'options-list': formStateService.isFocused(parentComponentId()) || options().length}">
+    @for (option of options(); track option.id) {
+      <li>
+        <app-edit-form-checkbox-option
+          [parentComponentId]="parentComponentId()"
+          [option]="option"
+          [disableRemove]="!formStateService.isFocused(parentComponentId())"
+          (remove)="removeOption(option.id)"
+          (optionTextChange)="onOptionTextChange($event)"
+          (canSaveQuestion)="onOptionCanSaveChange(option.id, $event)"
+        />
+      </li>
+    }
+  </ul>
+  @if (formStateService.isFocused(parentComponentId())) {
+    <button class="add-option-button" matButton="outlined" (click)="onAddOptionClick()">Add option</button>
+  }
+</div>
+@if (showResponseValidation()) {
+  <form [formGroup]="validationSelectorFg" class="horizontal">
+    <mat-form-field class="decorated-mat-input form-field">
+      <mat-select panelClass="decorated-select-option" formControlName="validationType">
+        @for (validationType of validationValidationTypes(); track validationType.value) {
+          <mat-option [value]="validationType.value">
+            {{ validationType.label }}
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </form>
+  <form [formGroup]="validationValueFg" class="horizontal">
+    @if (!activeValidationInputId() !== null) {
+      <div class="validation-value-container">
+        @if (activeValidationInputId() === 'NUMBER') {
+          <mat-form-field class="decorated-mat-input form-field" (focusout)="emitCanSaveAndHasError()">
+            <mat-label>Number</mat-label>
+            <input matInput formControlName="number" type="number">
+          </mat-form-field>
+        }
+      </div>
+    }
+    <mat-form-field class="decorated-mat-input form-field">
+      <mat-label>Custom error text</mat-label>
+      <input matInput formControlName="errorText">
+    </mat-form-field>
+  </form>
+}

@@ -1,0 +1,120 @@
+@use 'index' as *;
+@use '@angular/material' as mat;
+
+.parent-container {
+  @include mat.card-overrides((
+    elevated-container-shape: 0,
+    elevated-container-color: white
+  ));
+}
+
+.info-action-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.tab-container {
+  align-items: center;
+  margin: $space-md 0 0 0;
+}
+
+.form-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: $space-sm;
+}
+
+.save-message {
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: .3px;
+  line-height: 16px;
+  color: #5e5e5e;
+  cursor: default;
+  margin: 0 $space-md;
+  min-width: 80px;
+  user-select: none;
+  width: 160px;
+}
+
+.form-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-left: auto;
+
+  .profile-photo {
+    width: $space-xl;
+    height: $space-xl;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 0 0 $space-xxs;
+  }
+}
+
+.title {
+  font-size: $space-lg;
+  max-width: 30ch;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-logo {
+  cursor: pointer;
+}
+
+.published-button {
+  margin: 0 $space-sm 0 $space-sm;
+
+  @include mat.button-overrides((
+    outlined-container-shape: $space-xs,
+  ));
+}
+
+.publish-button {
+  margin: 0 $space-sm 0 $space-sm;
+
+  @include mat.button-overrides((
+    filled-container-shape: $space-xs
+  ))
+}
+
+.not-accepting-response-container {
+  background-color: #fffade;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: $space-xxl * 2;
+  justify-content: center;
+  padding: $space-xxs $space-md;
+
+  .not-accepting-response-message-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: $space-sm;
+
+    p {
+      color: black;
+    }
+
+    .edit-off-icon {
+      @include mat.icon-overrides((
+        color: #DA883F,
+      ));
+    }
+  }
+
+  button {
+    @include mat.button-overrides((
+      text-container-shape: $space-xs,
+      text-label-text-color: rgb(95, 99, 104),
+      text-ripple-color: #DBD7BF,
+      text-state-layer-color: #DBD7BF,
+      text-hover-state-layer-opacity: 0.3
+    ))
+  }
+}

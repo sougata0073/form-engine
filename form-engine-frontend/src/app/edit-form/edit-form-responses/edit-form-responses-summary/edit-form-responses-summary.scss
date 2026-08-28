@@ -1,0 +1,23 @@
+@use "index" as *;
+
+.parent-container {
+  display: flex;
+  flex-direction: column;
+  margin: $space-sm 0 0 0;
+
+  .response-summary-list {
+
+    li {
+      list-style: none;
+      margin: 0 0 $space-sm 0;
+    }
+  }
+
+  .loader {
+    align-self: center;
+  }
+}
+
+.parent-container.loader-only {
+  margin: $space-xxl 0 0 0;
+}

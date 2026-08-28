@@ -1,0 +1,53 @@
+@use 'index' as *;
+@use '@angular/material' as mat;
+
+.parent-container {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+
+  .card-container {
+    @include mat.card-overrides((
+      elevated-container-shape: $space-xs,
+      elevated-container-color: white
+    ));
+  }
+
+  .square-text-button {
+    @include mat.button-overrides((
+      text-container-shape: $space-xxs
+    ));
+  }
+
+  .question-card-content {
+    padding: $space-lg;
+
+    .question {
+      font-weight: 400;
+      font-size: $space-md;
+      line-height: 1.5;
+      letter-spacing: 0;
+    }
+  }
+
+  .response-content {
+    .response-text {
+      padding: $space-lg;
+      font-family: Roboto, Arial, sans-serif;
+      font-size: 20px;
+      font-weight: 300;
+      word-wrap: break-word;
+    }
+
+    .question-left-blank {
+      padding: $space-lg;
+      font-family: Roboto, Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: .2px;
+      line-height: 20px;
+      color: #757575;
+      font-style: italic;
+    }
+  }
+}

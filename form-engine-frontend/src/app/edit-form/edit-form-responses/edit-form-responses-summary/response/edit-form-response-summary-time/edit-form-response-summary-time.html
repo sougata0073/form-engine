@@ -1,0 +1,28 @@
+<app-infinite-scroll-list [listStyle]="listStyle()"
+                          [showItemLoader]="true"
+                          [isNextItemsLoading]="isNextPageLoading()"
+                          (lastItemVisible)="loadNextPage()"
+>
+  @for (tm of responses(); track tm.hour) {
+    <div class="time-container">
+      <div class="hour-container">
+        <p class="hour">{{ tm.hour }}</p>
+        <p class="colon">:</p>
+        <div class="blank-space"></div>
+      </div>
+
+      <div class="full-time-container">
+        @for (t of tm.times; track t.time) {
+          @if (+t.count > 1) {
+            <div class="time-multiple">
+              <p class="time-value">{{ t.time | date:'HH:mm' }}</p>
+              <p class="time-number">{{ t.count }}</p>
+            </div>
+          } @else {
+            <p class="time">{{ t.time | date:'HH:mm' }}</p>
+          }
+        }
+      </div>
+    </div>
+  }
+</app-infinite-scroll-list>

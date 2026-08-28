@@ -1,0 +1,51 @@
+<div class="parent-container">
+  @if (formId() && formResponseCount()) {
+    <mat-card appearance="raised" class="response-selector-card-container">
+      <mat-card-content class="response-selector-card-content-container no-padding-card">
+        <mat-paginator class="decorated-paginator"
+                       [length]="formResponseCount()?.count"
+                       [pageSize]="1"
+                       [showFirstLastButtons]="true"
+                       [hidePageSize]="true"
+                       [pageIndex]="individualResponsePaginatorIndex()"
+                       (page)="handleIndividualResponsePaginatorPageEvent($event)">
+        </mat-paginator>
+        <div class="response-by-individual-container-actions">
+          <button matIconButton matTooltip="Print response" [disabled]="!individualResponse()" (click)="onPrintResponseClick()">
+            <mat-icon fontIcon="print"/>
+          </button>
+          <button matIconButton matTooltip="Delete response" [disabled]="!individualResponse()" (click)="onDeleteResponseClick()">
+            <mat-icon fontIcon="delete"/>
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+  <div class="response-container"
+       [class.loader-only]="!(formId() && formResponseCount() && formRes() && individualResponse())">
+    @if (formId() && formResponseCount() && formRes() && individualResponse()) {
+      <div class="form-info">
+        <app-question-card [isTopItem]="true">
+          <div class="form-info-parent-container">
+            <p class="response-edit-message">Responses cannot be edited</p>
+            <div class="form-info-container">
+              <p class="title">{{ formRes()?.title }}</p>
+              <p class="description">{{ formRes()?.description }}</p>
+            </div>
+          </div>
+        </app-question-card>
+      </div>
+
+      @for (question of formRes()?.questions; track question.id) {
+        <div class="individual-question-response">
+          <app-edit-form-individual-question-wrapper
+            [question]="question"
+            [response]="response().get(question.id)"
+          />
+        </div>
+      }
+    } @else {
+      <mat-spinner class="loader"/>
+    }
+  </div>
+</div>

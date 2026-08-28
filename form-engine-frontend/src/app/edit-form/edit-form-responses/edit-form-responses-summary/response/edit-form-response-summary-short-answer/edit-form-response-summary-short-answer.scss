@@ -1,0 +1,16 @@
+@use "index" as *;
+
+.response {
+  margin: $space-xxs $space-sm 0 0;
+  background-color: #f9f9f9;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: .2px;
+  line-height: 20px;
+  color: #1f1f1f;
+  border-radius: $space-xxs;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

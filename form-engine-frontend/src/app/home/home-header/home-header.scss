@@ -1,0 +1,94 @@
+@use "index" as *;
+@use "@angular/material" as mat;
+
+.header-container {
+
+  @include mat.card-overrides((
+    filled-container-shape: 0,
+    filled-container-color: white
+  ));
+
+  .header-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 8px;
+
+    .header-content-child {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: $space-xs;
+      min-width: 280px;
+
+      &.start-justified {
+        justify-content: start;
+      }
+
+      &.end-justified {
+        justify-content: end;
+      }
+
+      .app-logo {
+        cursor: pointer;
+      }
+
+      .large-text {
+        font-size: $space-lg;
+        white-space: nowrap;
+      }
+
+      .template-gallery-message {
+        margin: 0 0 0 $space-lg;
+      }
+    }
+
+    .profile-photo {
+      width: $space-xl;
+      height: $space-xl;
+      border-radius: 50%;
+      object-fit: cover;
+      align-self: center;
+    }
+
+    .search-container {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+
+      .search-bar {
+        min-width: 40%;
+        max-width: 720px;
+        height: $space-xxl;
+        background-color: #f0f4f9;
+        border-radius: $space-xl;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: $space-xxs $space-xs $space-xxs $space-xs;
+        border: 1px solid transparent;
+
+        .search-text-input {
+          width: 100%;
+          font-size: $space-md;
+          margin: 0 $space-xxs 0 $space-xxs;
+          border: none;
+          background-color: transparent;
+          outline: none;
+        }
+
+        &.focused {
+          background-color: white;
+          border: 1px solid transparent;
+          box-shadow: 0 1px 1px 0 rgba(65, 69, 73, .3), 0 1px 3px 1px rgba(65, 69, 73, .15);
+        }
+      }
+    }
+  }
+}
+
+.hide {
+  visibility: hidden;
+}

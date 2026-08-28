@@ -1,0 +1,18 @@
+@use "index" as *;
+
+@mixin transparent-input {
+  .mat-mdc-form-field .mdc-text-field {
+    background-color: transparent;
+    padding: $space-xxs;
+
+    .mat-mdc-form-field-focus-overlay {
+
+      background-color: transparent;
+    }
+
+    .mdc-line-ripple::after {
+      transition: transform 280ms cubic-bezier(0.4, 0, 0.2, 1), opacity 280ms cubic-bezier(0.4, 0, 0.2, 1);
+      border-bottom-width: var(--mat-form-field-filled-focus-active-indicator-height, 3px);
+    }
+  }
+}

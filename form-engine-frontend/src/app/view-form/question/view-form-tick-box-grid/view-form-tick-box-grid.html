@@ -1,0 +1,45 @@
+<div class="parent-container">
+  <form [formGroup]="formGroup" [class]="{'with-options': question().rows.length || question().columns.length}">
+    <table>
+      @if (question().columns.length) {
+        <thead>
+        <tr>
+          <th class="column-label"></th>
+
+          @for (column of question().columns; track column.id) {
+            <th class="column-label">{{ column.column }}</th>
+          }
+        </tr>
+        </thead>
+      }
+      <tbody>
+        @for (option of options(); track option.row.value) {
+          <tr [formArray]="option.row.formArray">
+            <td class="row-label">{{ option.row.label }}</td>
+            @for (column of option.columns; track column.value) {
+              <td class="checkbox-cell">
+                <mat-checkbox
+                  [value]="column.value"
+                  [formControl]="column.control"
+                />
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </form>
+  @if (showError()) {
+    <mat-error class="error-container">Select option in each row to continue</mat-error>
+  }
+  @if (!question().required) {
+    <button
+      matButton
+      class="view-form-clear-selection-button"
+      [class]="{'hidden': !showClearSelection()}"
+      (click)="onClearSelectionClick()"
+    >
+      Clear selection
+    </button>
+  }
+</div>

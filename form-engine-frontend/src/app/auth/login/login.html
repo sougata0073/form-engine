@@ -1,0 +1,99 @@
+<div class="login-page">
+  <mat-card class="login-card">
+    <div class="header">
+      <h1>Form Engine</h1>
+      <p>Sign in to your account</p>
+    </div>
+
+    <form class="login-form" [formGroup]="formGroup" (ngSubmit)="loginUserWithEmailPassword($event)">
+
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+
+        <input
+          matInput
+          type="email"
+          formControlName="email">
+
+        @if (formGroup.controls.email.touched && formGroup.controls.email.hasError('required')) {
+          <mat-error>Email is required</mat-error>
+        } @else if (formGroup.controls.email.touched && formGroup.controls.email.hasError('email')) {
+          <mat-error>Invalid email address</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Password</mat-label>
+
+        <input
+          matInput
+          [type]="hidePassword() ? 'password' : 'text'"
+          formControlName="password">
+
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="hidePassword.set(!hidePassword())">
+          <mat-icon>
+            {{ hidePassword() ? 'visibility_off' : 'visibility' }}
+          </mat-icon>
+        </button>
+
+        @if (formGroup.controls.password.touched &&
+        formGroup.controls.password.hasError('required')) {
+          <mat-error>Password is required</mat-error>
+        }
+      </mat-form-field>
+
+      <button
+        mat-flat-button
+        color="primary"
+        class="login-btn"
+        [disabled]="disableLoginButton()">
+        Login
+      </button>
+
+    </form>
+
+    <div class="divider">
+      <span>OR</span>
+    </div>
+
+    <div class="social-buttons">
+
+      <button
+        mat-stroked-button
+        class="social-btn"
+        (click)="onSocialLoginClick('google')">
+        <span class="social-content">
+          <img src="assets/images/google.png" alt="Google">
+          <span>Continue with Google</span>
+        </span>
+      </button>
+
+      <button
+        mat-stroked-button
+        class="social-btn"
+        (click)="onSocialLoginClick('github')">
+        <span class="social-content">
+          <img src="assets/images/github.png" alt="GitHub">
+          <span>Continue with GitHub</span>
+        </span>
+      </button>
+
+    </div>
+
+    <div class="register-section">
+      <span>Don't have an account?</span>
+
+      <button
+        mat-button
+        color="primary"
+        type="button">
+        Register
+      </button>
+    </div>
+
+  </mat-card>
+</div>

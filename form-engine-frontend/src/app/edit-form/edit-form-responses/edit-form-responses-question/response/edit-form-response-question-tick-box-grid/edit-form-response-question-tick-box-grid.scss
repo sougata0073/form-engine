@@ -1,0 +1,147 @@
+@use 'index' as *;
+@use '@angular/material' as mat;
+
+.parent-container {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+
+  .card-container {
+    @include mat.card-overrides((
+      elevated-container-shape: $space-xs,
+      elevated-container-color: white
+    ));
+  }
+
+  .square-text-button {
+    @include mat.button-overrides((
+      text-container-shape: $space-xxs
+    ));
+  }
+
+  .question-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: $space-sm;
+    padding: $space-lg;
+
+    .question {
+      font-weight: 400;
+      font-size: $space-md;
+      line-height: 1.5;
+      letter-spacing: 0;
+    }
+
+    .option-selector-container {
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: thin;
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: $space-md;
+
+        th {
+          font-weight: normal;
+        }
+
+        .checkbox-cell {
+          min-width: $space-xxl;
+          padding: $space-xxs;
+          text-align: center;
+          vertical-align: middle;
+        }
+
+        .row-label {
+          padding: $space-md $space-md $space-md $space-xs;
+          border-left: 5px solid transparent;
+        }
+
+        .column-label {
+          padding: 0 $space-sm $space-md $space-sm;
+        }
+
+        .row-label,
+        .column-label {
+          white-space: nowrap;
+        }
+
+        .row {
+
+        }
+
+        .row.selected {
+          background-color: rgb(250, 227, 225);
+
+          .row-label {
+            border-left-color: rgb(162, 50, 41);
+          }
+        }
+      }
+    }
+
+    .options-container.with-options {
+      padding-bottom: $space-sm;
+
+      tr {
+        height: $space-xxl;
+      }
+    }
+
+  }
+
+  .response-content {
+    .question-left-blank {
+      padding: $space-lg;
+      font-family: Roboto, Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: .2px;
+      line-height: 20px;
+      color: #757575;
+      font-style: italic;
+    }
+
+    .options-container {
+      padding: $space-lg;
+
+      .option {
+        margin: 0;
+
+        .name {
+          padding: $space-xs;
+          font-family: Roboto, Arial, sans-serif;
+          font-size: 14px;
+          font-weight: 400;
+          letter-spacing: .2px;
+          line-height: 20px;
+          color: color-mix(in srgb, var(--gm3-sys-color-on-surface, #1f1f1f) 38%, var(--gm3-sys-color-surface, #fff));
+        }
+      }
+    }
+  }
+
+  .options-container {
+    display: flex;
+    flex-direction: column;
+    padding: 0 10px 0 10px;
+    gap: $space-xxs;
+
+    .option {
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+      margin: $space-xxs 0 0 0;
+      align-items: center;
+
+      .name {
+        padding: 10px 0;
+        font-weight: 400;
+        font-size: 11pt;
+        line-height: 1.5;
+        letter-spacing: 0;
+      }
+    }
+  }
+}

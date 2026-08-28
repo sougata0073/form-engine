@@ -1,0 +1,12 @@
+<div class="parent-container">
+  @if (response()?.fileUrl) {
+    <div class="selected-file-container">
+      <p class="file-name">{{ response()?.fileName }}</p>
+    </div>
+  } @else {
+    <button matButton="outlined" class="add-file-button" disabled>
+      <mat-icon fontIcon="attach_file"/>
+      Add file
+    </button>
+  }
+</div>

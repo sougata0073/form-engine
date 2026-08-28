@@ -1,0 +1,44 @@
+@use "index" as *;
+@use "@angular/material" as mat;
+
+.icon-action-pair {
+  display: flex;
+  flex-direction: row;
+  gap: $space-md;
+}
+
+.icon-action-pair.align-items-center {
+  align-items: center;
+}
+
+.responder-manage-action-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+}
+
+.responder-manage-action {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.responder-manage-action-label-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: $space-sm
+}
+
+.content-divider {
+  margin-top: 20px;
+}
+
+button {
+  @include mat.button-overrides((
+    text-container-shape: $space-xs,
+    filled-container-shape: $space-xs,
+    filled-container-color: rgb(95, 42, 4)
+  ))
+}

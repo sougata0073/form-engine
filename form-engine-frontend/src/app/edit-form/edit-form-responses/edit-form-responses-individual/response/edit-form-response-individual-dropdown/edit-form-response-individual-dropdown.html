@@ -1,0 +1,10 @@
+<form [formGroup]="formGroup" class="horizontal">
+  <mat-form-field class="decorated-mat-input form-field">
+    <mat-label>Choose</mat-label>
+    <mat-select panelClass="decorated-select-option" formControlName="dropdown">
+      @for (option of question().options; track option.id) {
+        <mat-option [value]="option.id">{{ option.option }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</form>

@@ -1,0 +1,94 @@
+<div class="parent-container" [class.focused]="editFormStateService.isFocused(this.componentId())">
+  <app-question-card
+    [isFocused]="editFormStateService.isFocused(componentId())"
+    [hasError]="hasError() || formGroup.invalid"
+  >
+    <form class="vertical" [formGroup]="formGroup">
+      <mat-icon class="drag-icon" fontIcon="drag_indicator" cdkDragHandle/>
+      <div class="horizontal">
+        <mat-form-field class="decorated-mat-input form-field">
+          <mat-label>Question</mat-label>
+          <input matInput
+                 (focus)="editFormStateService.changeFocus(componentId())"
+                 formControlName="question"
+                 #questionInput
+                 [required]="!!formGroup.controls.required.value && !editFormStateService.isFocused(this.componentId())"
+          >
+        </mat-form-field>
+        @if (showQuestionTypeSelector()) {
+          <mat-form-field class="decorated-mat-input form-field no-required-marker">
+            <mat-label>Question type</mat-label>
+            <mat-select panelClass="decorated-select-option"
+                        formControlName="questionType"
+            >
+              @for (key of questionTypeGroups().keys(); track key) {
+                @for (question of questionTypeGroups().get(key); track $index) {
+                  <mat-option [value]="question.value">
+                    <mat-icon [fontIcon]="question.icon"/>
+                    {{ question.displayValue }}
+                  </mat-option>
+                }
+                @if (key !== 'dateTime') {
+                  <div class="question-type-selector-item-divider">
+                    <mat-divider/>
+                  </div>
+                }
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+      </div>
+      @if (showDescription()) {
+        <mat-form-field class="decorated-mat-input form-field">
+          <mat-label>Question description</mat-label>
+          <input matInput formControlName="description">
+        </mat-form-field>
+      }
+    </form>
+
+    <ng-template #questionHost/>
+
+    @if (showQuestionActions()) {
+      <div class="question-action-divider">
+        <mat-divider/>
+      </div>
+      <div class="action-container">
+        <button matIconButton matTooltip="Copy question" (click)="onCopyQuestionClick()">
+          <mat-icon fontIcon="content_copy"/>
+        </button>
+        <button matIconButton matTooltip="Delete question" (click)="onDeleteQuestionClick()">
+          <mat-icon fontIcon="delete"/>
+        </button>
+        <div class="divider">
+          <mat-divider [vertical]="true"/>
+        </div>
+        <form [formGroup]="formGroup">
+          <div class="required-toggle-container">
+            <p>Required</p>
+            <mat-slide-toggle formControlName="required"/>
+          </div>
+        </form>
+        <button matIconButton [matMenuTriggerFor]="menu">
+          <mat-icon fontIcon="more_vert"/>
+        </button>
+        <mat-menu class="white-background-menu" #menu="matMenu">
+          @for (item of moreMenuItems(); track item.itemId) {
+            <button
+              mat-menu-item
+              class="stretched-menu-item"
+              [class]="{'selected-menu-item': selectedMoreMenuItemIds().has(item.itemId)}"
+              (click)="toggleSelectedMoreMenuItemIds(item.itemId)"
+            >
+              @if (selectedMoreMenuItemIds().has(item.itemId)) {
+                <mat-icon fontIcon="check"/>
+              } @else {
+                <mat-icon/>
+              }
+              <span>{{ item.label }}</span>
+            </button>
+          }
+        </mat-menu>
+      </div>
+    }
+  </app-question-card>
+</div>

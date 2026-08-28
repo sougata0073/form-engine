@@ -1,0 +1,10 @@
+@use "index" as *;
+
+.parent-container, form {
+  display: flex;
+  flex-direction: column;
+}
+
+.error-container {
+  margin-top: $space-sm;
+}

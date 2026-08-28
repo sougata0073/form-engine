@@ -1,0 +1,92 @@
+@use 'index' as *;
+@use '@angular/material' as mat;
+
+.parent-container {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+
+  .card-container {
+    @include mat.card-overrides((
+      elevated-container-shape: $space-xs,
+      elevated-container-color: white
+    ));
+  }
+
+  .square-text-button {
+    @include mat.button-overrides((
+      text-container-shape: $space-xxs
+    ));
+  }
+
+  .question-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: $space-sm;
+    padding: $space-lg;
+
+    .question-container {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+
+      .question {
+        font-weight: 400;
+        font-size: $space-md;
+        line-height: 1.5;
+        letter-spacing: 0;
+      }
+    }
+  }
+
+  .response-content {
+    .question-left-blank {
+      padding: $space-lg;
+      font-family: Roboto, Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: .2px;
+      line-height: 20px;
+      color: #757575;
+      font-style: italic;
+    }
+
+    .options-container {
+      padding: $space-lg;
+
+      .option {
+        margin: 0;
+
+        .name {
+          font-family: Roboto, Arial, sans-serif;
+          font-size: 14px;
+          font-weight: 400;
+          letter-spacing: .2px;
+          line-height: 20px;
+          color: #1f1f1f;
+          padding: 0;
+        }
+      }
+    }
+  }
+
+  .options-container {
+    display: flex;
+    flex-direction: column;
+    padding: 0 10px 0 10px;
+    gap: $space-xxs;
+
+    .option {
+      margin: $space-xxs 0 0 0;
+
+      .name {
+        padding: 10px 0;
+        font-weight: 400;
+        font-size: 11pt;
+        line-height: 1.5;
+        letter-spacing: 0;
+      }
+    }
+  }
+}

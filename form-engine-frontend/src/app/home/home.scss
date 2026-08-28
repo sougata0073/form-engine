@@ -1,0 +1,91 @@
+@use "index" as *;
+@use "@angular/material" as mat;
+
+.parent-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+
+  app-home-header {
+    flex-shrink: 0;
+    z-index: 10;
+  }
+
+  .page-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: filter 250ms ease;
+  }
+
+  .blur-background {
+    filter: blur(4px);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .loader-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .content-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+
+    .new-form-creation-container {
+      transition: height 300ms ease-in-out;
+    }
+  }
+
+  .recent-form-parent-container {
+    background-color: white;
+    margin-top: $space-md;
+    flex: 1;
+
+    .recent-form-container {
+      width: 60%;
+      place-self: center;
+
+      display: flex;
+      flex-direction: column;
+      gap: $space-md;
+
+      .controls {
+        display: flex;
+        justify-content: space-between;
+        margin-top: $space-lg;
+        padding: 0 $space-xs;
+
+        .message {
+          font-weight: 500;
+          color: #1f1f1f;
+          font-size: $space-md;
+        }
+
+        .buttons-container {
+          display: flex;
+          gap: 60px;
+        }
+      }
+
+      .recent-form-list {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+  }
+}

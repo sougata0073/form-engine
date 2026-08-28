@@ -1,0 +1,22 @@
+<div class="parent-container">
+  <form [formGroup]="formGroup">
+    <mat-radio-group class="radio-group" formControlName="linearScale">
+      @for (button of radioButtons(); track button) {
+        <div class="radio-button">
+          <label [for]="`mat-radio-${$index}-input`">{{ button }}</label>
+          <mat-radio-button (click)="onRadioButtonCLick(button)" [value]="button"/>
+        </div>
+      }
+    </mat-radio-group>
+  </form>
+  @if (!question().required) {
+    <button
+      matButton
+      class="view-form-clear-selection-button"
+      [class]="{'hidden': !formGroup.value.linearScale}"
+      (click)="formGroup.controls.linearScale.patchValue(null)"
+    >
+      Clear selection
+    </button>
+  }
+</div>

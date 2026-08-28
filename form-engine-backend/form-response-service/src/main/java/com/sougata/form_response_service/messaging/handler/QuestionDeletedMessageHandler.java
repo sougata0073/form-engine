@@ -1,0 +1,72 @@
+package com.sougata.form_response_service.messaging.handler;
+
+import com.sougata.form_engine.constant.Messaging;
+import com.sougata.form_engine.constant.MessagingChannelNames;
+import com.sougata.form_engine.constant.cache.FormResponseCacheNames;
+import com.sougata.form_engine.dto.messaging.QuestionDeleteMessage;
+import com.sougata.form_response_service.util.CacheUtil;
+import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.data.redis.connection.Message;
+import org.springframework.data.redis.connection.MessageListener;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
+@Component(MessagingChannelNames.QUESTION_DELETED + "_" + Messaging.MESSAGE_HANDLER_SUFFIX)
+@RequiredArgsConstructor
+public class QuestionDeletedMessageHandler implements MessageListener {
+
+    private static final String CACHE_FORM_RESPONSE_SUMMARY_SHORT = "formResponseSummaryShort";
+    private static final String CACHE_RESPONSE_SUMMARIES = "responseSummaries";
+    private static final String CACHE_RESPONSE_BY_QUESTION = "responseByQuestion";
+    private static final String CACHE_FORM_RESPONSE_SUMMARIES = "formResponseSummaries";
+    private static final String CACHE_RESPONSE_SUMMARY = "responseSummary";
+    private static final String CACHE_INDIVIDUAL_FORM_RESPONSE = "individualFormResponse";
+    private static final String CACHE_INDIVIDUAL_FORM_RESPONSE_BY_PAGE = "individualFormResponseByPage";
+    private static final String CACHE_IS_RESPONSE_ALREADY_SUBMITTED = "isResponseAlreadySubmitted";
+
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectMapper objectMapper;
+
+    @Caching(evict = {
+            @CacheEvict(
+                    cacheNames = {CACHE_INDIVIDUAL_FORM_RESPONSE},
+                    allEntries = true
+            )
+    })
+    @Override
+    public void onMessage(Message message, byte @Nullable [] pattern) {
+
+        var messageData = objectMapper.readValue(
+                new String(message.getBody(), StandardCharsets.UTF_8), QuestionDeleteMessage.class
+        );
+
+        var formResponseCountCacheKey = CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_COUNT, messageData.getFormId());
+        var responseSummariesCacheKey = CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_SUMMARIES, messageData.getFormId());
+
+        var responseByQuestionCacheKeys = redisTemplate.keys(CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_BY_QUESTION, "formId=" + messageData.getFormId()) + "::*");
+        var formResponseSummariesCacheKeys = redisTemplate.keys(CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_SUMMARIES, "formId=" + messageData.getFormId()) + "::*");
+        var responseSummaryCacheKeys = redisTemplate.keys(CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_SUMMARY, "formId=" + messageData.getFormId()) + "::*");
+        var individualFormResponseCacheKeys = redisTemplate.keys(CacheUtil.buildKey(FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE, "formId=" + messageData.getFormId()) + "::*");
+
+        var cacheKeys = new ArrayList<>(
+                List.of(
+                        formResponseCountCacheKey,
+                        responseSummariesCacheKey
+                )
+        );
+        cacheKeys.addAll(responseByQuestionCacheKeys);
+        cacheKeys.addAll(formResponseSummariesCacheKeys);
+        cacheKeys.addAll(responseSummaryCacheKeys);
+        cacheKeys.addAll(individualFormResponseCacheKeys);
+
+        redisTemplate.delete(cacheKeys);
+    }
+}

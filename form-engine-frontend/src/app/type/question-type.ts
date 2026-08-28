@@ -1,0 +1,15 @@
+export type QuestionType =
+  'CHECKBOX'
+  | 'DATE'
+  | 'DATE_TIME'
+  | 'DROPDOWN'
+  | 'DURATION'
+  | 'FILE_UPLOAD'
+  | 'LINEAR_SCALE'
+  | 'MULTIPLE_CHOICE'
+  | 'MULTIPLE_CHOICE_GRID'
+  | 'PARAGRAPH'
+  | 'RATING'
+  | 'SHORT_ANSWER'
+  | 'TICK_BOX_GRID'
+  | 'TIME';

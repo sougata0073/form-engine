@@ -1,0 +1,10 @@
+<app-infinite-scroll-list [listStyle]="listStyle()"
+                          [showItemLoader]="true"
+                          [isNextItemsLoading]="isNextPageLoading()"
+                          (lastItemVisible)="loadNextPage()"
+                          [isScrollContainerImmediateParent]="true"
+>
+  @for (r of responses(); track r) {
+    <div class="response">{{ r }}</div>
+  }
+</app-infinite-scroll-list>

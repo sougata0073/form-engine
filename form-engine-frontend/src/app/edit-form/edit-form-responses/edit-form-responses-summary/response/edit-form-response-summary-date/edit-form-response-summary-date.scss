@@ -1,0 +1,65 @@
+@use "index" as *;
+
+.date-container {
+  display: flex;
+  flex-direction: row;
+
+  .month-year {
+    font: 500 14px Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+    min-width: 95px;
+    text-align: right;
+    border-right: 1px solid black;
+    padding: 10px $space-md 10px 0;
+    align-self: center;
+    white-space: nowrap;
+  }
+
+  .date-list-container {
+    display: flex;
+    flex-direction: row;
+    margin: 0 0 0 14px;
+    align-items: center;
+
+    .date {
+      font: 400 13px Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+      align-self: center;
+      white-space: nowrap;
+      background-color: var(--mat-sys-surface);
+      padding: 6px 10px;
+      align-items: center;
+      border-radius: 14px;
+      margin: 0 2px;
+    }
+
+    .date-multiple {
+      display: flex;
+      flex-direction: row;
+      border-radius: 14px;
+      background-color: var(--mat-sys-primary);
+      height: fit-content;
+      padding: 3px 3px 3px 10px;
+      align-items: center;
+      margin: 0 2px;
+
+      .date-value {
+        font: 400 13px Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+        align-self: center;
+        white-space: nowrap;
+        align-items: center;
+        color: var(--mat-sys-surface);
+      }
+
+      .date-number {
+        font: 400 13px Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+        background-color: var(--mat-sys-surface);
+        border-radius: 14px;
+        color: var(--mat-sys-primary);
+        margin-left: 8px;
+        padding: 3px 7px;
+        align-self: center;
+        white-space: nowrap;
+        align-items: center;
+      }
+    }
+  }
+}

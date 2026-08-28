@@ -1,0 +1,15 @@
+<form class="horizontal">
+  <mat-form-field class="decorated-mat-input form-field">
+    <mat-label>Select date</mat-label>
+    <input matInput [matDatepicker]="datepicker" disabled>
+    <mat-datepicker #datepicker/>
+    <mat-datepicker-toggle [for]="datepicker" matSuffix/>
+  </mat-form-field>
+
+  <mat-form-field class="decorated-mat-input form-field">
+    <mat-label>Select time</mat-label>
+    <input matInput [matTimepicker]="timepicker" disabled>
+    <mat-timepicker #timepicker/>
+    <mat-timepicker-toggle [for]="timepicker" matSuffix/>
+  </mat-form-field>
+</form>

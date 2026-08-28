@@ -1,0 +1,26 @@
+<app-infinite-scroll-list [listStyle]="listStyle()"
+                          [showItemLoader]="true"
+                          [isNextItemsLoading]="isNextPageLoading()"
+                          (lastItemVisible)="loadNextPage()"
+                          [isScrollContainerImmediateParent]="true"
+>
+  @for (res of responses(); track `${res.year}_${res.month}`) {
+    <div class="date-container">
+      <p class="month-year">{{ `${res.month}/1/${res.year}` | date:'MMM y' }}</p>
+
+      <div class="date-list-container">
+        @for (d of res.dates; track d.date) {
+          @if (+d.count > 1) {
+            <div class="date-multiple">
+              <p class="date-value">{{ d.date | date:'dd:MM:yyyy' }}</p>
+              <p class="date-number">{{ d.count }}</p>
+            </div>
+          } @else {
+            <p class="date">{{ d.date | date:'dd:MM:yyyy' }}</p>
+          }
+        }
+      </div>
+
+    </div>
+  }
+</app-infinite-scroll-list>

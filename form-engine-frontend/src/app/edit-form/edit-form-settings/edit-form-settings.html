@@ -1,0 +1,720 @@
+<div
+  class="settings-page"
+  [formGroup]="settingsForm">
+
+  <mat-card appearance="raised" class="settings-card">
+    <mat-card-content class="no-padding-card">
+
+      <div class="card-title">
+        Settings
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="quiz-section">
+
+        <div class="setting-row quiz-row">
+
+          <div class="setting-content">
+
+            <div class="setting-title">
+              Make this a quiz
+            </div>
+
+            <div class="setting-description">
+              Assign point values, set answers and automatically provide feedback
+            </div>
+
+          </div>
+
+          <mat-slide-toggle
+            class="setting-toggle"
+            formControlName="isQuiz">
+          </mat-slide-toggle>
+
+        </div>
+
+
+        @if (controls.isQuiz.value) {
+
+          <div class="quiz-content">
+
+            <div class="sub-heading">
+              RELEASE MARKS
+            </div>
+
+            <mat-radio-group
+              class="radio-group"
+              formControlName="releaseMarks">
+
+              <mat-radio-button value="immediately">
+              <span class="radio-label">
+                Immediately after each submission
+              </span>
+              </mat-radio-button>
+
+              <mat-radio-button value="later">
+
+                <div class="radio-content">
+
+                <span class="radio-label">
+                  Later, after manual review
+                </span>
+
+                  <span class="radio-description">
+                  Turns on responses → collect email addresses
+                </span>
+
+                </div>
+
+              </mat-radio-button>
+
+            </mat-radio-group>
+
+
+            <div class="sub-heading respondent-heading">
+              RESPONDENT SETTINGS
+            </div>
+
+
+            <div class="setting-row quiz-sub-row">
+
+              <div class="setting-content">
+
+                <div class="setting-title">
+                  Missed questions
+                </div>
+
+                <div class="setting-description">
+                  Respondents can see which questions were answered incorrectly
+                </div>
+
+              </div>
+
+              <mat-slide-toggle
+                class="setting-toggle"
+                formControlName="missedQuestions">
+              </mat-slide-toggle>
+
+            </div>
+
+
+            <div class="setting-row quiz-sub-row">
+
+              <div class="setting-content">
+
+                <div class="setting-title">
+                  Correct answers
+                </div>
+
+                <div class="setting-description">
+                  Respondents can see correct answers after grades are released
+                </div>
+
+              </div>
+
+              <mat-slide-toggle
+                class="setting-toggle"
+                formControlName="correctAnswers">
+              </mat-slide-toggle>
+
+            </div>
+
+
+            <div class="setting-row quiz-sub-row">
+
+              <div class="setting-content">
+
+                <div class="setting-title">
+                  Point values
+                </div>
+
+                <div class="setting-description">
+                  Respondents can see total points and points received for each question
+                </div>
+
+              </div>
+
+              <mat-slide-toggle
+                class="setting-toggle"
+                formControlName="pointValues">
+              </mat-slide-toggle>
+
+            </div>
+
+
+            <div class="sub-heading global-heading">
+              GLOBAL QUIZ DEFAULTS
+            </div>
+
+
+            <div class="setting-row point-row quiz-sub-row">
+
+              <div class="setting-content">
+
+                <div class="setting-title">
+                  Default question point value
+                </div>
+
+                <div class="setting-description">
+                  Point values for every new question
+                </div>
+
+              </div>
+
+
+              <div class="point-input-wrapper">
+
+                <mat-form-field
+                  appearance="fill"
+                  class="point-input">
+
+                  <input
+                    matInput
+                    type="number"
+                    min="0"
+                    formControlName="defaultQuestionPointValue">
+
+                </mat-form-field>
+
+                <span class="points-label">
+                points
+              </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        }
+
+      </div>
+
+      <mat-expansion-panel
+        class="settings-expansion"
+        [expanded]="controls.responsesExpanded.value"
+        (opened)="updateExpansionControl(controls.responsesExpanded, true)"
+        (closed)="updateExpansionControl(controls.responsesExpanded, false)"
+        hideToggle>
+
+        <mat-expansion-panel-header>
+
+          <div class="expansion-header">
+
+            <div>
+
+              <div class="setting-title">
+                Responses
+              </div>
+
+              <div class="setting-description">
+                Manage how responses are collected and protected
+              </div>
+
+            </div>
+
+            <mat-icon class="expand-icon">
+              expand_more
+            </mat-icon>
+
+          </div>
+
+        </mat-expansion-panel-header>
+
+
+        <div class="expansion-content">
+
+          <div class="setting-row select-row">
+
+            <div class="setting-content">
+
+              <div class="setting-title">
+                Collect email addresses
+              </div>
+
+              <div class="setting-description">
+                Respondents will manually enter their email response
+              </div>
+
+            </div>
+
+            <mat-form-field
+              appearance="outline"
+              class="select-field">
+
+              <mat-select
+                formControlName="collectEmailAddresses"
+                panelClass="decorated-select-option">
+
+                <mat-option value="responder-input">
+                  Responder input
+                </mat-option>
+
+                <mat-option value="verified">
+                  Verified
+                </mat-option>
+
+                <mat-option value="off">
+                  Off
+                </mat-option>
+
+              </mat-select>
+
+            </mat-form-field>
+
+          </div>
+
+          <div class="setting-row select-row">
+
+            <div class="setting-content">
+
+              <div class="setting-title">
+                Send responders a copy of their response
+              </div>
+
+            </div>
+
+            <mat-form-field
+              appearance="outline"
+              class="select-field">
+
+              <mat-select
+                formControlName="sendRespondersCopy"
+                panelClass="decorated-select-option">
+
+                <mat-option value="off">
+                  Off
+                </mat-option>
+
+                <mat-option value="when-requested">
+                  When requested
+                </mat-option>
+
+                <mat-option value="always">
+                  Always
+                </mat-option>
+
+              </mat-select>
+
+            </mat-form-field>
+
+          </div>
+
+          <div class="setting-row compact">
+
+            <div class="setting-content">
+
+              <div class="setting-title">
+                Allow response editing
+              </div>
+
+              <div class="setting-description">
+                Responses can be changed after being submitted
+              </div>
+
+            </div>
+
+            <mat-slide-toggle
+              formControlName="allowResponseEditing">
+            </mat-slide-toggle>
+
+          </div>
+
+
+          <div class="sub-heading sign-in-heading">
+            REQUIRES SIGN-IN
+          </div>
+
+          <div class="setting-row compact">
+
+            <div class="setting-content">
+
+              <div class="setting-title">
+                Limit to 1 response
+              </div>
+
+            </div>
+
+            <mat-slide-toggle
+              formControlName="limitToOneResponse">
+            </mat-slide-toggle>
+
+          </div>
+
+        </div>
+
+      </mat-expansion-panel>
+
+      <mat-expansion-panel
+        class="settings-expansion"
+        [expanded]="controls.presentationExpanded.value"
+        (opened)="updateExpansionControl(controls.presentationExpanded, true)"
+        (closed)="updateExpansionControl(controls.presentationExpanded, false)"
+        hideToggle>
+
+        <mat-expansion-panel-header>
+
+          <div class="expansion-header">
+
+            <div>
+
+              <div class="setting-title">
+                Presentation
+              </div>
+
+              <div class="setting-description">
+                Manage how the form and responses are presented
+              </div>
+
+            </div>
+
+            <mat-icon class="expand-icon">
+              expand_more
+            </mat-icon>
+
+          </div>
+
+        </mat-expansion-panel-header>
+
+
+        <div class="expansion-content presentation">
+
+          <div class="sub-heading">
+            FORM PRESENTATION
+          </div>
+
+
+          <div class="setting-row compact">
+
+            <div class="setting-content">
+
+              <div class="setting-title">
+                Show progress bar
+              </div>
+
+            </div>
+
+            <mat-slide-toggle
+              formControlName="showProgressBar">
+            </mat-slide-toggle>
+
+          </div>
+
+
+          <div class="setting-row compact">
+
+            <div class="setting-content">
+
+              <div class="setting-title">
+                Shuffle question order
+              </div>
+
+            </div>
+
+            <mat-slide-toggle
+              formControlName="shuffleQuestionOrder">
+            </mat-slide-toggle>
+
+          </div>
+
+          <div class="sub-heading after-submission-heading">
+            AFTER SUBMISSION
+          </div>
+
+          @if (!controls.editingConfirmation.value) {
+
+            <div class="setting-row confirmation-row">
+
+              <div class="setting-content">
+
+                <div class="setting-title">
+                  Confirmation message
+                </div>
+
+                <div class="setting-description italic">
+                  {{ controls.confirmationMessage.value }}
+                </div>
+
+              </div>
+
+
+              <button
+                mat-button
+                color="primary"
+                type="button"
+                class="edit-button"
+                (click)="startConfirmationEdit()">
+
+                Edit
+
+              </button>
+
+            </div>
+
+          } @else {
+
+            <div class="confirmation-edit-row">
+
+              <mat-form-field
+                subscriptSizing="dynamic"
+                appearance="outline"
+                class="confirmation-field">
+
+                <mat-label>
+                  Confirmation message
+                </mat-label>
+
+                <input
+                  matInput
+                  formControlName="confirmationMessage"
+                  autocomplete="off">
+
+              </mat-form-field>
+
+
+              <div class="confirmation-actions">
+
+                <button
+                  mat-button
+                  color="primary"
+                  type="button"
+                  (click)="saveConfirmation()">
+
+                  Save
+
+                </button>
+
+                <button
+                  mat-button
+                  type="button"
+                  (click)="cancelConfirmation()">
+
+                  Cancel
+
+                </button>
+
+              </div>
+
+            </div>
+
+          }
+
+          <div class="setting-row compact">
+
+            <div class="setting-content">
+
+              <div class="setting-title">
+                Show link to submit another response
+              </div>
+
+            </div>
+
+            <mat-slide-toggle
+              formControlName="showAnotherResponseLink">
+            </mat-slide-toggle>
+
+          </div>
+
+          <div class="setting-row compact">
+
+            <div class="setting-content">
+
+              <div class="setting-title">
+                View results summary
+              </div>
+
+              <div class="setting-description">
+
+                Share
+                <span class="link-text">
+                results summary
+              </span>
+                with respondents.
+
+                <span class="link-text">
+                Important details
+              </span>
+
+              </div>
+
+            </div>
+
+            <mat-slide-toggle
+              formControlName="viewResultsSummary">
+            </mat-slide-toggle>
+
+          </div>
+
+          <div class="sub-heading restrictions-heading">
+            RESTRICTIONS
+          </div>
+
+
+          <div class="setting-row compact">
+
+            <div class="setting-content">
+
+              <div class="setting-title">
+                Disable auto-save for all respondents
+              </div>
+
+            </div>
+
+            <mat-slide-toggle
+              formControlName="disableAutoSave">
+            </mat-slide-toggle>
+
+          </div>
+
+        </div>
+
+      </mat-expansion-panel>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card appearance="raised" class="settings-card defaults-card">
+    <mat-card-content class="no-padding-card">
+      <div class="card-title">
+        Defaults
+      </div>
+
+      <mat-divider></mat-divider>
+
+
+      <mat-expansion-panel
+        class="settings-expansion"
+        [expanded]="controls.formDefaultsExpanded.value"
+        (opened)="updateExpansionControl(controls.formDefaultsExpanded, true)"
+        (closed)="updateExpansionControl(controls.formDefaultsExpanded, false)"
+        hideToggle>
+
+        <mat-expansion-panel-header>
+
+          <div class="expansion-header">
+
+            <div>
+
+              <div class="setting-title">
+                Form defaults
+              </div>
+
+              <div class="setting-description">
+                Settings applied to this form and new forms
+              </div>
+
+            </div>
+
+            <mat-icon class="expand-icon">
+              expand_more
+            </mat-icon>
+
+          </div>
+
+        </mat-expansion-panel-header>
+
+
+        <div class="expansion-content">
+
+          <div class="setting-row select-row form-default-row">
+
+            <div class="setting-content">
+
+              <div class="setting-title">
+                Collect email addresses by default
+              </div>
+
+              <div class="setting-description">
+                Respondents will manually enter their email response
+              </div>
+
+            </div>
+
+
+            <mat-form-field
+              appearance="outline"
+              class="select-field">
+
+              <mat-select
+                formControlName="collectEmailAddressesByDefault"
+                panelClass="decorated-select-option">
+
+                <mat-option value="responder-input">
+                  Responder input
+                </mat-option>
+
+                <mat-option value="verified">
+                  Verified
+                </mat-option>
+
+                <mat-option value="off">
+                  Off
+                </mat-option>
+
+              </mat-select>
+
+            </mat-form-field>
+
+          </div>
+
+        </div>
+
+      </mat-expansion-panel>
+
+      <mat-expansion-panel
+        class="settings-expansion"
+        [expanded]="controls.questionDefaultsExpanded.value"
+        (opened)="updateExpansionControl(controls.questionDefaultsExpanded, true)"
+        (closed)="updateExpansionControl(controls.questionDefaultsExpanded, false)"
+        hideToggle>
+
+        <mat-expansion-panel-header>
+
+          <div class="expansion-header">
+
+            <div>
+
+              <div class="setting-title">
+                Question defaults
+              </div>
+
+              <div class="setting-description">
+                Settings applied to all new questions
+              </div>
+
+            </div>
+
+            <mat-icon class="expand-icon">
+              expand_more
+            </mat-icon>
+
+          </div>
+
+        </mat-expansion-panel-header>
+
+
+        <div class="expansion-content">
+
+          <div class="setting-row compact">
+
+            <div class="setting-content">
+
+              <div class="setting-title">
+                Make questions required by default
+              </div>
+
+            </div>
+
+            <mat-slide-toggle
+              formControlName="makeQuestionsRequiredByDefault">
+            </mat-slide-toggle>
+
+          </div>
+
+        </div>
+
+      </mat-expansion-panel>
+    </mat-card-content>
+  </mat-card>
+
+</div>

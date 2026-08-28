@@ -1,0 +1,25 @@
+<div class="copy-responder-link-menu-content-container" (click)="$event.stopPropagation()">
+  @if (formInfo().published) {
+    <div class="menu-content">
+      <p class="menu-title">Copy responder link</p>
+      <form class="vertical" [formGroup]="copyResponderLinkFormGroup">
+        <mat-form-field subscriptSizing="dynamic" class="decorated-mat-input">
+          <input matInput formControlName="link">
+        </mat-form-field>
+      </form>
+      <div class="menu-button-container with-top-margin">
+        <button matButton (click)="onCopyClick()">Copy</button>
+      </div>
+    </div>
+  } @else {
+    <div class="menu-content with-gap">
+      <p class="menu-title">The form is unpublished</p>
+      <p>Currently, nobody can respond. Do you want to copy the unpublished form link?</p>
+      <div class="menu-button-container">
+        <button matButton (click)="onPublishClick()">Publish</button>
+        <button matButton="outlined" (click)="onCopyClick()">Copy
+        </button>
+      </div>
+    </div>
+  }
+</div>

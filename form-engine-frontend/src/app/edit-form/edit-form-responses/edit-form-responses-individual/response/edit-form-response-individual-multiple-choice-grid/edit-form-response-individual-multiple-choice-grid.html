@@ -1,0 +1,32 @@
+<form [formGroup]="formGroup" [class]="{'with-options': question().rows.length || question().columns.length}">
+  <table>
+    @if (question().columns.length) {
+      <thead>
+      <tr>
+        <th class="column-label"></th>
+
+        @for (column of question().columns; track column.id) {
+          <th class="column-label">{{ column.column }}</th>
+        }
+      </tr>
+      </thead>
+    }
+    <tbody>
+      @for (option of options(); track option.row.id) {
+        <tr>
+          <td class="row-label">{{ option.row.row }}</td>
+          <td [attr.colspan]="option.columns.length">
+            <mat-radio-group class="radio-group" [formControl]="option.row.formControl">
+              @for (column of option.columns; track column.id) {
+                <mat-radio-button
+                  [value]="column.id"
+                  class="radio-item"
+                />
+              }
+            </mat-radio-group>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</form>

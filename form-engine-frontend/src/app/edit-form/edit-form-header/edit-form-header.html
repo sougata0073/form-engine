@@ -1,0 +1,93 @@
+@if (formInfo()) {
+  <mat-card appearance="raised" class="parent-container edit-form-header">
+    <mat-card-content>
+      <div class="info-action-container">
+        <div class="form-info">
+          <img class="app-logo" ngSrc="assets/images/app-logo.png" width="40" height="40" alt="Application logo"
+               matTooltip="Form home" (click)="onFormsHomeClick()">
+          <p class="title">{{ formInfo()!.name }}</p>
+          @if (editFormStateService.isFormGettingModified()) {
+            <p class="save-message">Saving...</p>
+          } @else {
+            <p class="save-message">All changes are saved</p>
+          }
+        </div>
+        <div class="form-actions">
+          <button matIconButton matTooltip="Preview" (click)="onPreviewClick()">
+            <mat-icon fontIcon="visibility"/>
+          </button>
+          <button matIconButton matTooltip="Copy responder link" [matMenuTriggerFor]="copyResponderLinkMenu"
+                  #copyResponderLinkButton="matMenuTrigger">
+            <mat-icon fontIcon="link"/>
+          </button>
+          <mat-menu #copyResponderLinkMenu="matMenu" class="decorated-menu wide">
+            <app-copy-responder-link-menu-content [formInfo]="formInfo()!"/>
+          </mat-menu>
+          <button matIconButton matTooltip="Share">
+            <mat-icon fontIcon="person_add"/>
+          </button>
+          @if (formInfo()?.published) {
+            <button matButton="outlined" class="published-button" (click)="openPublishedOptionsDialog()">
+              Published
+              <mat-icon iconPositionEnd fontIcon="tune"/>
+            </button>
+          } @else {
+            <button class="publish-button" matButton="filled" (click)="onPublishClick()">Publish</button>
+          }
+          <button matIconButton matTooltip="More" [matMenuTriggerFor]="moreMenu" #moreMenuTrigger="matMenuTrigger">
+            <mat-icon fontIcon="more_vert"/>
+          </button>
+          <mat-menu #moreMenu="matMenu" class="decorated-menu">
+            <button mat-menu-item (click)="onCopyFormClick()">
+              <mat-icon fontIcon="content_copy"/>
+              <span>Make a copy</span>
+            </button>
+            <button mat-menu-item>
+              <mat-icon fontIcon="delete"/>
+              <span>Move to bin</span>
+            </button>
+            <button mat-menu-item (click)="onPrintClick(moreMenuTrigger)" [disabled]="activatedLink() !== 'questions'">
+              <mat-icon fontIcon="print"/>
+              <span>Print</span>
+            </button>
+            <button
+              mat-menu-item
+              (click)="onUnpublishFormClick()"
+              [disabled]="!formInfo()!.published"
+            >
+              <mat-icon fontIcon="unpublished"/>
+              <span>Unpublish form</span>
+            </button>
+          </mat-menu>
+          <img
+            class="profile-photo"
+            [src]="authJwtData()?.avatarUrl ?? 'assets/images/person.png'"
+            alt="Profile"
+            [matTooltip]="`${authJwtData()?.name}\n${authJwtData()?.email}`"
+          >
+        </div>
+      </div>
+      <div class="tab-container">
+        <nav class="edit-form-tabs" mat-tab-nav-bar [tabPanel]="tabPanel">
+          @for (tab of tabs(); track $index) {
+            <a mat-tab-link
+               (click)="onTabClick(tab.link)"
+               [active]="activatedLink() === tab.link">
+              {{ tab.label }}
+            </a>
+          }
+        </nav>
+        <mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  @if (!formInfo()!.acceptingResponse && formInfo()!.published) {
+    <div class="not-accepting-response-container">
+      <div class="not-accepting-response-message-container">
+        <mat-icon fontIcon="edit_off" class="edit-off-icon"/>
+        <p>This form isn't accepting responses.</p>
+      </div>
+      <button matButton (click)="openPublishedOptionsDialog()">Manage</button>
+    </div>
+  }
+}

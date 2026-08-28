@@ -1,0 +1,26 @@
+@use "index" as *;
+
+.file-name-container {
+  padding: $space-sm;
+  background-color: #f9f9f9;
+  border: 1px solid #dadada;
+  border-top: none;
+  border-radius: 4px;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: .2px;
+  line-height: 20px;
+  color: #1f1f1f;
+}
+
+.file-name-container:hover {
+  cursor: pointer;
+  text-decoration: underline;
+  background-color: #e9e8e8;
+  outline: none;
+}
+
+.item-loader {
+  place-self: center;
+}

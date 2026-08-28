@@ -1,0 +1,32 @@
+<app-infinite-scroll-list [listStyle]="listStyle()"
+                          [showItemLoader]="true"
+                          [isNextItemsLoading]="isNextPageLoading()"
+                          (lastItemVisible)="loadNextPage()"
+                          [isScrollContainerImmediateParent]="true"
+>
+  @for (duration of responses(); track duration.hours) {
+    <div class="duration-container">
+      <div class="hour-container">
+        <p class="hour">{{ duration.hours }}</p>
+        <p class="colon">:</p>
+        <div class="blank-space"></div>
+        <p class="colon">:</p>
+        <div class="blank-space"></div>
+      </div>
+
+      <div class="duration-list-container">
+        @for (d of duration.durations; track `${d.minutes}_${d.seconds}`) {
+          @if (+d.count > 1) {
+            <div class="duration-multiple">
+              <p class="duration-value">{{ `${duration.hours}:${d.minutes}:${d.seconds}` }}</p>
+              <p class="duration-number">{{ d.count }}</p>
+            </div>
+          } @else {
+            <p class="duration">{{ `${duration.hours}:${d.minutes}:${d.seconds}` }}</p>
+          }
+        }
+      </div>
+
+    </div>
+  }
+</app-infinite-scroll-list>

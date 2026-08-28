@@ -1,0 +1,63 @@
+<form class="vertical">
+  <mat-form-field class="decorated-mat-input form-field">
+    <mat-label>Short answer text</mat-label>
+    <input matInput disabled>
+  </mat-form-field>
+</form>
+@if (showResponseValidation()) {
+  <form [formGroup]="validationSelectorFg" class="horizontal">
+    <mat-form-field class="decorated-mat-input form-field">
+      <mat-select panelClass="decorated-select-option" formControlName="inputType">
+        @for (pair of validationInputTypes(); track pair.value) {
+          <mat-option [value]="pair.value">
+            {{ pair.label }}
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field class="decorated-mat-input form-field">
+      <mat-select panelClass="decorated-select-option" formControlName="validationType">
+        @for (validationType of validationValidationTypes(); track validationType.value) {
+          <mat-option [value]="validationType.value">
+            {{ validationType.label }}
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </form>
+  <form [formGroup]="validationValueFg" class="horizontal">
+    @if (activeValidationInputId() !== null) {
+      <div class="validation-value-container">
+        @if (activeValidationInputId() === 'FROM_TO_NUMBER') {
+          <mat-form-field class="decorated-mat-input form-field" (focusout)="emitCanSaveAndHasError()">
+            <mat-label>Number</mat-label>
+            <input matInput formControlName="fromNumber" type="number">
+          </mat-form-field>
+          <p class="validation-and-label">and</p>
+          <mat-form-field class="decorated-mat-input form-field" (focusout)="emitCanSaveAndHasError()">
+            <mat-label>Number</mat-label>
+            <input matInput formControlName="toNumber" type="number">
+          </mat-form-field>
+        } @else if (activeValidationInputId() === 'PATTERN') {
+          <mat-form-field class="decorated-mat-input form-field" (focusout)="emitCanSaveAndHasError()">
+            <mat-label>Text</mat-label>
+            <input matInput formControlName="text">
+          </mat-form-field>
+        } @else if (activeValidationInputId() === 'NUMBER') {
+          <mat-form-field class="decorated-mat-input form-field" (focusout)="emitCanSaveAndHasError()">
+            <mat-label>Number</mat-label>
+            <input matInput formControlName="number" type="number">
+          </mat-form-field>
+        }
+      </div>
+    }
+    <mat-form-field class="decorated-mat-input form-field">
+      <mat-label>Custom error text</mat-label>
+      <input matInput formControlName="errorText">
+    </mat-form-field>
+  </form>
+  @let formError = isNotFormValid();
+  @if (formError) {
+    <mat-error>{{ formError }}</mat-error>
+  }
+}

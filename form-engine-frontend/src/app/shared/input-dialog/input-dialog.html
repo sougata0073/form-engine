@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+<mat-dialog-content>
+  @if (data.description !== null) {
+    <p>{{ data.description }}</p>
+  }
+  <mat-form-field>
+    <input matInput [formControl]="formControl"/>
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button matButton (click)="data.onBtn1Click()">{{ data.btn1Text }}</button>
+  <button matButton="filled" (click)="data.onBtn2Click()" [mat-dialog-close]="formControl.value"
+          cdkFocusInitial>{{ data.btn2Text }}
+  </button>
+</mat-dialog-actions>

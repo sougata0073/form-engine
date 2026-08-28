@@ -1,0 +1,8 @@
+@use 'index' as *;
+
+.validation-value-container {
+  display: flex;
+  flex-direction: row;
+  gap: $space-xl;
+  width: 50%;
+}

@@ -1,0 +1,31 @@
+<div
+  class="parent-container"
+  [class.with-loader-only]="!formRes()">
+
+  @if (formRes()) {
+    <app-edit-form-info [formRes]="formRes()!"/>
+
+    <ul class="question-list" cdkDropList [cdkDropListAutoScrollStep]="10"
+        (cdkDropListDropped)="handleDropListDropEvent($event)">
+      @for (question of formRes()!.questions; track question.id) {
+        <li class="question-list-item" cdkDrag [cdkDragData]="question" cdkDragLockAxis="y"
+            cdkDragBoundary=".question-list">
+          <app-edit-form-question-wrapper
+            [question]="question"
+            [orderIndex]="$index"/>
+        </li>
+      }
+    </ul>
+
+    <button
+      matFab
+      extended
+      class="component-add-button"
+      (click)="onAddQuestionClick()">
+      <mat-icon fontIcon="add"/>
+      Add Question
+    </button>
+  } @else {
+    <mat-spinner class="loader"/>
+  }
+</div>

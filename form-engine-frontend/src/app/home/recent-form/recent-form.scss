@@ -1,0 +1,74 @@
+@use "index" as *;
+
+.recent-form {
+  border: 1px solid #c4c7c5;
+  border-radius: 3px;
+  cursor: pointer;
+  max-width: 208px;
+  margin: 0 $space-md $space-md 0;
+
+  .photo {
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    height: 169px;
+    width: 208px;
+  }
+
+  .info-container {
+    display: flex;
+    flex-direction: column;
+    padding: $space-md $space-sm 14px $space-md;
+    border-top: 1px solid #c4c7c5;
+
+    .name {
+      color: #444746;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: .15px;
+      line-height: 18px;
+      margin-left: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+
+    .form-meta {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+
+      .form-name-container {
+        display: flex;
+        flex-direction: row;
+
+        .form-open-time {
+          color: #5e5e5e;
+          font-size: 12px;
+          letter-spacing: .3px;
+          line-height: 24px;
+          margin-left: 5px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          vertical-align: middle;
+          white-space: nowrap;
+        }
+      }
+
+      .more-menu-button {
+        padding: 2px;
+        border-radius: 50%;
+      }
+
+      .more-menu-button:hover {
+        background-color: color-mix(in srgb, var(--gm3-sys-color-on-surface, #1f1f1f) 10%, var(--gm3-sys-color-surface, #fff));
+        outline: 1px solid transparent;
+      }
+    }
+  }
+}
+
+.recent-form:hover {
+  border-color: var(--mat-button-text-label-text-color, var(--mat-sys-primary));
+}

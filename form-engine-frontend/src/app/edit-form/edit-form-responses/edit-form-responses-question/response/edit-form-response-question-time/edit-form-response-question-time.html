@@ -1,0 +1,40 @@
+<div class="parent-container">
+  <mat-card appearance="raised" class="card-container">
+    <mat-card-content class="question-card-content no-padding-card">
+      <p class="question">{{ questionDetails().question ?? 'Question' }}</p>
+    </mat-card-content>
+  </mat-card>
+  <app-infinite-scroll-list [listStyle]="listStyle()"
+                            [showItemLoader]="true"
+                            [isNextItemsLoading]="isNextPageLoading()"
+                            (lastItemVisible)="loadNextPage()"
+  >
+    @for (response of response()?.responses; track response.formResponsesIdentifier) {
+      <app-edit-form-response-question-response-container
+        [formId]="formId()"
+        [response]="response"
+      >
+        <div class="response-content">
+          @if (response.time === null) {
+            <p class="question-left-blank">Question left blank</p>
+          } @else {
+            <div class="time-parent">
+              <p class="time-label">Time</p>
+              <div class="time-container">
+                <div class="time-value-container">
+                  <p class="value">{{ response.time | date:'HH' }}</p>
+                </div>
+                <div class="time-divider">
+                  <p class="divider">:</p>
+                </div>
+                <div class="time-value-container">
+                  <p class="value">{{ response.time | date:'mm' }}</p>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </app-edit-form-response-question-response-container>
+    }
+  </app-infinite-scroll-list>
+</div>

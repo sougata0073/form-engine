@@ -1,0 +1,56 @@
+<mat-card appearance="filled" class="header-container">
+  <mat-card-content class="header-content no-padding-card">
+    <div class="header-content-child start-justified">
+      @if (isTemplateGalleryOpened()) {
+        <button matIconButton (click)="templateGalleryBackButtonClick.emit()">
+          <mat-icon fontIcon="arrow_back"/>
+        </button>
+        <p class="large-text template-gallery-message">Template gallery</p>
+      } @else {
+        <button matIconButton matTooltip="Main menu" class="menu-btn">
+          <mat-icon fontIcon="menu"/>
+        </button>
+        <img class="app-logo" ngSrc="assets/images/app-logo.png" width="40" height="40" alt="Application logo"
+             matTooltip="Form Engine">
+        <p class="large-text">Form Engine</p>
+      }
+    </div>
+
+    <div class="search-container" [class.hide]="isTemplateGalleryOpened()">
+      <div
+        class="search-bar"
+        [class.focused]="isSearchInputFocused()"
+      >
+        <button matIconButton matTooltip="Search" (click)="onSearch()">
+          <mat-icon fontIcon="search"/>
+        </button>
+
+        <input class="search-text-input" type="text"
+               [formControl]="searchFormControl"
+               (focusin)="isSearchInputFocused.set(true)"
+               (focusout)="isSearchInputFocused.set(false)"
+               (keydown)="onSearchInputKeyDown($event)">
+
+        @if (searchFormControl.value) {
+          <button matIconButton matTooltip="Clear search" (click)="onClearSearchClick()">
+            <mat-icon fontIcon="close"/>
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (!isTemplateGalleryOpened()) {
+      <div class="header-content-child end-justified">
+        <button matIconButton matTooltip="Apps">
+          <mat-icon fontIcon="apps"/>
+        </button>
+        <img
+          class="profile-photo"
+          [src]="authJwtData()?.avatarUrl ?? 'assets/images/person.png'"
+          alt="Profile"
+          [matTooltip]="`${authJwtData()?.name}\n${authJwtData()?.email}`"
+        >
+      </div>
+    }
+  </mat-card-content>
+</mat-card>

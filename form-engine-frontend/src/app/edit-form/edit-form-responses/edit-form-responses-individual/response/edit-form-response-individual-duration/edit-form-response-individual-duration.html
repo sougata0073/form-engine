@@ -1,0 +1,26 @@
+<div class="duration-container">
+  <div class="duration-part-container">
+    <p class="part">Hr</p>
+    <div class="duration-value-container">
+      <p class="value">{{ response()?.hours }}</p>
+    </div>
+  </div>
+  <div class="duration-divider">
+    <p class="divider">:</p>
+  </div>
+  <div class="duration-part-container">
+    <p class="part">Min</p>
+    <div class="duration-value-container">
+      <p class="value">{{ response()?.minutes }}</p>
+    </div>
+  </div>
+  <div class="duration-divider">
+    <p class="divider">:</p>
+  </div>
+  <div class="duration-part-container">
+    <p class="part">Sec</p>
+    <div class="duration-value-container">
+      <p class="value">{{ response()?.seconds }}</p>
+    </div>
+  </div>
+</div>

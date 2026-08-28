@@ -1,0 +1,26 @@
+<div class="date-container">
+  <div class="date-part-container">
+    <p class="part">DD</p>
+    <div class="date-value-container">
+      <p class="value">{{ response()?.date | date:'dd' }}</p>
+    </div>
+  </div>
+  <div class="date-divider">
+    <p class="divider">/</p>
+  </div>
+  <div class="date-part-container">
+    <p class="part">MM</p>
+    <div class="date-value-container">
+      <p class="value">{{ response()?.date | date:'MM' }}</p>
+    </div>
+  </div>
+  <div class="date-divider">
+    <p class="divider">/</p>
+  </div>
+  <div class="date-part-container">
+    <p class="part">YYYY</p>
+    <div class="date-value-container">
+      <p class="value">{{ response()?.date | date:'yyyy' }}</p>
+    </div>
+  </div>
+</div>

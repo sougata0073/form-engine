@@ -1,0 +1,38 @@
+<div class="parent-container" [class.loader-only]="!(formId() && formDetails() && questionDetails())">
+  @if (formId() && formDetails() && questionDetails()) {
+    <mat-card appearance="raised" class="question-selector-card-container">
+      <mat-card-content class="question-selector-card-content-container no-padding-card">
+        <form [formGroup]="formGroup">
+          <mat-form-field class="decorated-mat-input no-required-marker" appearance="outline"
+                          subscriptSizing="dynamic">
+            <mat-select panelClass="decorated-select-option"
+                        formControlName="questionSelector"
+            >
+              @for (q of formDetails()?.questions; track q.id) {
+                <mat-option [value]="q.id">
+                  {{ q.question === null ? `Question ${$index + 1}` : q.question }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </form>
+        <mat-paginator class="decorated-paginator"
+                       [length]="formDetails()?.questions?.length ?? 0"
+                       [pageSize]="1"
+                       [showFirstLastButtons]="false"
+                       [hidePageSize]="true"
+                       [pageIndex]="questionSelectorPaginatorIndex()"
+                       (page)="handleQuestionSelectorPaginatorEvent($event)">
+        </mat-paginator>
+      </mat-card-content>
+    </mat-card>
+    <div class="response-list">
+      <app-edit-form-response-question-wrapper
+        [questionDetails]="questionDetails()!"
+        [formId]="formId()!"
+      />
+    </div>
+  } @else {
+    <mat-spinner class="loader"/>
+  }
+</div>

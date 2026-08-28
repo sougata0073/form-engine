@@ -1,0 +1,48 @@
+<div class="parent-container">
+  <form [formGroup]="formGroup" [class]="{'with-options': question().rows.length || question().columns.length}">
+    <table>
+      @if (question().columns.length) {
+        <thead>
+        <tr>
+          <th class="column-label"></th>
+
+          @for (column of question().columns; track column.id) {
+            <th class="column-label">{{ column.column }}</th>
+          }
+        </tr>
+        </thead>
+      }
+      <tbody>
+        @for (option of options(); track option.row.value) {
+          <tr>
+            <td class="row-label">{{ option.row.label }}</td>
+            <td [attr.colspan]="option.columns.length">
+              <mat-radio-group class="radio-group" [formControl]="option.row.control">
+                @for (column of option.columns; track column.value) {
+                  <mat-radio-button
+                    [value]="column.value"
+                    class="radio-item"
+                    (click)="onRadioButtonCLick(option.row.value, column.value)"
+                  />
+                }
+              </mat-radio-group>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </form>
+  @if (showError()) {
+    <mat-error class="error-container">Select option in each row to continue</mat-error>
+  }
+  @if (!question().required) {
+    <button
+      matButton
+      class="view-form-clear-selection-button"
+      [class]="{'hidden': !showClearSelection()}"
+      (click)="onClearSelectionClick()"
+    >
+      Clear selection
+    </button>
+  }
+</div>

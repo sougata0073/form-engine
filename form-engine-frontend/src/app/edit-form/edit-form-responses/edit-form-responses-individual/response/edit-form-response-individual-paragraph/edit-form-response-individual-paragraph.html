@@ -1,0 +1,13 @@
+<form class="horizontal">
+  <mat-form-field class="decorated-mat-input form-field">
+    <mat-label>Your answer</mat-label>
+    <textarea cdkTextareaAutosize
+              cdkAutosizeMinRows="1"
+              cdkAutosizeMaxRows="20"
+              matInput
+              [value]="response()?.text"
+              disabled
+    >
+    </textarea>
+  </mat-form-field>
+</form>

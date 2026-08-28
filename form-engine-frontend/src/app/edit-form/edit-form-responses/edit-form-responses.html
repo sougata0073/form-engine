@@ -1,0 +1,17 @@
+<div class="parent-container">
+  <div class="header">
+    <app-edit-form-responses-header [formId]="formId()"/>
+  </div>
+
+  @if (formResponseCount()?.count === '0') {
+    <mat-card appearance="raised" class="card-container">
+      <mat-card-content class="card-content-container no-padding-card">
+        <p class="no-response-text">No responses yet. Please check back later.</p>
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <div class="main-content">
+      <router-outlet/>
+    </div>
+  }
+</div>

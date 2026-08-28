@@ -1,0 +1,36 @@
+<form class="horizontal" [formGroup]="formGroup">
+  <mat-form-field class="decorated-mat-input form-field" hideRequiredMarker>
+    <mat-label>Select date</mat-label>
+    <input matInput [matDatepicker]="datepicker" formControlName="date"
+           (focusout)="onFocusOut(formGroup.controls.date)">
+    <mat-hint>MM/DD/YYYY</mat-hint>
+    <mat-error>
+      {{
+        formControlError(
+          formGroup.controls.date, [
+            {errorCode: 'matDatepickerParse', message: 'Invalid date format'}
+          ]
+        )
+      }}
+    </mat-error>
+    <mat-datepicker #datepicker/>
+    <mat-datepicker-toggle [for]="datepicker" matSuffix/>
+  </mat-form-field>
+
+  <mat-form-field class="decorated-mat-input form-field" hideRequiredMarker>
+    <mat-label>Select time</mat-label>
+    <input matInput [matTimepicker]="timepicker" formControlName="time"
+           (focusout)="onFocusOut(formGroup.controls.time)">
+    <mat-error>
+      {{
+        formControlError(
+          formGroup.controls.date, [
+            {errorCode: 'matTimepickerParse', message: 'Invalid time format'}
+          ]
+        )
+      }}
+    </mat-error>
+    <mat-timepicker #timepicker/>
+    <mat-timepicker-toggle [for]="timepicker" matSuffix/>
+  </mat-form-field>
+</form>

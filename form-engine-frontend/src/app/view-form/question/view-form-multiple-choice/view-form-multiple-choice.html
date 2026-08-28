@@ -1,0 +1,24 @@
+<div class="parent-container">
+  <form [formGroup]="formGroup">
+    <mat-radio-group class="radio-group" formControlName="multipleChoice">
+      @for (option of options(); track option.value) {
+        <mat-radio-button
+          [value]="option.value"
+          (click)="onRadioButtonCLick(option.value)"
+        >
+          {{ option.label }}
+        </mat-radio-button>
+      }
+    </mat-radio-group>
+  </form>
+  @if (!question().required) {
+    <button
+      matButton
+      class="view-form-clear-selection-button"
+      [class]="{'hidden': !formGroup.value.multipleChoice}"
+      (click)="formGroup.controls.multipleChoice.patchValue(null)"
+    >
+      Clear selection
+    </button>
+  }
+</div>

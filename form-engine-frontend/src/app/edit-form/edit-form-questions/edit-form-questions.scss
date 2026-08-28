@@ -1,0 +1,62 @@
+@use "index" as *;
+@use "@angular/material" as mat;
+
+.parent-container {
+  display: flex;
+  flex-direction: column;
+  padding: $space-md 0;
+}
+
+.parent-container.with-loader-only {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.question-list {
+
+}
+
+.question-list-item {
+  margin: $space-md 0;
+  list-style: none;
+}
+
+.component-add-button {
+  align-self: center;
+  margin-top: $space-lg;
+}
+
+.cdk-drag-preview {
+  border: none;
+  box-sizing: border-box;
+  border-radius: 4px;
+  opacity: 0.6;
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+  0 8px 10px 1px rgba(0, 0, 0, 0.14),
+  0 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.question-list.cdk-drop-list-dragging .question-list-item:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.loader {
+  flex: 1;
+  align-self: center;
+  justify-self: center;
+}
+
+@media print {
+  .component-add-button,
+  .loader {
+    display: none;
+  }
+}

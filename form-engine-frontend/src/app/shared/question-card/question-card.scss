@@ -1,0 +1,28 @@
+@use 'index' as *;
+@use '@angular/material' as mat;
+
+.top-item {
+  border-top: rgb(219, 68, 55) $space-xs solid;
+}
+
+.focused {
+  border-left: dodgerblue $space-xxs solid;
+}
+
+.has-error {
+  border: red 1px solid;
+}
+
+.card-container {
+  @include mat.card-overrides((
+    elevated-container-shape: $space-xs,
+    elevated-container-color: white
+  ));
+  transition: border-left-width 200ms cubic-bezier(0.4, 0, 0.2, 1), opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media print {
+  .top-item, .focused, .has-error {
+    border: none;
+  }
+}

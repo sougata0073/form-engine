@@ -1,0 +1,113 @@
+<div class="parent-container">
+  @let form = formRes();
+  <div class="content-wrapper">
+    @if (!isFormSubmitted()) {
+      @if (form) {
+        <div
+          class="main-content"
+          [class.loading]="isFormSubmitInProgress()">
+
+          <app-view-form-info [formRes]="form"/>
+
+          <ul class="question-list">
+            @for (q of form.questions; track q.id) {
+              <li>
+                <app-view-form-question-wrapper
+                  [question]="q"
+                  [submitClick]="submitClick"
+                  [clearClick]="clearClick"
+                  (questionResponse)="onQuestionResponseEmit($event)"
+                />
+              </li>
+            }
+          </ul>
+
+          <div class="buttons-container" [class.no-questions]="form.questions.length === 0">
+            <button
+              class="submit-button"
+              matButton="filled"
+              #submitBtn
+              (click)="onFormSubmit(submitBtn)">
+              Submit
+            </button>
+
+            <button
+              class="clear-button"
+              matButton
+              (click)="onClearClick()">
+              Clear form
+            </button>
+          </div>
+
+          <div class="footer-container">
+
+            <p class="never-submit-password-warning">Never submit passwords through Form Engine.</p>
+            <app-view-form-footer/>
+
+          </div>
+
+        </div>
+      } @else if (formError()?.reason === 'NOT_ACCEPTING_RESPONSE') {
+        <div class="not-accepting-response-message-container">
+          <app-question-card [isTopItem]="true">
+            <div class="not-accepting-response-content-container">
+              <p class="form-title">{{ formError()!.formTitle }}</p>
+              <p>{{ formError()!.message }}</p>
+            </div>
+          </app-question-card>
+
+          <app-view-form-footer/>
+
+        </div>
+      } @else if (formError()?.reason === 'NOT_PUBLISHED') {
+        <div class="not-published-container">
+          <div class="app-title-container">
+            <img
+              ngSrc="assets/images/app-logo.png"
+              height="48"
+              width="48"
+              alt="Form engine logo">
+
+            <p class="app-title">Form Engine</p>
+          </div>
+
+          <p class="message">{{ formError()?.message }}</p>
+        </div>
+      } @else if (formError()?.reason === 'RESPONSE_ALREADY_SUBMITTED') {
+        <div class="response-already-submitted-message-container">
+          <app-question-card [isTopItem]="true">
+            <div class="response-already-submitted-content-container">
+              <p class="form-title">{{ formError()!.formTitle }}</p>
+              <p>{{ formError()!.message }}</p>
+            </div>
+          </app-question-card>
+
+          <app-view-form-footer/>
+
+        </div>
+      } @else {
+        <div class="loader-container">
+          <mat-spinner/>
+        </div>
+      }
+    } @else {
+      <div class="form-submitted-message-container">
+        <app-question-card [isTopItem]="true">
+          <div class="form-submitted-content-container">
+            <p class="form-title">{{ form?.title }}</p>
+            <p>Your response has been recorded.</p>
+          </div>
+        </app-question-card>
+
+        <app-view-form-footer/>
+
+      </div>
+    }
+
+    @if (isFormSubmitInProgress()) {
+      <div class="loader-overlay">
+        <mat-spinner/>
+      </div>
+    }
+  </div>
+</div>

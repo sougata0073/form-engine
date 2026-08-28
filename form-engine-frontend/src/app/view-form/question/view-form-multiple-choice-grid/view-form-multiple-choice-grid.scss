@@ -1,0 +1,59 @@
+@use "index" as *;
+
+.parent-container {
+  display: flex;
+  flex-direction: column;
+
+  form {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+  }
+
+  form.with-options {
+    padding-bottom: $space-sm;
+
+    tr {
+      height: $space-xxl;
+    }
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: $space-md;
+
+    th {
+      font-weight: normal;
+    }
+
+    .radio-group {
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .radio-item {
+      flex: 1;
+      text-align: center;
+    }
+
+    .row-label {
+      padding: $space-md $space-md $space-md 0;
+    }
+
+    .column-label {
+      padding: 0 $space-sm $space-md $space-sm;
+    }
+
+    .row-label,
+    .column-label {
+      white-space: nowrap;
+    }
+  }
+
+  .error-container {
+    margin-top: $space-sm;
+  }
+}

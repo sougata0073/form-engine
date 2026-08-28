@@ -1,0 +1,11 @@
+<div class="template">
+
+  <img
+    class="photo"
+    [class.recently-used-template]="isRecentlyUsedTemplate()"
+    [src]="photo() ?? `https://picsum.photos/164/123?random=${template().id}`"
+    [alt]="template().name"
+    (click)="onClick.emit()">
+
+  <p class="title">{{ template().name }}</p>
+</div>

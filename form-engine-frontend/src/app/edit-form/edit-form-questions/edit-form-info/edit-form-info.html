@@ -1,0 +1,20 @@
+<app-question-card
+  [isTopItem]="true"
+  [hasError]="formGroup.invalid"
+  [isFocused]="formStateService.isFocused(componentId())"
+>
+  <form [formGroup]="formGroup">
+    <mat-form-field class="decorated-mat-input title">
+      <mat-label>Form title</mat-label>
+      <input matInput type="text" formControlName="title" (focus)="formStateService.changeFocus(componentId())">
+    </mat-form-field>
+    <mat-form-field class="decorated-mat-input description">
+      <mat-label>Form description</mat-label>
+      <textarea cdkTextareaAutosize
+                cdkAutosizeMinRows="1"
+                cdkAutosizeMaxRows="20"
+                matInput type="text" formControlName="description"
+                (focus)="formStateService.changeFocus(componentId())"></textarea>
+    </mat-form-field>
+  </form>
+</app-question-card>

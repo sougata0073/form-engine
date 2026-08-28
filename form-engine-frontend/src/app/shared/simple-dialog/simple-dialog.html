@@ -1,0 +1,10 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+@if (data.description) {
+  <mat-dialog-content>{{ data.description }}</mat-dialog-content>
+}
+<mat-dialog-actions>
+  @if (data.negativeButtonText !== undefined) {
+    <button matButton [mat-dialog-close]="false">{{ data.negativeButtonText }}</button>
+  }
+  <button matButton [mat-dialog-close]="true" cdkFocusInitial>{{ data.positiveButtonText }}</button>
+</mat-dialog-actions>

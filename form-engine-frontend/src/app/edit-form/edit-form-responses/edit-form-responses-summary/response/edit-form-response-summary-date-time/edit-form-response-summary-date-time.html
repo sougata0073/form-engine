@@ -1,0 +1,23 @@
+<app-infinite-scroll-list [listStyle]="listStyle()"
+                          [showItemLoader]="true"
+                          [isNextItemsLoading]="isNextPageLoading()"
+                          (lastItemVisible)="loadNextPage()"
+                          [isScrollContainerImmediateParent]="true"
+>
+  @for (res of responses(); track res.id) {
+    <div class="date-time-container">
+      <p class="date">{{ res.response.date | date:'d MMM y' }}</p>
+
+      <div class="time-container">
+        @if (+res.response.timeCount > 1) {
+          <div class="time-multiple">
+            <p class="time-value">{{ res.response.time | date:'HH:mm' }}</p>
+            <p class="time-number">{{ res.response.timeCount }}</p>
+          </div>
+        } @else {
+          <p class="time">{{ res.response.time | date:'HH:mm' }}</p>
+        }
+      </div>
+    </div>
+  }
+</app-infinite-scroll-list>

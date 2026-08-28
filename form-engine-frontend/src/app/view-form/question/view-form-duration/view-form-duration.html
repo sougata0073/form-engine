@@ -1,0 +1,44 @@
+<form class="horizontal" [formGroup]="formGroup">
+  <mat-form-field class="decorated-mat-input form-field" hideRequiredMarker>
+    <mat-label>Hours</mat-label>
+    <input matInput formControlName="hours" type="number"
+           (focusout)="onFocusOut(formGroup.controls.hours)">
+    <mat-error>{{
+        formControlError(formGroup.controls.hours,
+          [
+            {errorCode: 'min', message: 'Hours must be greater that 0'},
+            {errorCode: 'max', message: 'Hours must be less than or equal to 72'}
+          ]
+        )
+      }}
+    </mat-error>
+  </mat-form-field>
+  <mat-form-field class="decorated-mat-input form-field" hideRequiredMarker>
+    <mat-label>Minutes</mat-label>
+    <input matInput formControlName="minutes" type="number"
+           (focusout)="onFocusOut(formGroup.controls.minutes)">
+    <mat-error>{{
+        formControlError(formGroup.controls.minutes,
+          [
+            {errorCode: 'min', message: 'Minutes must be greater than or equal to 0'},
+            {errorCode: 'max', message: 'Minutes must be less than or equal to 59'}
+          ]
+        )
+      }}
+    </mat-error>
+  </mat-form-field>
+  <mat-form-field class="decorated-mat-input form-field" hideRequiredMarker>
+    <mat-label>Seconds</mat-label>
+    <input matInput formControlName="seconds" type="number"
+           (focusout)="onFocusOut(formGroup.controls.seconds)">
+    <mat-error>{{
+        formControlError(formGroup.controls.seconds,
+          [
+            {errorCode: 'min', message: 'Seconds must be greater than or equal to 0'},
+            {errorCode: 'max', message: 'Seconds must be less than or equal to 59'}
+          ]
+        )
+      }}
+    </mat-error>
+  </mat-form-field>
+</form>

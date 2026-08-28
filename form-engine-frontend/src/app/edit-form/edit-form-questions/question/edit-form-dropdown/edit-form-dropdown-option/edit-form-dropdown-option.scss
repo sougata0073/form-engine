@@ -1,0 +1,16 @@
+@use "index" as *;
+
+form {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: $space-md;
+
+  p {
+    font-size: $space-md;
+  }
+
+  .form-field {
+    flex: 1;
+  }
+}

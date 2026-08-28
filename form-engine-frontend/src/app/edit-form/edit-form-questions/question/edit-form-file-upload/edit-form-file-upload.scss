@@ -1,0 +1,44 @@
+@use "index" as *;
+@use "@angular/material" as mat;
+
+.parent-container {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+}
+
+.label-input-container {
+  display: flex;
+  flex-direction: row;
+  gap: $space-xxl * 2;
+
+  p {
+    font-size: $space-md;
+    align-self: center;
+  }
+}
+
+.file-type-container {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+
+  ul {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  li {
+    list-style: none;
+  }
+}
+
+.preview-container {
+  padding: $space-md 0 $space-md 0;
+
+  .add-file-button {
+    @include mat.button-overrides((
+      outlined-container-shape: $space-xs,
+    ));
+  }
+}

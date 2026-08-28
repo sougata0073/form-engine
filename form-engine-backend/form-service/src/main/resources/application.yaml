@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: form-service
+  config:
+    import: configserver:${CONFIGURATION_SERVICE_URL}

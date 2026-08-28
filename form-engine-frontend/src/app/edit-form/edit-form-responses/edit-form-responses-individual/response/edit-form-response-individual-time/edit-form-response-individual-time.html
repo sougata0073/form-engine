@@ -1,0 +1,14 @@
+<div class="time-parent">
+  <p class="time-label">Time</p>
+  <div class="time-container">
+    <div class="time-value-container">
+      <p class="value">{{ response()?.time | date:'HH' }}</p>
+    </div>
+    <div class="time-divider">
+      <p class="divider">:</p>
+    </div>
+    <div class="time-value-container">
+      <p class="value">{{ response()?.time | date:'mm' }}</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,17 @@
+INSERT INTO "public"."file_types" ("category", "mime_types")
+VALUES ('Audio', ARRAY['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4']),
+       ('Document',
+        ARRAY['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain']),
+       ('Drawing',
+        ARRAY['image/svg+xml', 'application/vnd.oasis.opendocument.graphics']),
+       ('Image',
+        ARRAY['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']),
+       ('Pdf', ARRAY['application/pdf']),
+       ('Presentation',
+        ARRAY['application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation']),
+       ('Spreadsheet',
+        ARRAY['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'text/csv']),
+       ('Video', ARRAY['video/mp4', 'video/webm', 'video/ogg']);

@@ -1,0 +1,17 @@
+<div class="parent-container"  [class.loader-only]="!(formId() && responseSummaries())">
+  @if (formId() && responseSummaries()) {
+    <ul class="response-summary-list">
+      @for (responseSummary of responseSummaries()!.responses; track responseSummary.questionId) {
+        @defer (on viewport) {
+          <li>
+            <app-edit-form-response-summary-wrapper [formId]="formId()!" [responseSummary]="responseSummary"/>
+          </li>
+        } @placeholder {
+          <li></li>
+        }
+      }
+    </ul>
+  } @else {
+    <mat-spinner class="loader"/>
+  }
+</div>

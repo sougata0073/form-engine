@@ -1,0 +1,50 @@
+@use 'index' as *;
+@use '@angular/material' as mat;
+
+.question-type-selector-item-divider {
+  margin: $space-xs 0 $space-xs 0;
+}
+
+.action-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+
+  *:not(.divider) {
+    align-content: center;
+  }
+}
+
+.drag-icon {
+  align-self: center;
+  transform: rotate(90deg);
+  visibility: hidden;
+  color: #B2B2B2;
+}
+
+.parent-container.focused, .parent-container:hover {
+  .drag-icon {
+    visibility: visible;
+  }
+}
+
+.question-action-divider {
+  margin: $space-xl 0 $space-md 0;
+}
+
+.divider {
+  display: flex;
+  flex-direction: row;
+  margin: $space-xxs $space-md $space-xxs $space-md;
+}
+
+.required-toggle-container {
+  display: flex;
+  flex-direction: row;
+  gap: $space-md;
+
+  p {
+    font-size: $space-md;
+    cursor: default;
+  }
+}

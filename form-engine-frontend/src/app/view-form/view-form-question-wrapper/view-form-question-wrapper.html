@@ -1,0 +1,16 @@
+<app-question-card [hasError]="hasError()">
+  <div class="parent-container">
+    <div class="question-info-container">
+      <p class="question">
+        {{ question().question }}
+        @if (question().required) {
+          <span class="required">*</span>
+        }
+      </p>
+      @if (question().description) {
+        <p>{{ question().description }}</p>
+      }
+    </div>
+    <ng-template #questionHost/>
+  </div>
+</app-question-card>

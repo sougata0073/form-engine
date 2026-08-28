@@ -1,0 +1,8 @@
+<form [formGroup]="formGroup" class="horizontal">
+  <mat-form-field class="decorated-mat-input form-field" hideRequiredMarker>
+    <mat-label>Your answer</mat-label>
+    <input matInput formControlName="shortAnswer"
+           (focusout)="onFocusOut(formGroup.controls.shortAnswer)">
+    <mat-error>{{ formError() }}</mat-error>
+  </mat-form-field>
+</form>

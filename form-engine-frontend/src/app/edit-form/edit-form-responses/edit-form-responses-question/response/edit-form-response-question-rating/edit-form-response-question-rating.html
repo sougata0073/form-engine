@@ -1,0 +1,36 @@
+<div class="parent-container">
+  <mat-card appearance="raised" class="card-container">
+    <mat-card-content class="question-card-content no-padding-card">
+      <p class="question">{{ questionDetails().question ?? 'Question' }}</p>
+    </mat-card-content>
+  </mat-card>
+  <app-infinite-scroll-list [listStyle]="listStyle()"
+                            [showItemLoader]="true"
+                            [isNextItemsLoading]="isNextPageLoading()"
+                            (lastItemVisible)="loadNextPage()"
+  >
+    @for (response of response()?.responses; track response.formResponsesIdentifier) {
+      <app-edit-form-response-question-response-container
+        [formId]="formId()"
+        [response]="response"
+      >
+        <div class="response-content">
+          @if (response.rating === null) {
+            <p class="question-left-blank">Question left blank</p>
+          } @else {
+            <div class="rating-container">
+              @for (num of ratingNums(); track num) {
+                <div class="rating">
+                  <p class="number">{{ num }}</p>
+                  <img
+                    [ngSrc]="ratingIconToPath(questionDetails().ratingIcon, num <= response.rating ? 'activated' : 'disabled')"
+                    height="24" width="24">
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </app-edit-form-response-question-response-container>
+    }
+  </app-infinite-scroll-list>
+</div>

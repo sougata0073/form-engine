@@ -1,0 +1,18 @@
+@use 'index' as *;
+
+.options-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.options-list {
+  margin-bottom: $space-xl;
+}
+
+li {
+  list-style: none;
+}
+
+.add-option-button {
+  align-self: center;
+}

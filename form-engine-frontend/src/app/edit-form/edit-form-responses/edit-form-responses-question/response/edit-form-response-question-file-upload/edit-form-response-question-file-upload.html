@@ -1,0 +1,29 @@
+<div class="parent-container">
+  <mat-card appearance="raised" class="card-container">
+    <mat-card-content class="question-card-content no-padding-card">
+      <p class="question">{{ questionDetails().question ?? 'Question' }}</p>
+    </mat-card-content>
+  </mat-card>
+  <app-infinite-scroll-list [listStyle]="listStyle()"
+                            [showItemLoader]="true"
+                            [isNextItemsLoading]="isNextPageLoading()"
+                            (lastItemVisible)="loadNextPage()"
+  >
+    @for (response of response()?.responses; track response.formResponsesIdentifier) {
+      <app-edit-form-response-question-response-container
+        [formId]="formId()"
+        [response]="response"
+      >
+        <div class="response-content">
+          @if (response.fileUrl === null && response.fileMimeType === null) {
+            <p class="question-left-blank">Question left blank</p>
+          } @else {
+            <div class="file-container">
+              <p class="file" [matTooltip]="response.fileName">{{ response.fileName }}</p>
+            </div>
+          }
+        </div>
+      </app-edit-form-response-question-response-container>
+    }
+  </app-infinite-scroll-list>
+</div>

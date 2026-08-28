@@ -1,0 +1,28 @@
+<mat-card appearance="raised" class="card-container">
+  <mat-card-content class="response-card-content no-padding-card">
+    <ng-content/>
+    <div class="response-count">
+      <button matButton class="square-text-button" [matMenuTriggerFor]="responseIdsMenu"
+              (menuOpened)="isMenuOpened.set(true)"
+              (menuClosed)="isMenuOpened.set(false)"
+      >
+        {{ response().responseCount + ' responses' }}
+      </button>
+    </div>
+    <mat-menu #responseIdsMenu="matMenu" class="decorated-menu" yPosition="above">
+      @if (isMenuOpened()) {
+        <app-infinite-scroll-list
+          [showItemLoader]="true"
+          [isNextItemsLoading]="isNextPageLoading()"
+          (lastItemVisible)="loadNextPage()"
+        >
+          @for (summary of formResponseSummaries()?.responses; track summary.responseId) {
+            <button mat-menu-item (click)="onResponseIdClick(summary.responseId)">
+              <span>{{ summary.responderId === null ? 'User not found' : summary.responderUserName }}</span>
+            </button>
+          }
+        </app-infinite-scroll-list>
+      }
+    </mat-menu>
+  </mat-card-content>
+</mat-card>

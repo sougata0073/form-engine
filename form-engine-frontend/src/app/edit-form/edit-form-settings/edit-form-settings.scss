@@ -1,0 +1,737 @@
+@use 'index' as *;
+@use '@angular/material' as mat;
+
+.settings-page {
+  padding: $space-md 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-card {
+
+  @include mat.card-overrides((
+    elevated-container-shape: $space-xs,
+    elevated-container-color: white
+  ));
+}
+
+.card-title {
+  padding: 25px 24px 22px;
+
+  color: #202124;
+
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 400;
+}
+
+mat-divider {
+  margin: 0 24px;
+
+  border-top-color: #dadce0;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  box-sizing: border-box;
+
+  min-height: 72px;
+
+  padding: 15px 54px;
+
+  gap: 24px;
+}
+
+.setting-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.setting-title {
+  color: #202124;
+
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 400;
+}
+
+.setting-description {
+  margin-top: 2px;
+
+  color: #5f6368;
+
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.setting-description.italic {
+  font-style: italic;
+}
+
+.setting-toggle {
+  flex: 0 0 auto;
+}
+
+.quiz-section {
+  position: relative;
+}
+
+.quiz-section::after {
+  content: '';
+
+  position: absolute;
+
+  left: 24px;
+  right: 24px;
+  bottom: 0;
+
+  height: 1px;
+
+  background: #dadce0;
+}
+
+.quiz-row {
+  min-height: 132px;
+
+  padding-top: 30px;
+  padding-bottom: 28px;
+
+  border-bottom: none;
+}
+
+.quiz-row .setting-content {
+  align-self: center;
+}
+
+.quiz-content {
+  box-sizing: border-box;
+
+  padding: 4px 54px 16px 84px;
+
+  border-bottom: none;
+}
+
+.sub-heading {
+  margin: 0 0 14px;
+
+  color: #5f6368;
+
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 500;
+
+  letter-spacing: 0.65px;
+}
+
+.respondent-heading {
+  margin-top: 26px;
+  margin-bottom: 14px;
+}
+
+.global-heading {
+  margin-top: 23px;
+  margin-bottom: 14px;
+}
+
+.quiz-sub-row {
+  min-height: 72px;
+
+  padding-left: 30px;
+  padding-right: 0;
+
+  padding-top: 13px;
+  padding-bottom: 13px;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+
+  padding: 0;
+}
+
+.radio-group mat-radio-button {
+  width: 100%;
+}
+
+.radio-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.radio-label {
+  color: #202124;
+
+  font-size: 16px;
+  line-height: 22px;
+}
+
+.radio-description {
+  margin-top: 1px;
+
+  color: #5f6368;
+
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.radio-group
+::ng-deep
+.mdc-form-field {
+  align-items: flex-start;
+}
+
+.radio-group
+::ng-deep
+.mdc-radio {
+  margin-top: -2px;
+}
+
+.point-row {
+  align-items: center;
+
+  min-height: 72px;
+
+  padding-top: 10px;
+  padding-bottom: 20px;
+}
+
+.point-input-wrapper {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  flex: 0 0 auto;
+}
+
+.points-label {
+  color: #5f6368;
+
+  font-size: 14px;
+  line-height: 20px;
+
+  white-space: nowrap;
+}
+
+.point-input {
+  width: 64px;
+
+  margin: 0;
+}
+
+.point-input
+::ng-deep
+.mat-mdc-text-field-wrapper {
+  min-height: 40px;
+
+  padding: 0 !important;
+
+  background: transparent !important;
+
+  border: none !important;
+  border-radius: 0 !important;
+
+  box-shadow: none !important;
+}
+
+.point-input
+::ng-deep
+.mdc-text-field {
+  min-height: 40px;
+
+  padding: 0 !important;
+
+  background: transparent !important;
+
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+.point-input
+::ng-deep
+.mdc-text-field--filled {
+  background: transparent !important;
+}
+
+.point-input
+::ng-deep
+.mat-mdc-form-field-flex {
+  height: 40px;
+  min-height: 40px;
+
+  padding: 0 !important;
+
+  display: flex;
+  align-items: center;
+
+  background: transparent !important;
+
+  border: none;
+  border-bottom: 1px solid #dadce0;
+
+  border-radius: 0;
+}
+
+.point-input
+::ng-deep
+.mat-mdc-form-field-flex:focus-within {
+  border-bottom: 2px solid #673ab7;
+}
+
+.point-input
+::ng-deep
+.mat-mdc-form-field-infix {
+  height: 40px;
+  min-height: 40px;
+
+  padding: 8px 0 0 !important;
+
+  display: flex;
+  align-items: center;
+}
+
+.point-input
+::ng-deep
+.mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}
+
+.point-input
+::ng-deep
+.mdc-notched-outline {
+  display: none !important;
+}
+
+.point-input
+::ng-deep
+.mat-mdc-input-element {
+  width: 100%;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  border: none !important;
+  outline: none !important;
+
+  background: transparent !important;
+
+  color: #202124;
+
+  font-size: 14px;
+  line-height: 20px;
+
+  text-align: right;
+
+  -moz-appearance: textfield;
+}
+
+.point-input
+::ng-deep
+input[type='number'] {
+  border: none !important;
+  outline: none !important;
+
+  background: transparent !important;
+
+  text-align: right;
+
+  -moz-appearance: textfield;
+}
+
+.point-input
+::ng-deep
+input[type='number']::-webkit-inner-spin-button,
+.point-input
+::ng-deep
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: auto;
+
+  opacity: 0;
+  margin: 0;
+
+  transition: opacity 120ms ease;
+}
+
+.point-input:hover
+::ng-deep
+input[type='number']::-webkit-inner-spin-button,
+.point-input:hover
+::ng-deep
+input[type='number']::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+.point-input:focus-within
+::ng-deep
+input[type='number']::-webkit-inner-spin-button,
+.point-input:focus-within
+::ng-deep
+input[type='number']::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+.settings-expansion {
+  position: relative;
+
+  background: transparent !important;
+
+  border: none !important;
+  border-radius: 0 !important;
+
+  box-shadow: none !important;
+}
+
+.settings-expansion::before {
+  display: none !important;
+}
+
+.settings-expansion + .settings-expansion::before {
+  content: '';
+
+  display: block !important;
+
+  position: absolute;
+
+  top: 0;
+  left: 24px;
+  right: 24px;
+
+  height: 1px;
+
+  background: #dadce0;
+
+  z-index: 2;
+}
+
+.settings-expansion
+::ng-deep
+.mat-expansion-panel-header {
+  height: 100px;
+
+  padding: 0 54px;
+
+  background: transparent;
+}
+
+.settings-expansion
+::ng-deep
+.mat-expansion-panel-header:hover {
+  background: rgba(60, 64, 67, 0.04) !important;
+}
+
+.settings-expansion
+::ng-deep
+.mat-expansion-panel-header.mat-expanded {
+  height: 100px;
+
+  padding-left: 54px;
+  padding-right: 54px;
+}
+
+.settings-expansion
+::ng-deep
+.mat-expansion-panel-body {
+  padding: 0 0 16px;
+}
+
+.expansion-header {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+.expand-icon {
+  width: 22px;
+  height: 22px;
+
+  flex: 0 0 auto;
+
+  color: #202124;
+
+  transition: transform 180ms ease;
+}
+
+.settings-expansion
+::ng-deep
+.mat-expansion-panel-header.mat-expanded
+.expand-icon {
+  transform: rotate(180deg);
+}
+
+.expansion-content {
+  box-sizing: border-box;
+
+  padding: 4px 54px 14px 84px;
+}
+
+.expansion-content .setting-row {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.select-row {
+  min-height: 96px;
+}
+
+.select-field {
+  width: 180px;
+
+  flex: 0 0 auto;
+}
+
+.select-field
+::ng-deep
+.mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}
+
+.select-field
+::ng-deep
+.mat-mdc-text-field-wrapper {
+  min-height: 48px;
+}
+
+.select-field
+::ng-deep
+.mat-mdc-form-field-infix {
+  min-height: 48px;
+
+  padding-top: 0;
+  padding-bottom: 0;
+
+  display: flex;
+  align-items: center;
+}
+
+.sign-in-heading {
+  margin-top: 14px;
+  margin-bottom: 12px;
+}
+
+.confirmation-row {
+  min-height: 82px;
+}
+
+.edit-button {
+  flex: 0 0 auto;
+
+  padding: 0 16px;
+  min-width: auto;
+
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.after-submission-heading {
+  margin-top: 26px;
+  margin-bottom: 14px;
+}
+
+.restrictions-heading {
+  margin-top: 24px;
+  margin-bottom: 14px;
+}
+
+.link-text {
+  color: #1a73e8;
+  cursor: pointer;
+}
+
+.confirmation-edit-row {
+  display: flex;
+  align-items: flex-start;
+
+  box-sizing: border-box;
+
+  padding: 15px 0 10px;
+
+  gap: 22px;
+}
+
+.confirmation-field {
+  width: 500px;
+  max-width: 100%;
+
+  flex: 1 1 auto;
+}
+
+.confirmation-field
+::ng-deep
+.mat-mdc-text-field-wrapper {
+  min-height: 56px;
+}
+
+.confirmation-field
+::ng-deep
+.mat-mdc-form-field-infix {
+  min-height: 56px;
+
+  padding-top: 14px;
+  padding-bottom: 8px;
+}
+
+.confirmation-actions {
+  display: flex;
+  align-items: center;
+
+  flex: 0 0 auto;
+
+  padding-top: 8px;
+
+  gap: 2px;
+}
+
+.confirmation-actions button {
+  min-width: auto;
+
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.form-default-row {
+  min-height: 100px;
+}
+
+.checkbox-row {
+  padding: 10px 54px 24px;
+}
+
+.checkbox-row
+::ng-deep
+.mdc-form-field {
+  color: #202124;
+
+  font-size: 14px;
+}
+
+.setting-row
+mat-slide-toggle {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 700px) {
+
+  .settings-page {
+    padding: 8px 0 40px;
+  }
+
+  .card-title {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  mat-divider {
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+
+  .setting-row {
+    padding-left: 18px;
+    padding-right: 18px;
+
+    gap: 12px;
+  }
+
+  .quiz-content {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .quiz-sub-row {
+    padding-left: 18px;
+    padding-right: 0;
+  }
+
+  .quiz-section::after {
+    left: 18px;
+    right: 18px;
+  }
+
+  .settings-expansion
+  ::ng-deep
+  .mat-expansion-panel-header,
+  .settings-expansion
+  ::ng-deep
+  .mat-expansion-panel-header.mat-expanded {
+    height: 92px;
+
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .settings-expansion + .settings-expansion::before {
+    left: 18px;
+    right: 18px;
+  }
+
+  .expansion-content {
+    padding-left: 48px;
+    padding-right: 18px;
+  }
+
+  .checkbox-row {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .select-field {
+    width: 180px;
+  }
+
+  .confirmation-edit-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .confirmation-field {
+    width: 100%;
+  }
+
+  .confirmation-actions {
+    padding-top: 0;
+  }
+}
+
+@media (max-width: 500px) {
+
+  .setting-row {
+    align-items: flex-start;
+  }
+
+  .setting-toggle {
+    margin-top: 2px;
+  }
+
+  .select-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .select-field {
+    width: 100%;
+  }
+
+  .point-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .point-input-wrapper {
+    width: 100%;
+  }
+
+  .radio-group {
+    padding-left: 0;
+  }
+}

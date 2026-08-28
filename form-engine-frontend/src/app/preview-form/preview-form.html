@@ -1,0 +1,89 @@
+<div class="parent-container">
+  @let form = formRes();
+  @if (form) {
+    <mat-card appearance="raised" class="header-container">
+      <mat-card-content class="header-content-container">
+        <div class="header-content">
+          <div class="navigation-container">
+            <button matIconButton matTooltip="Close preview" (click)="onCLoseClick()">
+              <mat-icon fontIcon="arrow_back"/>
+            </button>
+            <p class="title">Preview mode</p>
+          </div>
+          <div class="form-state-container">
+            @if (form.published) {
+              <div class="publish-state-container">
+                <mat-icon class="published" fontIcon="check_circle"/>
+                <p class="published">Published</p>
+              </div>
+            } @else {
+              <div class="publish-state-container">
+                <mat-icon class="not-published" fontIcon="unpublished"/>
+                <p class="not-published">Not published</p>
+              </div>
+            }
+            <button matButton="outlined" class="copy-responder-link" [matMenuTriggerFor]="menu">
+              <mat-icon fontIcon="link"/>
+              Copy reponder link
+            </button>
+            <mat-menu #menu="matMenu" class="decorated-menu wide">
+              <app-copy-responder-link-menu-content
+                [formInfo]="form"
+              />
+            </mat-menu>
+          </div>
+        </div>
+        @if (!form.acceptingResponse) {
+          <div class="not-accepting-response-container">
+            <div class="not-accepting-response-message-container">
+              <mat-icon fontIcon="edit_off" class="edit-off-icon"/>
+              <p>This form isn't accepting responses.</p>
+            </div>
+            <button matButton (click)="onManagePublishSettingsClick()">Manage publish settings</button>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+    <div class="main-content-container">
+      <div class="main-content">
+        <app-view-form-info [formRes]="form"/>
+        <ul class="question-list">
+          @for (q of form.questions; track q.id) {
+            <li>
+              <app-view-form-question-wrapper [question]="q" [clearClick]="clearClick"/>
+            </li>
+          }
+        </ul>
+
+        <div class="buttons-container">
+          <button
+            class="submit-button"
+            matButton="filled"
+            [disabled]="true">
+            Submit
+          </button>
+
+          <button
+            class="clear-button"
+            matButton
+            (click)="onClearClick()">
+            Clear form
+          </button>
+        </div>
+
+        <div class="footer-container">
+
+          <p class="never-submit-password-warning">Never submit passwords through Form Engine.</p>
+          <app-view-form-footer/>
+
+        </div>
+
+      </div>
+
+    </div>
+  } @else {
+    <div class="loader-container">
+      <mat-spinner/>
+    </div>
+  }
+</div>

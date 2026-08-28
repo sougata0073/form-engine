@@ -1,0 +1,26 @@
+@use "index" as *;
+
+.container {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 $space-sm;
+  gap: $space-sm;
+
+  * {
+    text-align: center;
+    color: rgba(0, 0, 0, 0.66);
+  }
+
+  .app-title {
+    font-size: $space-lg;
+    line-height: normal;
+    margin-top: $space-xxs;
+  }
+
+  a {
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}

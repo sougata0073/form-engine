@@ -1,0 +1,11 @@
+<form [formGroup]="formGroup">
+  <mat-icon fontIcon="check_box_outline_blank"/>
+  <mat-form-field subscriptSizing="dynamic" class="decorated-mat-input form-field">
+    <input matInput formControlName="option" (focus)="formStateService.changeFocus(parentComponentId())">
+  </mat-form-field>
+  @if (!disableRemove()) {
+    <button matIconButton matTooltip="Remove" (click)="remove.emit()">
+      <mat-icon fontIcon="close"/>
+    </button>
+  }
+</form>

@@ -1,0 +1,69 @@
+@if (formStateService.isFocused(parentComponentId())) {
+  <div class="horizontal">
+    <div class="rows-container">
+      <h2>Rows</h2>
+      <ul>
+        @for (row of rows(); track row.id) {
+          <li>
+            <app-edit-form-dropdown-option
+              [parentComponentId]="parentComponentId()"
+              [option]="row"
+              (remove)="removeRow(row.id)"
+              [disableRemove]="!formStateService.isFocused(parentComponentId())"
+              (optionTextChange)="onRowTextChange($event)"
+              (canSaveQuestion)="onRowCanSaveChange(row.id, $event)"
+            />
+          </li>
+        }
+      </ul>
+      <button class="add-button" matButton="outlined" (click)="addRow()">Add row</button>
+    </div>
+    <div class="column-container">
+      <h2>Columns</h2>
+      <ul>
+        @for (column of columns(); track column.id) {
+          <li>
+            <app-edit-form-multiple-choice-option
+              [parentComponentId]="parentComponentId()"
+              [option]="column"
+              (remove)="removeColumn(column.id)"
+              (optionTextChange)="onColumnTextChange($event)"
+              (canSaveQuestion)="onColumnCanSaveChange(column.id, $event)"
+            />
+          </li>
+        }
+      </ul>
+      <button class="add-button" matButton="outlined" (click)="addColumn()">Add column</button>
+    </div>
+  </div>
+} @else {
+  <div class="preview-container" [class]="{'with-options': rows().length || columns().length}">
+    <table>
+      @if (columns().length) {
+        <thead>
+        <tr>
+          <th class="column-label"></th>
+
+          @for (column of columns(); track column.id) {
+            <th class="column-label">{{ column.option }}</th>
+          }
+        </tr>
+        </thead>
+      }
+      <tbody>
+        @for (row of rows(); track row.id) {
+          <tr>
+            <td class="row-label">{{ row.option }}</td>
+            <td [attr.colspan]="columns().length">
+              <mat-radio-group class="radio-group">
+                @for (column of columns(); track column.id) {
+                  <mat-radio-button [value]="column.option" class="radio-item" disabled/>
+                }
+              </mat-radio-group>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

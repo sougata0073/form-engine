@@ -1,0 +1,12 @@
+<form [formGroup]="formGroup" class="horizontal">
+  <mat-form-field class="decorated-mat-input form-field" hideRequiredMarker>
+    <mat-label>Choose</mat-label>
+    <mat-select panelClass="decorated-select-option" formControlName="dropdown"
+                (focusout)="onFocusOut(formGroup.controls.dropdown)">
+      @for (option of options(); track option.value) {
+        <mat-option [value]="option.value">{{ option.label }}</mat-option>
+      }
+    </mat-select>
+    <mat-error>{{ formControlError(formGroup.controls.dropdown, []) }}</mat-error>
+  </mat-form-field>
+</form>

@@ -1,0 +1,10 @@
+@use "index" as *;
+
+.scroll-container {
+  overflow-y: auto;
+}
+
+.item-loader {
+  place-self: center;
+  margin: $space-md 0 $space-md 0;
+}

@@ -1,0 +1,26 @@
+@use "index" as *;
+
+.parent-container {
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+}
+
+.question-info-container {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+
+  p {
+    line-height: 1;
+    font-size: $space-md;
+  }
+
+  .question {
+    font-size: $space-md * 1.2;
+  }
+
+  .required {
+    color: red;
+  }
+}

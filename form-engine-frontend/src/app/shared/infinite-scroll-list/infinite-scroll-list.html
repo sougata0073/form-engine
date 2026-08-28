@@ -1,0 +1,7 @@
+<div #scrollContainer class="scroll-container" [style]="listStyle()">
+  <ng-content/>
+  @if (showItemLoader() && isNextItemsLoading()) {
+    <mat-spinner class="item-loader"/>
+  }
+  <div #scrollAnchorVertical></div>
+</div>

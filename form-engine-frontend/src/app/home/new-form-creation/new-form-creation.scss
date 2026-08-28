@@ -1,0 +1,50 @@
+@use "index" as *;
+@use "@angular/material" as mat;
+
+.new-form-container {
+  width: 60%;
+  place-self: center;
+  padding: $space-lg 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+
+  .controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0 $space-xs 0 $space-xs;
+
+    .message {
+      flex: 1;
+      font-size: $space-md;
+    }
+
+    .buttons-container {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+
+      @include mat.button-overrides((
+        text-container-shape: $space-xxs,
+      ));
+
+      .divider {
+        border-left: 1px solid #c4c7c5;
+        height: 32px;
+        opacity: 0.54;
+      }
+    }
+  }
+
+  .template-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+.hide {
+  visibility: hidden;
+}

@@ -1,0 +1,17 @@
+<div class="parent-container">
+  <app-edit-form-header [formId]="formId()" class="header"/>
+
+  <div class="main-content-container" cdkScrollable>
+    <div
+      class="main-content"
+      [class.loading]="editFormStateService.isFormGettingModified() || editFormStateService.showGlobalLoader()">
+      <router-outlet/>
+    </div>
+
+    @if (editFormStateService.isFormGettingModified() || editFormStateService.showGlobalLoader()) {
+      <div class="loader-overlay">
+        <mat-spinner/>
+      </div>
+    }
+  </div>
+</div>

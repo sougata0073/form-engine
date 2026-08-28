@@ -1,0 +1,37 @@
+@use 'index' as *;
+@use '@angular/material' as mat;
+
+.parent-container {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+
+  .question-selector-card-container {
+
+    @include mat.card-overrides((
+      elevated-container-shape: $space-xs,
+      elevated-container-color: white
+    ));
+
+    .question-selector-card-content-container {
+      display: flex;
+      flex-direction: row;
+      padding: $space-lg;
+      align-items: center;
+    }
+  }
+
+  .response-list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-sm;
+  }
+
+  .loader {
+    align-self: center;
+  }
+}
+
+.parent-container.loader-only {
+  margin: $space-xxl 0 0 0;
+}

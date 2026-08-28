@@ -1,0 +1,131 @@
+@use "index" as *;
+@use "@angular/material" as mat;
+
+.radio-button-content-pair {
+  display: flex;
+  flex-direction: row;
+  gap: $space-md;
+}
+
+.radio-button-content-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+  margin-top: $space-xs;
+
+  label {
+    cursor: pointer;
+  }
+}
+
+//.radio-button-content-container:first-child {
+//  margin-left: $space-xs;
+//}
+
+.choose-date-time-button {
+  align-self: start;
+}
+
+.date-time-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+}
+
+button {
+  @include mat.button-overrides((
+    text-container-shape: $space-xs,
+    outlined-container-shape: $space-xs,
+    filled-container-shape: $space-xs,
+    filled-container-color: rgb(95, 42, 4)
+  ))
+}
+
+.blue-button {
+  @include mat.button-overrides((
+    text-label-text-color: rgb(26, 115, 232),
+    text-ripple-color: rgb(210, 227, 252),
+    text-state-layer-color: rgb(210, 227, 252),
+    text-hover-state-layer-opacity: 0.3,
+    filled-container-color: #0b57d0,
+  ))
+}
+
+.response-limit-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+
+  .main-input-container {
+    display: flex;
+    flex-direction: row;
+    gap: $space-sm;
+    align-items: center;
+  }
+
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+  }
+
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
+
+  input {
+    width: 4ch;
+    padding: $space-xs $space-sm;
+    outline: none;
+  }
+
+  input.ng-invalid.ng-touched {
+    border: solid red 1px;
+  }
+}
+
+.not-accepting-response-message-container {
+  margin-top: $space-sm;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  .label-container {
+    display: flex;
+    flex-direction: column;
+    gap: $space-sm;
+
+    :first-child {
+      color: black;
+    }
+  }
+}
+
+.content-divider {
+  margin-top: 20px;
+}
+
+.date-time-form {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+  padding: $space-sm;
+}
+
+.date-time-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  button {
+    @include mat.icon-button-overrides((
+      icon-color: rgb(26, 115, 232),
+    ))
+  }
+}

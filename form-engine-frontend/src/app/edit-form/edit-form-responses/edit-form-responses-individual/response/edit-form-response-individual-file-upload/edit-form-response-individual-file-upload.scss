@@ -1,0 +1,34 @@
+@use "index" as *;
+@use "@angular/material" as mat;
+
+.parent-container {
+
+  .selected-file-container {
+    height: 42px;
+    width: fit-content;
+    border: 1px solid #dadada;
+    padding: 0 3px 0 7px;
+    border-radius: $space-xxs;
+    align-content: center;
+
+    .file-name {
+      font-size: $space-md;
+      max-width: 120px;
+      margin: 0 $space-xs 0 $space-xs;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-name:hover {
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  }
+
+  .add-file-button {
+    @include mat.button-overrides((
+      outlined-container-shape: $space-xs,
+    ));
+  }
+}

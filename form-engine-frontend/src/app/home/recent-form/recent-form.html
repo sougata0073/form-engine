@@ -1,0 +1,37 @@
+<div class="recent-form">
+  <img class="photo"
+       (click)="openForm()"
+       [src]="`https://picsum.photos/169/208?random=${form().id}`"/>
+  <div class="info-container">
+    <p class="name">
+      {{ form().name }}
+    </p>
+    <div class="form-meta">
+      <div class="form-name-container">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+             fill="#FFC93C">
+          <path
+            d="M348.5-291.5Q360-303 360-320t-11.5-28.5Q337-360 320-360t-28.5 11.5Q280-337 280-320t11.5 28.5Q303-280 320-280t28.5-11.5Zm0-160Q360-463 360-480t-11.5-28.5Q337-520 320-520t-28.5 11.5Q280-497 280-480t11.5 28.5Q303-440 320-440t28.5-11.5Zm0-160Q360-623 360-640t-11.5-28.5Q337-680 320-680t-28.5 11.5Q280-657 280-640t11.5 28.5Q303-600 320-600t28.5-11.5ZM440-280h240v-80H440v80Zm0-160h240v-80H440v80Zm0-160h240v-80H440v80ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Z"/>
+        </svg>
+        <p class="form-open-time">
+          Opened {{ formattedDate() }}
+        </p>
+      </div>
+      <mat-icon class="more-menu-button" fontIcon="more_vert" [matMenuTriggerFor]="recentFormMoreMenu"/>
+      <mat-menu #recentFormMoreMenu="matMenu" class="white-background-menu">
+        <button mat-menu-item class="stretched-menu-item" (click)="openRenameDialog()">
+          <span>Rename</span>
+          <mat-icon fontIcon="text_fields"/>
+        </button>
+        <button mat-menu-item class="stretched-menu-item" (click)="onRemoveFormClick()">
+          <span>Remove</span>
+          <mat-icon fontIcon="delete"/>
+        </button>
+        <button mat-menu-item class="stretched-menu-item" (click)="onOpenInNewTabClick()">
+          <span>Open in new tab</span>
+          <mat-icon fontIcon="open_in_new"/>
+        </button>
+      </mat-menu>
+    </div>
+  </div>
+</div>

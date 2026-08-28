@@ -1,0 +1,83 @@
+@use 'index' as *;
+@use '@angular/material' as mat;
+
+.parent-container {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+
+  .response-selector-card-container {
+    @include mat.card-overrides((
+      elevated-container-shape: $space-xs,
+      elevated-container-color: white
+    ));
+
+    .response-selector-card-content-container {
+      display: flex;
+      flex-direction: row;
+      padding: $space-lg;
+      align-items: center;
+      justify-content: space-between;
+
+      .response-by-individual-container-actions {
+        display: flex;
+        flex-direction: row;
+      }
+    }
+  }
+
+  .response-container {
+    display: flex;
+    flex-direction: column;
+    gap: $space-md;
+
+    .form-info {
+      .form-info-parent-container {
+        display: flex;
+        flex-direction: column;
+        gap: $space-sm;
+        padding: $space-xs 0;
+
+        .response-edit-message {
+          white-space: pre-wrap;
+          line-height: 135%;
+          font-family: Roboto, Arial, sans-serif;
+          font-size: $space-sm;
+          font-weight: 400;
+          letter-spacing: .3px;
+          color: #757575;
+        }
+
+        .form-info-container {
+          display: flex;
+          flex-direction: column;
+          gap: $space-md;
+
+          .title {
+            line-height: 1;
+            font-size: $space-xl;
+          }
+
+          .description {
+            line-height: 1;
+            font-size: $space-md;
+          }
+        }
+      }
+    }
+
+    .loader {
+      align-self: center;
+    }
+  }
+
+  .response-container.loader-only {
+    margin: $space-xxl 0 0 0;
+  }
+}
+
+@media print {
+  .response-selector-card-container, .loader {
+    display: none;
+  }
+}

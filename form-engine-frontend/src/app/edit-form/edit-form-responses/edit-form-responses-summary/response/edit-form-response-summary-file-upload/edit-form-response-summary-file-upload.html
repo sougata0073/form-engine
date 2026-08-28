@@ -1,0 +1,12 @@
+<app-infinite-scroll-list [listStyle]="listStyle()"
+                          [showItemLoader]="true"
+                          [isNextItemsLoading]="isNextPageLoading()"
+                          (lastItemVisible)="loadNextPage()"
+                          [isScrollContainerImmediateParent]="true"
+>
+  @for (file of responses(); track file.fileUrl) {
+    <div class="file-name-container">
+      <p class="file-name" [matTooltip]="file.fileName">{{ file.fileName }}</p>
+    </div>
+  }
+</app-infinite-scroll-list>
