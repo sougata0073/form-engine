@@ -108,7 +108,7 @@ public class LinearScaleManager extends ResponseManager<
 
     @Override
     public LinearScaleResponseQuestionDto getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
-        var grouped = linearScaleRepository.groupedByResponseScale(questionId, pageable);
+        var grouped = linearScaleRepository.groupedByResponseScale(formId, questionId, pageable);
 
         var ls = new LinearScaleResponseQuestionDto();
 
@@ -167,7 +167,7 @@ public class LinearScaleManager extends ResponseManager<
 
         var groupedResponse = scale.getFirst() == null ? null : Integer.parseInt(scale.getFirst());
 
-        return linearScaleRepository.getResponseIdsByGroupedResponse(questionId, groupedResponse, pageable);
+        return linearScaleRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
     }
 
     @Override

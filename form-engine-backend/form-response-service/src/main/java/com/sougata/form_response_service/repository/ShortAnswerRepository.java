@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository("SHORT_ANSWER_RESPONSE_REPOSITORY")
 public interface ShortAnswerRepository extends AnyTypeQuestionResponseRepository<ShortAnswer, Long> {
@@ -31,10 +32,11 @@ public interface ShortAnswerRepository extends AnyTypeQuestionResponseRepository
             and qr.question_id = :questionId
             left join short_answers sa
             on qr.id = sa.question_response_id
+            where fr.form_id = :formId
             group by sa.text
             order by responseCount desc, sa.text asc
             """, nativeQuery = true)
-    List<Tuple> groupedByText(long questionId, Pageable pageable);
+    List<Tuple> groupedByText(UUID formId, long questionId, Pageable pageable);
 
     @Query(value = """
             select
@@ -46,13 +48,13 @@ public interface ShortAnswerRepository extends AnyTypeQuestionResponseRepository
             and qr.question_id = :questionId
             left join short_answers sa
             on qr.id = sa.question_response_id
-            where (
+            where fr.form_id = :formId and (
                 (:response is null and sa.text is null)
                 or sa.text = :response
             )
             order by fr.created_at, fr.id
             """, nativeQuery = true)
-    List<Tuple> getResponseIdsByGroupedResponse(long questionId, String response, Pageable pageable);
+    List<Tuple> getResponseIdsByGroupedResponse(UUID formId, long questionId, String response, Pageable pageable);
 
     @Query("""
             select

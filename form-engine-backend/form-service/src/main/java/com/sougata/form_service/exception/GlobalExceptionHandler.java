@@ -1,6 +1,6 @@
 package com.sougata.form_service.exception;
 
-import com.sougata.form_service.dto.form.ViewFormErrorResDto;
+import com.sougata.form_engine.dto.form.ViewFormErrorResDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;

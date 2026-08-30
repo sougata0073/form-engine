@@ -1,6 +1,6 @@
 package com.sougata.form_service.model.template;
 
-import com.sougata.form_service.constant.RatingIcon;
+import com.sougata.form_engine.constant.RatingIcon;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

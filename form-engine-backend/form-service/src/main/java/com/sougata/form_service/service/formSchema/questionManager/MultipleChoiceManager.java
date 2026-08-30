@@ -1,9 +1,9 @@
 package com.sougata.form_service.service.formSchema.questionManager;
 
-import com.sougata.form_service.constant.QuestionType;
-import com.sougata.form_service.dto.question.request.MultipleChoicePutReqDto;
-import com.sougata.form_service.dto.question.response.MultipleChoiceDetailsDto;
-import com.sougata.form_service.dto.template.questionTemplate.MultipleChoiceTemplateDetails;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.details.MultipleChoiceDetailsDto;
+import com.sougata.form_engine.dto.question.schemaRequest.MultipleChoicePutReqDto;
+import com.sougata.form_engine.dto.template.questionTemplate.MultipleChoiceTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.Form;
 import com.sougata.form_service.model.formSchema.MultipleChoice;

@@ -1,8 +1,8 @@
 package com.sougata.form_service.service.formSchema;
 
-import com.sougata.form_service.dto.common.SuccessMessageDto;
-import com.sougata.form_service.dto.form.*;
-import com.sougata.form_service.dto.template.TemplateDetails;
+import com.sougata.form_engine.dto.form.*;
+import com.sougata.form_engine.dto.others.SuccessMessageDto;
+import com.sougata.form_engine.dto.template.TemplateDetails;
 import com.sougata.form_service.model.formSchema.Form;
 
 import java.util.UUID;

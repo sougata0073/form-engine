@@ -1,11 +1,11 @@
 package com.sougata.form_data_service.service.responseManager;
 
-import com.sougata.form_data_service.constant.QuestionType;
-import com.sougata.form_data_service.dto.question.request.DurationResponsePutReqDto;
 import com.sougata.form_data_service.model.Duration;
 import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.repository.DurationRepository;
 import com.sougata.form_data_service.repository.QuestionResponseRepository;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.responseRequest.DurationResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,9 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service("DURATION_RESPONSE_MANAGER")
-public class DurationManager extends ResponseManager<
-        DurationResponsePutReqDto
-        > {
+public class DurationManager extends ResponseManager<DurationResponsePutReqDto> {
 
     private final DurationRepository durationRepository;
 

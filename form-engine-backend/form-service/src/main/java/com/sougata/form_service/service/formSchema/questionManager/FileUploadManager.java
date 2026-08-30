@@ -1,10 +1,10 @@
 package com.sougata.form_service.service.formSchema.questionManager;
 
-import com.sougata.form_service.constant.QuestionType;
-import com.sougata.form_service.dto.question.request.FileUploadPutReqDto;
-import com.sougata.form_service.dto.question.response.FileTypeDetails;
-import com.sougata.form_service.dto.question.response.FileUploadDetailsDto;
-import com.sougata.form_service.dto.template.questionTemplate.FileUploadTemplateDetails;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.others.FileTypeDetails;
+import com.sougata.form_engine.dto.question.details.FileUploadDetailsDto;
+import com.sougata.form_engine.dto.question.schemaRequest.FileUploadPutReqDto;
+import com.sougata.form_engine.dto.template.questionTemplate.FileUploadTemplateDetails;
 import com.sougata.form_service.exception.FileTypeNotFoundException;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.FileType;

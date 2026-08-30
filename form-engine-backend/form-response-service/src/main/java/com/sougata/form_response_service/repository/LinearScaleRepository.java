@@ -33,10 +33,11 @@ public interface LinearScaleRepository extends AnyTypeQuestionResponseRepository
             and qr.question_id = :questionId
             left join linear_scales ls
             on qr.id = ls.question_response_id
+            where fr.form_id = :formId
             group by ls.scale
             order by responseCount desc, ls.scale asc
             """, nativeQuery = true)
-    List<Tuple> groupedByResponseScale(long questionId, Pageable pageable);
+    List<Tuple> groupedByResponseScale(UUID formId, long questionId, Pageable pageable);
 
     @Query("""
             select
@@ -57,12 +58,12 @@ public interface LinearScaleRepository extends AnyTypeQuestionResponseRepository
             and qr.question_id = :questionId
             left join linear_scales ls
             on qr.id = ls.question_response_id
-            where (
+            where fr.form_id = :formId and (
                 (:response is null and ls.scale is null)
                 or ls.scale = :response
             )
             order by fr.created_at, fr.id
             """, nativeQuery = true)
-    List<Tuple> getResponseIdsByGroupedResponse(long questionId, Integer response, Pageable pageable);
+    List<Tuple> getResponseIdsByGroupedResponse(UUID formId, long questionId, Integer response, Pageable pageable);
 
 }

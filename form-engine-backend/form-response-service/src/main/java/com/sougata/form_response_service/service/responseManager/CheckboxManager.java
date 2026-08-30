@@ -170,7 +170,7 @@ public class CheckboxManager extends ResponseManager<
 
         var groupedResponse = firstOptionId == null ? new Long[]{null} : optionIds.stream().map(Long::parseLong).toArray(Long[]::new);
 
-        return checkboxRepository.getResponseIdsByGroupedResponse(questionId, groupedResponse, pageable);
+        return checkboxRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
     }
 
     @Override

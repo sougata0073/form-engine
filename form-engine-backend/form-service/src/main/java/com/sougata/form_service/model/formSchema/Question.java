@@ -1,7 +1,7 @@
 package com.sougata.form_service.model.formSchema;
 
 import com.github.f4b6a3.tsid.TsidCreator;
-import com.sougata.form_service.constant.QuestionType;
+import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_service.model.Auditable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

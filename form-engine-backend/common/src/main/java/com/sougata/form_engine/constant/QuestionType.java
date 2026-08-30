@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum QuestionType {
+
     CHECKBOX("Checkbox"),
     DATE("Date"),
     DATE_TIME("Date and Time"),

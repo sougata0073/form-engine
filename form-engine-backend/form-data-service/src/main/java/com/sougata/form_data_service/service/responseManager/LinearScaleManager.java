@@ -1,11 +1,11 @@
 package com.sougata.form_data_service.service.responseManager;
 
-import com.sougata.form_data_service.constant.QuestionType;
-import com.sougata.form_data_service.dto.question.request.LinearScaleResponsePutReqDto;
 import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.model.LinearScale;
 import com.sougata.form_data_service.repository.LinearScaleRepository;
 import com.sougata.form_data_service.repository.QuestionResponseRepository;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.responseRequest.LinearScaleResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,9 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service("LINEAR_SCALE_RESPONSE_MANAGER")
-public class LinearScaleManager extends ResponseManager<
-        LinearScaleResponsePutReqDto
-        > {
+public class LinearScaleManager extends ResponseManager<LinearScaleResponsePutReqDto> {
 
     private final LinearScaleRepository linearScaleRepository;
 

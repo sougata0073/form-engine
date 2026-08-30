@@ -1,6 +1,7 @@
 package com.sougata.form_data_service.configuration;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.sougata.form_engine.constant.cache.CommonCacheNames;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SocketOptions;
 import io.lettuce.core.TimeoutOptions;
@@ -124,7 +125,7 @@ public class RedisConfiguration implements CachingConfigurer {
                 .disableCachingNullValues()
                 .entryTtl(Duration.ofMinutes(defaultTtlMinutes))
                 .disableCachingNullValues()
-                .prefixCacheNameWith("form-data::")
+                .prefixCacheNameWith(CommonCacheNames.FORM_DATA_SERVICE_PREFIX + CommonCacheNames.SEPARATOR)
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(redisSerializer));
 

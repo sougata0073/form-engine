@@ -1,9 +1,9 @@
 package com.sougata.form_data_service.formValidation.service.questionSchemaManager;
 
-import com.sougata.form_data_service.constant.QuestionType;
-import com.sougata.form_data_service.dto.question.request.DateResponsePutReqDto;
-import com.sougata.form_data_service.dto.question.response.DateDetailsDto;
 import com.sougata.form_data_service.formValidation.service.QuestionSchemaManager;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.details.DateDetailsDto;
+import com.sougata.form_engine.dto.question.responseRequest.DateResponsePutReqDto;
 import org.springframework.stereotype.Service;
 
 @Service("DATE_QUESTION_SCHEMA_MANAGER")

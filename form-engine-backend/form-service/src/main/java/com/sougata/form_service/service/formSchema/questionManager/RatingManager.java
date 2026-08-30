@@ -1,9 +1,9 @@
 package com.sougata.form_service.service.formSchema.questionManager;
 
-import com.sougata.form_service.constant.QuestionType;
-import com.sougata.form_service.dto.question.request.RatingPutReqDto;
-import com.sougata.form_service.dto.question.response.RatingDetailsDto;
-import com.sougata.form_service.dto.template.questionTemplate.RatingTemplateDetails;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.details.RatingDetailsDto;
+import com.sougata.form_engine.dto.question.schemaRequest.RatingPutReqDto;
+import com.sougata.form_engine.dto.template.questionTemplate.RatingTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.Form;
 import com.sougata.form_service.model.formSchema.Question;

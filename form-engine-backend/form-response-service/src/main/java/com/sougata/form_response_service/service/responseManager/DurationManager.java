@@ -117,7 +117,7 @@ public class DurationManager extends ResponseManager<
 
     @Override
     public DurationResponseQuestionDto getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
-        var grouped = durationRepository.groupedByDuration(questionId, pageable);
+        var grouped = durationRepository.groupedByDuration(formId, questionId, pageable);
 
         var d = new DurationResponseQuestionDto();
 
@@ -192,7 +192,7 @@ public class DurationManager extends ResponseManager<
         var m = minutes.getFirst() == null ? null : Integer.parseInt(minutes.getFirst());
         var s = seconds.getFirst() == null ? null : Integer.parseInt(seconds.getFirst());
 
-        return durationRepository.getResponseIdsByGroupedResponse(questionId, h, m, s, pageable);
+        return durationRepository.getResponseIdsByGroupedResponse(formId, questionId, h, m, s, pageable);
     }
 
     @Override

@@ -112,7 +112,7 @@ public class TimeManager extends ResponseManager<
 
     @Override
     public TimeResponseQuestionDto getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
-        var grouped = timeRepository.groupedByTime(questionId, pageable);
+        var grouped = timeRepository.groupedByTime(formId, questionId, pageable);
 
         var t = new TimeResponseQuestionDto();
 
@@ -171,7 +171,7 @@ public class TimeManager extends ResponseManager<
 
         var groupedResponse = time.getFirst() == null ? null : Instant.parse(time.getFirst());
 
-        return timeRepository.getResponseIdsByGroupedResponse(questionId, groupedResponse, pageable);
+        return timeRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
     }
 
     @Override

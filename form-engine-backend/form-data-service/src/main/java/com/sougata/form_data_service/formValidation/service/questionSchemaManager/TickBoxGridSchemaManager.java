@@ -1,10 +1,10 @@
 package com.sougata.form_data_service.formValidation.service.questionSchemaManager;
 
-import com.sougata.form_data_service.constant.QuestionType;
-import com.sougata.form_data_service.dto.question.request.TickBoxGridResponsePutReqDto;
-import com.sougata.form_data_service.dto.question.response.TickBoxGridDetailsDto;
 import com.sougata.form_data_service.formValidation.exception.ResponseValidationException;
 import com.sougata.form_data_service.formValidation.service.QuestionSchemaManager;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.details.TickBoxGridDetailsDto;
+import com.sougata.form_engine.dto.question.responseRequest.TickBoxGridResponsePutReqDto;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -26,11 +26,11 @@ public class TickBoxGridSchemaManager extends QuestionSchemaManager<TickBoxGridD
         }
 
         var validRowIds = new HashSet<>(tbg.getRows().stream()
-                .map(TickBoxGridDetailsDto.TickBoxGridRowResDto::id)
+                .map(TickBoxGridDetailsDto.Row::getId)
                 .toList());
 
         var validColumnIds = new HashSet<>(tbg.getColumns().stream()
-                .map(TickBoxGridDetailsDto.TickBoxGridColumnResDto::id)
+                .map(TickBoxGridDetailsDto.Column::getId)
                 .toList());
 
         var invalidRowIds = new ArrayList<Long>();

@@ -1,5 +1,6 @@
 package com.sougata.form_service.configuration;
 
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,6 +9,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import java.util.concurrent.Executor;
 
 @Configuration
+@Getter
 public class AppConfiguration {
 
     private final Long cacheDefaultTtlMinutes;
@@ -16,10 +18,6 @@ public class AppConfiguration {
             @Value("${app.cache.default-ttl-minutes}") Long cacheDefaultTtlMinutes
     ) {
         this.cacheDefaultTtlMinutes = cacheDefaultTtlMinutes;
-    }
-
-    public Long getCacheDefaultTtlMinutes() {
-        return cacheDefaultTtlMinutes;
     }
 
     @Bean

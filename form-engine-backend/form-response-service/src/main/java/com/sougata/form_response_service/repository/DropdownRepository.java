@@ -33,10 +33,11 @@ public interface DropdownRepository extends AnyTypeQuestionResponseRepository<Dr
             and qr.question_id = :questionId
             left join dropdowns d
             on qr.id = d.question_response_id
+            where fr.form_id = :formId
             group by d.response_option_id
             order by responseCount desc, d.response_option_id asc
             """, nativeQuery = true)
-    List<Tuple> groupedByResponseOption(long questionId, Pageable pageable);
+    List<Tuple> groupedByResponseOption(UUID formId, long questionId, Pageable pageable);
 
     @Query("""
             select
@@ -57,11 +58,11 @@ public interface DropdownRepository extends AnyTypeQuestionResponseRepository<Dr
             and qr.question_id = :questionId
             left join dropdowns d
             on qr.id = d.question_response_id
-            where (
+            where fr.form_id = :formId and (
                 (:response is null and d.response_option_id is null)
                 or d.response_option_id = :response
             )
             order by fr.created_at, fr.id
             """, nativeQuery = true)
-    List<Tuple> getResponseIdsByGroupedResponse(long questionId, Long response, Pageable pageable);
+    List<Tuple> getResponseIdsByGroupedResponse(UUID formId, long questionId, Long response, Pageable pageable);
 }

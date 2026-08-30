@@ -1,6 +1,6 @@
 package com.sougata.form_service.repository.formSchema;
 
-import com.sougata.form_service.constant.QuestionType;
+import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_service.exception.NoQuestionRepositoryFoundException;
 import com.sougata.form_service.model.formSchema.AnyTypeQuestion;
 import org.springframework.beans.BeansException;

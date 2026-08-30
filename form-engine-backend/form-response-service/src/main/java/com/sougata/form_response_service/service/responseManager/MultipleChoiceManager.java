@@ -106,7 +106,7 @@ public class MultipleChoiceManager extends ResponseManager<
 
     @Override
     public MultipleChoiceResponseQuestionDto getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
-        var grouped = multipleChoiceRepository.groupedByResponseOption(questionId, pageable);
+        var grouped = multipleChoiceRepository.groupedByResponseOption(formId, questionId, pageable);
 
         var mc = new MultipleChoiceResponseQuestionDto();
 
@@ -165,7 +165,7 @@ public class MultipleChoiceManager extends ResponseManager<
 
         var groupedResponse = optionId.getFirst() == null ? null : Long.parseLong(optionId.getFirst());
 
-        return multipleChoiceRepository.getResponseIdsByGroupedResponse(questionId, groupedResponse, pageable);
+        return multipleChoiceRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
     }
 
     @Override

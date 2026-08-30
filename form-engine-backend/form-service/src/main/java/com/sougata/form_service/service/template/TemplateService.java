@@ -1,7 +1,7 @@
 package com.sougata.form_service.service.template;
 
-import com.sougata.form_service.dto.template.TemplateSummariesDto;
-import com.sougata.form_service.dto.template.TemplateToFormBuildResDto;
+import com.sougata.form_engine.dto.template.TemplateSummariesDto;
+import com.sougata.form_engine.dto.template.TemplateToFormBuildResDto;
 
 import java.util.UUID;
 

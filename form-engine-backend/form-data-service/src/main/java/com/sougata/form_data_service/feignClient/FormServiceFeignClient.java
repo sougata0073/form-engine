@@ -1,6 +1,6 @@
 package com.sougata.form_data_service.feignClient;
 
-import com.sougata.form_data_service.dto.form.FormDetailsDto;
+import com.sougata.form_engine.dto.form.FormDetailsDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

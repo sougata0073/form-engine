@@ -1,8 +1,8 @@
 package com.sougata.form_data_service.repository;
 
-import com.sougata.form_data_service.constant.QuestionType;
 import com.sougata.form_data_service.exception.NoQuestionResponseRepositoryFoundException;
 import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
+import com.sougata.form_engine.constant.QuestionType;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;

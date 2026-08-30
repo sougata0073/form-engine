@@ -1,22 +1,19 @@
 package com.sougata.form_service.service.formSchema.impl;
 
-import com.sougata.form_engine.constant.MessagingChannelNames;
+import com.sougata.form_engine.constant.cache.CommonCacheNames;
+import com.sougata.form_engine.constant.cache.FormCacheNames;
+import com.sougata.form_engine.constant.cache.QuestionCacheNames;
+import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
+import com.sougata.form_engine.dto.form.FormDetailsDto;
 import com.sougata.form_engine.dto.messaging.QuestionDeleteMessage;
+import com.sougata.form_engine.dto.others.SuccessMessageDto;
+import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
+import com.sougata.form_engine.dto.question.schemaRequest.QuestionOrderUpdateReqDto;
+import com.sougata.form_engine.dto.question.schemaRequest.QuestionPutReqDto;
+import com.sougata.form_engine.dto.question.summary.QuestionSummariesDto;
+import com.sougata.form_engine.dto.question.summary.QuestionSummaryDto;
 import com.sougata.form_service.configuration.AppConfiguration;
-import com.sougata.form_service.constant.QuestionType;
-import com.sougata.form_service.constant.cacheNames.CommonCacheNames;
-import com.sougata.form_service.constant.cacheNames.FormCacheNames;
-import com.sougata.form_service.constant.cacheNames.QuestionCacheNames;
-import com.sougata.form_service.dto.common.SuccessMessageDto;
-import com.sougata.form_service.dto.form.FormDetailsDto;
-import com.sougata.form_service.dto.question.QuestionSummariesDto;
-import com.sougata.form_service.dto.question.QuestionSummaryDto;
-import com.sougata.form_service.dto.question.request.QuestionOrderUpdateReqDto;
-import com.sougata.form_service.dto.question.request.QuestionPutReqDto;
-import com.sougata.form_service.dto.question.response.QuestionDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
-import com.sougata.form_service.feignClient.FormDataServiceFeignClient;
-import com.sougata.form_service.model.formSchema.Question;
 import com.sougata.form_service.projection.QuestionIdAndOrderIndexProjection;
 import com.sougata.form_service.projection.QuestionSummaryProjection;
 import com.sougata.form_service.repository.formSchema.AnyTypeQuestionRepositoryFactory;
@@ -29,7 +26,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -39,14 +39,12 @@ public class QuestionServiceImpl implements QuestionService {
 
     private final QuestionManagerFactory questionManagerFactory;
     private final AnyTypeQuestionRepositoryFactory anyTypeQuestionRepositoryFactory;
-    private final FormDataServiceFeignClient formDataServiceFeignClient;
     private final QuestionRepository questionRepository;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final RedisTemplate<String, String> redisTemplateString;
     private final AppConfiguration appConfiguration;
 
     @Override
-    public QuestionDetails createQuestion(UUID formId, QuestionPutReqDto dto) {
+    public QuestionDetailsDto createQuestion(UUID formId, QuestionPutReqDto dto) {
         var questionManager = questionManagerFactory.get(dto.getQuestionType());
         var question = questionManager.create(formId, dto);
 
@@ -60,13 +58,13 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     @Transactional
-    public QuestionDetails updateQuestion(UUID formId, Long questionId, QuestionPutReqDto dto) {
+    public QuestionDetailsDto updateQuestion(UUID formId, Long questionId, QuestionPutReqDto dto) {
 
         var prevQType = questionRepository.findQuestionTypeById(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(questionId))
                 .getQuestionType();
 
-        QuestionDetails question;
+        QuestionDetailsDto question;
 
         if (prevQType == dto.getQuestionType()) {
             var manager = questionManagerFactory.get(prevQType);
@@ -112,7 +110,7 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     @Transactional(readOnly = true)
-    public QuestionDetails getQuestion(UUID formId, Long questionId) {
+    public QuestionDetailsDto getQuestion(UUID formId, Long questionId) {
 
         var qType = questionRepository.findQuestionTypeById(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(questionId))
@@ -121,29 +119,6 @@ public class QuestionServiceImpl implements QuestionService {
         var manager = questionManagerFactory.get(qType);
 
         return manager.get(formId, questionId);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    @Transactional(readOnly = true)
-    public List<QuestionDetails> getSimilarTypeQuestions(QuestionType questionType, List<Question> parentQuestions) {
-        var repo = anyTypeQuestionRepositoryFactory.get(questionType);
-        var manager = questionManagerFactory.get(questionType);
-
-        var questionIdMap = parentQuestions.stream().collect(
-                Collectors.toMap(
-                        Question::getId,
-                        Function.identity()
-                )
-        );
-        var questionIds = questionIdMap.keySet();
-
-        return repo.findAllById((Iterable<Object>) (Iterable<?>) questionIds).stream()
-                .map(q -> {
-                    var parentQuestion = questionIdMap.get(q.getQuestionId());
-                    return manager.toQuestionResDto(q, parentQuestion);
-                })
-                .toList();
     }
 
     @Override
@@ -188,8 +163,8 @@ public class QuestionServiceImpl implements QuestionService {
             questionRepository.save(question);
             questionRepository.updateNextQuestionOrderIndexes(formId, questionId, prevIndex, req.getCurrentIndex());
 
-            var formDetailsCacheKey = CommonCacheNames.PREFIX + CommonCacheNames.SEPARATOR + FormCacheNames.FORM_DETAILS + CommonCacheNames.SEPARATOR + formId;
-            var questionSummariesCacheKey = CommonCacheNames.PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_SUMMARIES + CommonCacheNames.SEPARATOR + formId;
+            var formDetailsCacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + FormCacheNames.FORM_DETAILS + CommonCacheNames.SEPARATOR + formId;
+            var questionSummariesCacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_SUMMARIES + CommonCacheNames.SEPARATOR + formId;
 
             if (redisTemplate.hasKey(formDetailsCacheKey) || redisTemplate.hasKey(questionSummariesCacheKey)) {
                 var idOrderIndexMap = questionRepository.findAllIdAndOrderIndexByFormId(formId)
@@ -220,17 +195,17 @@ public class QuestionServiceImpl implements QuestionService {
                 }
             }
 
-            var questionDetailsCacheKey = CommonCacheNames.PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_DETAILS + CommonCacheNames.SEPARATOR + questionId;
+            var questionDetailsCacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_DETAILS + CommonCacheNames.SEPARATOR + questionId;
 
             if (redisTemplate.hasKey(questionDetailsCacheKey)) {
-                var questionDetails = (QuestionDetails) redisTemplate.opsForValue().get(questionDetailsCacheKey);
+                var questionDetails = (QuestionDetailsDto) redisTemplate.opsForValue().get(questionDetailsCacheKey);
 
                 questionDetails.setOrderIndex(req.getCurrentIndex());
 
                 redisTemplate.opsForValue().set(questionDetailsCacheKey, questionDetails, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
             }
 
-            var questionSummaryCacheKey = CommonCacheNames.PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_SUMMARY + CommonCacheNames.SEPARATOR + questionId;
+            var questionSummaryCacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_SUMMARY + CommonCacheNames.SEPARATOR + questionId;
 
             if (redisTemplate.hasKey(questionSummaryCacheKey)) {
                 var questionSummary = (QuestionSummaryDto) redisTemplate.opsForValue().get(questionDetailsCacheKey);
@@ -247,9 +222,9 @@ public class QuestionServiceImpl implements QuestionService {
         );
     }
 
-    private void addQuestionInQuestionSummaries(UUID formId, QuestionDetails question) {
+    private void addQuestionInQuestionSummaries(UUID formId, QuestionDetailsDto question) {
 
-        var cacheKey = CommonCacheNames.PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_SUMMARIES + CommonCacheNames.SEPARATOR + formId;
+        var cacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_SUMMARIES + CommonCacheNames.SEPARATOR + formId;
 
         if (redisTemplate.hasKey(cacheKey)) {
             var prevSummaries = (QuestionSummariesDto) redisTemplate.opsForValue().get(cacheKey);
@@ -270,7 +245,7 @@ public class QuestionServiceImpl implements QuestionService {
 
     private void deleteQuestionInQuestionSummaries(UUID formId, Long questionId) {
 
-        var cacheKey = CommonCacheNames.PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_SUMMARIES + CommonCacheNames.SEPARATOR + formId;
+        var cacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_SUMMARIES + CommonCacheNames.SEPARATOR + formId;
 
         if (redisTemplate.hasKey(cacheKey)) {
             var prevSummaries = (QuestionSummariesDto) redisTemplate.opsForValue().get(cacheKey);
@@ -282,8 +257,8 @@ public class QuestionServiceImpl implements QuestionService {
         }
     }
 
-    private void updateQuestionInQuestionSummaries(UUID formId, QuestionDetails question) {
-        var cacheKey = CommonCacheNames.PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_SUMMARIES + CommonCacheNames.SEPARATOR + formId;
+    private void updateQuestionInQuestionSummaries(UUID formId, QuestionDetailsDto question) {
+        var cacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_SUMMARIES + CommonCacheNames.SEPARATOR + formId;
 
         if (redisTemplate.hasKey(cacheKey)) {
             var prevSummaries = (QuestionSummariesDto) redisTemplate.opsForValue().get(cacheKey);
@@ -300,21 +275,21 @@ public class QuestionServiceImpl implements QuestionService {
         }
     }
 
-    private void addQuestionInFormDetails(UUID formId, QuestionDetails question) {
-        var cacheKey = CommonCacheNames.PREFIX + CommonCacheNames.PREFIX + FormCacheNames.FORM_DETAILS + CommonCacheNames.SEPARATOR + formId;
+    private void addQuestionInFormDetails(UUID formId, QuestionDetailsDto question) {
+        var cacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + FormCacheNames.FORM_DETAILS + CommonCacheNames.SEPARATOR + formId;
 
         if (redisTemplate.hasKey(cacheKey)) {
             var formDetails = (FormDetailsDto) redisTemplate.opsForValue().get(cacheKey);
 
             formDetails.getQuestions().add(question);
-            formDetails.getQuestions().sort(Comparator.comparingInt(QuestionDetails::getOrderIndex));
+            formDetails.getQuestions().sort(Comparator.comparingInt(QuestionDetailsDto::getOrderIndex));
 
             redisTemplate.opsForValue().set(cacheKey, formDetails, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
         }
     }
 
-    private void updateQuestionInFormDetails(UUID formId, QuestionDetails question) {
-        var cacheKey = CommonCacheNames.PREFIX + CommonCacheNames.PREFIX + FormCacheNames.FORM_DETAILS + CommonCacheNames.SEPARATOR + formId;
+    private void updateQuestionInFormDetails(UUID formId, QuestionDetailsDto question) {
+        var cacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + FormCacheNames.FORM_DETAILS + CommonCacheNames.SEPARATOR + formId;
 
         if (redisTemplate.hasKey(cacheKey)) {
             var formDetails = (FormDetailsDto) redisTemplate.opsForValue().get(cacheKey);
@@ -334,7 +309,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     private void deleteQuestionInFormDetails(UUID formId, Long questionId) {
-        var cacheKey = CommonCacheNames.PREFIX + CommonCacheNames.PREFIX + FormCacheNames.FORM_DETAILS + CommonCacheNames.SEPARATOR + formId;
+        var cacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + FormCacheNames.FORM_DETAILS + CommonCacheNames.SEPARATOR + formId;
 
         if (redisTemplate.hasKey(cacheKey)) {
             var formDetails = (FormDetailsDto) redisTemplate.opsForValue().get(cacheKey);
@@ -345,14 +320,14 @@ public class QuestionServiceImpl implements QuestionService {
         }
     }
 
-    private void putQuestionDetails(QuestionDetails question) {
-        var cacheKey = CommonCacheNames.PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_DETAILS + CommonCacheNames.SEPARATOR + question.getId();
+    private void putQuestionDetails(QuestionDetailsDto question) {
+        var cacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_DETAILS + CommonCacheNames.SEPARATOR + question.getId();
 
         redisTemplate.opsForValue().set(cacheKey, question, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
     }
 
     private void putQuestionSummary(QuestionSummaryDto question) {
-        var cacheKey = CommonCacheNames.PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_SUMMARY + CommonCacheNames.SEPARATOR + question.getId();
+        var cacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_SUMMARY + CommonCacheNames.SEPARATOR + question.getId();
 
         redisTemplate.opsForValue().set(cacheKey, question, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
     }

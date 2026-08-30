@@ -1,9 +1,9 @@
 package com.sougata.form_service.service.formSchema.questionManager;
 
-import com.sougata.form_service.constant.QuestionType;
-import com.sougata.form_service.dto.question.request.LinearScalePutReqDto;
-import com.sougata.form_service.dto.question.response.LinearScaleDetailsDto;
-import com.sougata.form_service.dto.template.questionTemplate.LinearScaleTemplateDetails;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.details.LinearScaleDetailsDto;
+import com.sougata.form_engine.dto.question.schemaRequest.LinearScalePutReqDto;
+import com.sougata.form_engine.dto.template.questionTemplate.LinearScaleTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.Form;
 import com.sougata.form_service.model.formSchema.LinearScale;

@@ -1,13 +1,13 @@
 package com.sougata.form_data_service.service.responseManager;
 
-import com.sougata.form_data_service.constant.QuestionType;
-import com.sougata.form_data_service.dto.question.request.TickBoxGridResponsePutReqDto;
 import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.model.TickBoxGrid;
 import com.sougata.form_data_service.model.TickBoxGridColumn;
 import com.sougata.form_data_service.model.TickBoxGridRow;
 import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_data_service.repository.TickBoxGridRepository;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.responseRequest.TickBoxGridResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +17,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service("TICK_BOX_GRID_RESPONSE_MANAGER")
-public class TickBoxGridManager extends ResponseManager<
-        TickBoxGridResponsePutReqDto
-        > {
+public class TickBoxGridManager extends ResponseManager<TickBoxGridResponsePutReqDto> {
 
     private final TickBoxGridRepository tickBoxGridRepository;
 

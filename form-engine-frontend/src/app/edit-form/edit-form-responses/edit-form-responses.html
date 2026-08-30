@@ -1,6 +1,6 @@
 <div class="parent-container">
   <div class="header">
-    <app-edit-form-responses-header [formId]="formId()"/>
+    <app-edit-form-responses-header [formId]="formId()" />
   </div>
 
   @if (formResponseCount()?.count === '0') {
@@ -11,7 +11,7 @@
     </mat-card>
   } @else {
     <div class="main-content">
-      <router-outlet/>
+      <router-outlet />
     </div>
   }
 </div>

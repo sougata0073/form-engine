@@ -1,11 +1,11 @@
 package com.sougata.form_data_service.formValidation.service.questionSchemaManager;
 
-import com.sougata.form_data_service.constant.QuestionType;
 import com.sougata.form_data_service.constant.ValidationMessages;
-import com.sougata.form_data_service.dto.question.request.RatingResponsePutReqDto;
-import com.sougata.form_data_service.dto.question.response.RatingDetailsDto;
 import com.sougata.form_data_service.formValidation.exception.ResponseValidationException;
 import com.sougata.form_data_service.formValidation.service.QuestionSchemaManager;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.details.RatingDetailsDto;
+import com.sougata.form_engine.dto.question.responseRequest.RatingResponsePutReqDto;
 import org.springframework.stereotype.Service;
 
 @Service("RATING_QUESTION_SCHEMA_MANAGER")

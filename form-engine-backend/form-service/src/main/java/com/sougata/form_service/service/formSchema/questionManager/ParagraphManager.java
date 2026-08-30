@@ -1,10 +1,12 @@
 package com.sougata.form_service.service.formSchema.questionManager;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.sougata.form_service.constant.QuestionType;
-import com.sougata.form_service.dto.question.request.ParagraphPutReqDto;
-import com.sougata.form_service.dto.question.response.ParagraphDetailsDto;
-import com.sougata.form_service.dto.template.questionTemplate.ParagraphTemplateDetails;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.details.ParagraphDetailsDto;
+import com.sougata.form_engine.dto.question.schemaRequest.ParagraphPutReqDto;
+import com.sougata.form_engine.dto.template.questionTemplate.ParagraphTemplateDetails;
+import com.sougata.form_engine.dto.validation.config.ValidationConfig;
+import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_service.exception.JsonParsingException;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.Form;
@@ -14,8 +16,6 @@ import com.sougata.form_service.repository.formSchema.ParagraphRepository;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.service.formSchema.FormService;
 import com.sougata.form_service.service.formSchema.QuestionManager;
-import com.sougata.form_service.util.JsonUtil;
-import com.sougata.form_service.validation.configuration.ValidationConfig;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

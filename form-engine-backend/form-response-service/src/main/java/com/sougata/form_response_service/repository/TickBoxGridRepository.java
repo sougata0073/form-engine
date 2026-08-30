@@ -53,12 +53,13 @@ public interface TickBoxGridRepository extends AnyTypeQuestionResponseRepository
                 and tbgr.row_id = :rowId
                 left join tick_box_grid_columns tbgc
                 on tbgc.tick_box_grid_row_id = tbgr.id
+                where fr.form_id = :formId
                 group by fr.id
             ) x
             group by columnIds
             order by responseCount desc, columnIds asc
             """, nativeQuery = true)
-    List<Tuple> groupedByResponseRowColumn(long questionId, long rowId, Pageable pageable);
+    List<Tuple> groupedByResponseRowColumn(UUID formId, long questionId, long rowId, Pageable pageable);
 
     @Query(value = """
                 select
@@ -95,6 +96,7 @@ public interface TickBoxGridRepository extends AnyTypeQuestionResponseRepository
                 and tbgr.row_id = :rowId
             left join tick_box_grid_columns tbgc
                 on tbgc.tick_box_grid_row_id = tbgr.id
+        where fr.form_id = :formId
         group by
             fr.id
         having array_agg(
@@ -108,5 +110,5 @@ public interface TickBoxGridRepository extends AnyTypeQuestionResponseRepository
             fr.created_at,
             fr.id
     """, nativeQuery = true)
-    List<Tuple> getResponseIdsByGroupedResponse(long questionId, Long rowId, Long[] response, Pageable pageable);
+    List<Tuple> getResponseIdsByGroupedResponse(UUID formId, long questionId, Long rowId, Long[] response, Pageable pageable);
 }

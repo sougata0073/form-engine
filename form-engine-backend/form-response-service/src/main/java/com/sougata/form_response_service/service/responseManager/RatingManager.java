@@ -117,7 +117,7 @@ public class RatingManager extends ResponseManager<
 
     @Override
     public RatingResponseQuestionDto getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
-        var grouped = ratingRepository.groupedByRating(questionId, pageable);
+        var grouped = ratingRepository.groupedByRating(formId, questionId, pageable);
 
         var r = new RatingResponseQuestionDto();
 
@@ -175,7 +175,7 @@ public class RatingManager extends ResponseManager<
 
         var groupedResponse = rating.getFirst() == null ? null : Integer.parseInt(rating.getFirst());
 
-        return ratingRepository.getResponseIdsByGroupedResponse(questionId, groupedResponse, pageable);
+        return ratingRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
     }
 
 

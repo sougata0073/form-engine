@@ -1,11 +1,11 @@
 package com.sougata.form_service.service.template.impl;
 
-import com.sougata.form_service.constant.cacheNames.TemplateCacheNames;
-import com.sougata.form_service.dto.template.TemplateCategoryDetails;
-import com.sougata.form_service.dto.template.TemplateDetails;
-import com.sougata.form_service.dto.template.TemplateSummaryDto;
-import com.sougata.form_service.dto.template.questionTemplate.QuestionTemplateDetails;
-import com.sougata.form_service.dto.template.questionTemplate.QuestionTemplateSummary;
+import com.sougata.form_engine.constant.cache.TemplateCacheNames;
+import com.sougata.form_engine.dto.template.TemplateCategoryDetails;
+import com.sougata.form_engine.dto.template.TemplateDetails;
+import com.sougata.form_engine.dto.template.TemplateSummaryDto;
+import com.sougata.form_engine.dto.template.questionTemplate.QuestionTemplateDetails;
+import com.sougata.form_engine.dto.template.questionTemplate.QuestionTemplateSummary;
 import com.sougata.form_service.exception.TemplateNotFoundException;
 import com.sougata.form_service.repository.template.AnyQuestionTemplateRepositoryFactory;
 import com.sougata.form_service.repository.template.QuestionTemplateRepository;

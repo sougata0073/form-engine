@@ -1,7 +1,7 @@
 package com.sougata.form_service.service.template;
 
-import com.sougata.form_service.constant.QuestionType;
-import com.sougata.form_service.dto.template.questionTemplate.QuestionTemplateDetails;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.template.questionTemplate.QuestionTemplateDetails;
 import com.sougata.form_service.model.template.AnyTypeQuestionTemplate;
 
 public abstract class QuestionTemplateManager<QT extends AnyTypeQuestionTemplate, QTD extends QuestionTemplateDetails> {

@@ -1,9 +1,8 @@
 package com.sougata.form_response_service.messaging.handler;
 
-import com.sougata.form_engine.constant.Messaging;
-import com.sougata.form_engine.constant.MessagingChannelNames;
+import com.sougata.form_engine.constant.messaging.CommonMessagingNames;
+import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.constant.cache.FormResponseCacheNames;
-import com.sougata.form_engine.dto.messaging.FormResponseDeleteMessage;
 import com.sougata.form_engine.dto.messaging.FormResponseSavedMessage;
 import com.sougata.form_response_service.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component(MessagingChannelNames.FORM_RESPONSE_SAVED + "_" + Messaging.MESSAGE_HANDLER_SUFFIX)
+@Component(MessagingChannelNames.FORM_RESPONSE_SAVED + "_" + CommonMessagingNames.MESSAGE_HANDLER_SUFFIX)
 @RequiredArgsConstructor
 public class FormResponseSavedMessageHandler implements MessageListener {
 
@@ -38,7 +37,7 @@ public class FormResponseSavedMessageHandler implements MessageListener {
         var formResponseSummariesCacheKeys = redisTemplate.keys(CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_SUMMARIES, "formId=" + messageData.getFormId()) + "::*");
         var responseSummaryCacheKeys = redisTemplate.keys(CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_SUMMARY, "formId=" + messageData.getFormId()) + "::*");
 
-        var cacheKeys = new ArrayList<String>(
+        var cacheKeys = new ArrayList<>(
                 List.of(formResponseCountCacheKey, responseSummariesCacheKey)
         );
 

@@ -1,11 +1,11 @@
 package com.sougata.form_data_service.formValidation.responseValidator;
 
 import com.sougata.form_data_service.constant.ValidationMessages;
-import com.sougata.form_data_service.dto.question.request.ShortAnswerResponsePutReqDto;
-import com.sougata.form_data_service.dto.validationConfig.NoneValidationConfig;
-import com.sougata.form_data_service.dto.validationConfig.ShortAnswerValidationConfig;
 import com.sougata.form_data_service.formValidation.exception.ResponseValidationException;
-import com.sougata.form_data_service.util.StringUtil;
+import com.sougata.form_engine.dto.validation.config.NoneValidationConfig;
+import com.sougata.form_engine.dto.validation.config.ShortAnswerValidationConfig;
+import com.sougata.form_engine.util.StringUtil;
+import com.sougata.form_engine.dto.question.responseRequest.ShortAnswerResponsePutReqDto;
 
 public class ShortAnswerValidator {
 
@@ -33,15 +33,6 @@ public class ShortAnswerValidator {
             return true;
         }
 
-        @Override
-        public Class<ShortAnswerResponsePutReqDto> getValidationRequestClass() {
-            return ShortAnswerResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ShortAnswerValidationConfig.MaxCharacterCount> getValidationConfigClass() {
-            return ShortAnswerValidationConfig.MaxCharacterCount.class;
-        }
     }
 
     public static class LengthMinCharacterCount implements
@@ -60,15 +51,6 @@ public class ShortAnswerValidator {
             return true;
         }
 
-        @Override
-        public Class<ShortAnswerResponsePutReqDto> getValidationRequestClass() {
-            return ShortAnswerResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ShortAnswerValidationConfig.MinCharacterCount> getValidationConfigClass() {
-            return ShortAnswerValidationConfig.MinCharacterCount.class;
-        }
     }
 
     public static class NumberIsNumber implements
@@ -82,15 +64,6 @@ public class ShortAnswerValidator {
             return true;
         }
 
-        @Override
-        public Class<ShortAnswerResponsePutReqDto> getValidationRequestClass() {
-            return ShortAnswerResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ShortAnswerValidationConfig.IsNumber> getValidationConfigClass() {
-            return ShortAnswerValidationConfig.IsNumber.class;
-        }
     }
 
     public static class NumberGreaterThan implements
@@ -107,15 +80,6 @@ public class ShortAnswerValidator {
             return true;
         }
 
-        @Override
-        public Class<ShortAnswerResponsePutReqDto> getValidationRequestClass() {
-            return ShortAnswerResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ShortAnswerValidationConfig.GreaterThan> getValidationConfigClass() {
-            return ShortAnswerValidationConfig.GreaterThan.class;
-        }
     }
 
     public static class NumberGreaterThanOrEqualTo implements
@@ -132,15 +96,6 @@ public class ShortAnswerValidator {
             return true;
         }
 
-        @Override
-        public Class<ShortAnswerResponsePutReqDto> getValidationRequestClass() {
-            return ShortAnswerResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ShortAnswerValidationConfig.GreaterThanOrEqualTo> getValidationConfigClass() {
-            return ShortAnswerValidationConfig.GreaterThanOrEqualTo.class;
-        }
     }
 
     public static class NumberLessThan implements
@@ -157,15 +112,6 @@ public class ShortAnswerValidator {
             return true;
         }
 
-        @Override
-        public Class<ShortAnswerResponsePutReqDto> getValidationRequestClass() {
-            return ShortAnswerResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ShortAnswerValidationConfig.LessThan> getValidationConfigClass() {
-            return ShortAnswerValidationConfig.LessThan.class;
-        }
     }
 
     public static class NumberLessThanOrEqualTo implements
@@ -182,15 +128,6 @@ public class ShortAnswerValidator {
             return true;
         }
 
-        @Override
-        public Class<ShortAnswerResponsePutReqDto> getValidationRequestClass() {
-            return ShortAnswerResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ShortAnswerValidationConfig.LessThanOrEqualTo> getValidationConfigClass() {
-            return ShortAnswerValidationConfig.LessThanOrEqualTo.class;
-        }
     }
 
     public static class NumberEqualTo implements
@@ -207,15 +144,6 @@ public class ShortAnswerValidator {
             return true;
         }
 
-        @Override
-        public Class<ShortAnswerResponsePutReqDto> getValidationRequestClass() {
-            return ShortAnswerResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ShortAnswerValidationConfig.EqualTo> getValidationConfigClass() {
-            return ShortAnswerValidationConfig.EqualTo.class;
-        }
     }
 
     public static class NumberNotEqualTo implements
@@ -232,15 +160,6 @@ public class ShortAnswerValidator {
             return true;
         }
 
-        @Override
-        public Class<ShortAnswerResponsePutReqDto> getValidationRequestClass() {
-            return ShortAnswerResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ShortAnswerValidationConfig.NotEqualTo> getValidationConfigClass() {
-            return ShortAnswerValidationConfig.NotEqualTo.class;
-        }
     }
 
     public static class NumberBetween implements
@@ -257,15 +176,6 @@ public class ShortAnswerValidator {
             return true;
         }
 
-        @Override
-        public Class<ShortAnswerResponsePutReqDto> getValidationRequestClass() {
-            return ShortAnswerResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ShortAnswerValidationConfig.Between> getValidationConfigClass() {
-            return ShortAnswerValidationConfig.Between.class;
-        }
     }
 
     public static class NumberNotBetween implements
@@ -282,15 +192,6 @@ public class ShortAnswerValidator {
             return true;
         }
 
-        @Override
-        public Class<ShortAnswerResponsePutReqDto> getValidationRequestClass() {
-            return ShortAnswerResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ShortAnswerValidationConfig.NotBetween> getValidationConfigClass() {
-            return ShortAnswerValidationConfig.NotBetween.class;
-        }
     }
 
     public static class NumberWholeNumber implements
@@ -309,15 +210,6 @@ public class ShortAnswerValidator {
             return true;
         }
 
-        @Override
-        public Class<ShortAnswerResponsePutReqDto> getValidationRequestClass() {
-            return ShortAnswerResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ShortAnswerValidationConfig.WholeNumber> getValidationConfigClass() {
-            return ShortAnswerValidationConfig.WholeNumber.class;
-        }
     }
 
     public static class RegexMatches implements
@@ -337,15 +229,6 @@ public class ShortAnswerValidator {
             return true;
         }
 
-        @Override
-        public Class<ShortAnswerResponsePutReqDto> getValidationRequestClass() {
-            return ShortAnswerResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ShortAnswerValidationConfig.Matches> getValidationConfigClass() {
-            return ShortAnswerValidationConfig.Matches.class;
-        }
     }
 
     public static class RegexDoesNotMatch implements
@@ -365,15 +248,6 @@ public class ShortAnswerValidator {
             return true;
         }
 
-        @Override
-        public Class<ShortAnswerResponsePutReqDto> getValidationRequestClass() {
-            return ShortAnswerResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ShortAnswerValidationConfig.DoesNotMatch> getValidationConfigClass() {
-            return ShortAnswerValidationConfig.DoesNotMatch.class;
-        }
     }
 
     public static class TextContains implements
@@ -394,15 +268,6 @@ public class ShortAnswerValidator {
             return true;
         }
 
-        @Override
-        public Class<ShortAnswerResponsePutReqDto> getValidationRequestClass() {
-            return ShortAnswerResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ShortAnswerValidationConfig.Contains> getValidationConfigClass() {
-            return ShortAnswerValidationConfig.Contains.class;
-        }
     }
 
     public static class TextDoesNotContains implements
@@ -421,15 +286,6 @@ public class ShortAnswerValidator {
             return true;
         }
 
-        @Override
-        public Class<ShortAnswerResponsePutReqDto> getValidationRequestClass() {
-            return ShortAnswerResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ShortAnswerValidationConfig.DoesNotContains> getValidationConfigClass() {
-            return ShortAnswerValidationConfig.DoesNotContains.class;
-        }
     }
 
     public static class TextEmail implements
@@ -443,15 +299,6 @@ public class ShortAnswerValidator {
             return true;
         }
 
-        @Override
-        public Class<ShortAnswerResponsePutReqDto> getValidationRequestClass() {
-            return ShortAnswerResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ShortAnswerValidationConfig.Email> getValidationConfigClass() {
-            return ShortAnswerValidationConfig.Email.class;
-        }
     }
 
     public static class TextUrl implements
@@ -465,15 +312,6 @@ public class ShortAnswerValidator {
             return true;
         }
 
-        @Override
-        public Class<ShortAnswerResponsePutReqDto> getValidationRequestClass() {
-            return ShortAnswerResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ShortAnswerValidationConfig.Url> getValidationConfigClass() {
-            return ShortAnswerValidationConfig.Url.class;
-        }
     }
 
     public static class None implements ResponseValidator<ShortAnswerResponsePutReqDto, NoneValidationConfig> {
@@ -483,15 +321,6 @@ public class ShortAnswerValidator {
             return true;
         }
 
-        @Override
-        public Class<ShortAnswerResponsePutReqDto> getValidationRequestClass() {
-            return ShortAnswerResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<NoneValidationConfig> getValidationConfigClass() {
-            return NoneValidationConfig.class;
-        }
     }
 
 }

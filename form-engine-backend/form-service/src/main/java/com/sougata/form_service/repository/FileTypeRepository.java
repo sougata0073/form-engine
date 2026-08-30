@@ -1,6 +1,6 @@
 package com.sougata.form_service.repository;
 
-import com.sougata.form_service.constant.cacheNames.CommonCacheNames;
+import com.sougata.form_engine.constant.cache.CommonCacheNames;
 import com.sougata.form_service.model.FileType;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;

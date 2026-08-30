@@ -114,7 +114,7 @@ public class DateManager extends ResponseManager<
 
     @Override
     public DateResponseQuestionDto getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
-        var grouped = dateRepository.groupedByDate(questionId, pageable);
+        var grouped = dateRepository.groupedByDate(formId, questionId, pageable);
 
         var d = new DateResponseQuestionDto();
 
@@ -173,7 +173,7 @@ public class DateManager extends ResponseManager<
 
         var groupedResponse = date.getFirst() == null ? null :  Instant.parse(date.getFirst());
 
-        return dateRepository.getResponseIdsByGroupedResponse(questionId, groupedResponse, pageable);
+        return dateRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
     }
 
     @Override

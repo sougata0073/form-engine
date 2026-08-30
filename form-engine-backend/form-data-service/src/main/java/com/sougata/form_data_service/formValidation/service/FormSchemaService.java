@@ -1,14 +1,14 @@
 package com.sougata.form_data_service.formValidation.service;
 
 import com.sougata.form_data_service.constant.ValidationMessages;
-import com.sougata.form_data_service.dto.common.SuccessMessageDto;
-import com.sougata.form_data_service.dto.form.FormDetailsDto;
-import com.sougata.form_data_service.dto.question.response.QuestionDetailsDto;
-import com.sougata.form_data_service.dto.validation.ResponseValidationRequestDto;
+import com.sougata.form_engine.dto.others.SuccessMessageDto;
+import com.sougata.form_engine.dto.form.FormDetailsDto;
 import com.sougata.form_data_service.formValidation.exception.QuestionSchemaNotFoundException;
 import com.sougata.form_data_service.formValidation.exception.RequiredQuestionResponseNotFoundException;
 import com.sougata.form_data_service.formValidation.exception.ResponseValidationException;
 import com.sougata.form_data_service.formValidation.service.questionSchemaManager.QuestionSchemaManagerFactory;
+import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
+import com.sougata.form_engine.dto.validation.request.ResponseValidationRequestDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

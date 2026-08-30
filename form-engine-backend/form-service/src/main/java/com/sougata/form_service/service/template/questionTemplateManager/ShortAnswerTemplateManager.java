@@ -1,13 +1,13 @@
 package com.sougata.form_service.service.template.questionTemplateManager;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.sougata.form_service.constant.QuestionType;
-import com.sougata.form_service.dto.template.questionTemplate.ShortAnswerTemplateDetails;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.template.questionTemplate.ShortAnswerTemplateDetails;
+import com.sougata.form_engine.dto.validation.config.ValidationConfig;
+import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_service.exception.JsonParsingException;
 import com.sougata.form_service.model.template.ShortAnswerTemplate;
 import com.sougata.form_service.service.template.QuestionTemplateManager;
-import com.sougata.form_service.util.JsonUtil;
-import com.sougata.form_service.validation.configuration.ValidationConfig;
 import org.springframework.stereotype.Service;
 
 @Service("SHORT_ANSWER_TEMPLATE_MANAGER")

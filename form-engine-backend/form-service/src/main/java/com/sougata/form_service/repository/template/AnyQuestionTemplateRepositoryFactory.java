@@ -1,6 +1,6 @@
 package com.sougata.form_service.repository.template;
 
-import com.sougata.form_service.constant.QuestionType;
+import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_service.exception.NoQuestionTemplateRepositoryFoundException;
 import com.sougata.form_service.model.template.AnyTypeQuestionTemplate;
 import org.springframework.beans.BeansException;

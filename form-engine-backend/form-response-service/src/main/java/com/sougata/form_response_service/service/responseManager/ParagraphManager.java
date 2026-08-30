@@ -89,7 +89,7 @@ public class ParagraphManager extends ResponseManager<
 
     @Override
     public ParagraphResponseQuestionDto getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
-        var grouped = paragraphRepository.groupedByText(questionId, pageable);
+        var grouped = paragraphRepository.groupedByText(formId, questionId, pageable);
 
         var p = new ParagraphResponseQuestionDto();
 
@@ -147,7 +147,7 @@ public class ParagraphManager extends ResponseManager<
 
         var groupedResponse = text.getFirst();
 
-        return paragraphRepository.getResponseIdsByGroupedResponse(questionId, groupedResponse, pageable);
+        return paragraphRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
     }
 
     @Override

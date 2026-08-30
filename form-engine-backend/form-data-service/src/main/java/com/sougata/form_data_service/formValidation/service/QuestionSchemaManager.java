@@ -1,8 +1,8 @@
 package com.sougata.form_data_service.formValidation.service;
 
-import com.sougata.form_data_service.constant.QuestionType;
-import com.sougata.form_data_service.dto.question.request.QuestionResponsePutReqDto;
-import com.sougata.form_data_service.dto.question.response.QuestionDetailsDto;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
+import com.sougata.form_engine.dto.question.responseRequest.QuestionResponsePutReqDto;
 
 public abstract class QuestionSchemaManager<QR extends QuestionDetailsDto, QRAR extends QuestionResponsePutReqDto> {
 

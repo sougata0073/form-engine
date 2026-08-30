@@ -136,6 +136,7 @@ public class TickBoxGridManager extends ResponseManager<
         var rowId = Long.parseLong(rowIdString);
 
         var grouped = tickBoxGridRepository.groupedByResponseRowColumn(
+                formId,
                 questionId,
                 rowId,
                 pageable
@@ -224,7 +225,7 @@ public class TickBoxGridManager extends ResponseManager<
 
         var columnIdsResponse = firstColumnId == null ? new Long[]{null} : columnIds.stream().map(Long::parseLong).toArray(Long[]::new);
 
-        return tickBoxGridRepository.getResponseIdsByGroupedResponse(questionId, rowIdResponse, columnIdsResponse, pageable);
+        return tickBoxGridRepository.getResponseIdsByGroupedResponse(formId, questionId, rowIdResponse, columnIdsResponse, pageable);
     }
 
     @Override

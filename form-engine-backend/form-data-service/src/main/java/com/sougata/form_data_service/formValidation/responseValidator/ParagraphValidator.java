@@ -1,10 +1,10 @@
 package com.sougata.form_data_service.formValidation.responseValidator;
 
 import com.sougata.form_data_service.constant.ValidationMessages;
-import com.sougata.form_data_service.dto.question.request.ParagraphResponsePutReqDto;
-import com.sougata.form_data_service.dto.validationConfig.NoneValidationConfig;
-import com.sougata.form_data_service.dto.validationConfig.ParagraphValidationConfig;
 import com.sougata.form_data_service.formValidation.exception.ResponseValidationException;
+import com.sougata.form_engine.dto.question.responseRequest.ParagraphResponsePutReqDto;
+import com.sougata.form_engine.dto.validation.config.NoneValidationConfig;
+import com.sougata.form_engine.dto.validation.config.ParagraphValidationConfig;
 
 public class ParagraphValidator {
 
@@ -24,15 +24,6 @@ public class ParagraphValidator {
             return true;
         }
 
-        @Override
-        public Class<ParagraphResponsePutReqDto> getValidationRequestClass() {
-            return ParagraphResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ParagraphValidationConfig.MaxCharacterCount> getValidationConfigClass() {
-            return ParagraphValidationConfig.MaxCharacterCount.class;
-        }
     }
 
     public static class LengthMinCharacterCount implements
@@ -51,15 +42,6 @@ public class ParagraphValidator {
             return true;
         }
 
-        @Override
-        public Class<ParagraphResponsePutReqDto> getValidationRequestClass() {
-            return ParagraphResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ParagraphValidationConfig.MinCharacterCount> getValidationConfigClass() {
-            return ParagraphValidationConfig.MinCharacterCount.class;
-        }
     }
 
     public static class RegexMatches implements
@@ -79,15 +61,6 @@ public class ParagraphValidator {
             return true;
         }
 
-        @Override
-        public Class<ParagraphResponsePutReqDto> getValidationRequestClass() {
-            return ParagraphResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ParagraphValidationConfig.Matches> getValidationConfigClass() {
-            return ParagraphValidationConfig.Matches.class;
-        }
     }
 
     public static class DoesNotMatch implements
@@ -107,15 +80,6 @@ public class ParagraphValidator {
             return true;
         }
 
-        @Override
-        public Class<ParagraphResponsePutReqDto> getValidationRequestClass() {
-            return ParagraphResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<ParagraphValidationConfig.DoesNotMatch> getValidationConfigClass() {
-            return ParagraphValidationConfig.DoesNotMatch.class;
-        }
     }
 
     public static class None implements ResponseValidator<ParagraphResponsePutReqDto, NoneValidationConfig> {
@@ -125,15 +89,6 @@ public class ParagraphValidator {
             return true;
         }
 
-        @Override
-        public Class<ParagraphResponsePutReqDto> getValidationRequestClass() {
-            return ParagraphResponsePutReqDto.class;
-        }
-
-        @Override
-        public Class<NoneValidationConfig> getValidationConfigClass() {
-            return NoneValidationConfig.class;
-        }
     }
 
 }

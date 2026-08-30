@@ -1,8 +1,8 @@
 package com.sougata.form_service.controller;
 
-import com.sougata.form_service.constant.cacheNames.TemplateCacheNames;
-import com.sougata.form_service.dto.template.TemplateSummariesDto;
-import com.sougata.form_service.dto.template.TemplateToFormBuildResDto;
+import com.sougata.form_engine.constant.cache.TemplateCacheNames;
+import com.sougata.form_engine.dto.template.TemplateSummariesDto;
+import com.sougata.form_engine.dto.template.TemplateToFormBuildResDto;
 import com.sougata.form_service.service.template.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;

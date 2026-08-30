@@ -1,9 +1,9 @@
 package com.sougata.form_service.service.formSchema.questionManager;
 
-import com.sougata.form_service.constant.QuestionType;
-import com.sougata.form_service.dto.question.request.TimePutReqDto;
-import com.sougata.form_service.dto.question.response.TimeDetailsDto;
-import com.sougata.form_service.dto.template.questionTemplate.TimeTemplateDetails;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.details.TimeDetailsDto;
+import com.sougata.form_engine.dto.question.schemaRequest.TimePutReqDto;
+import com.sougata.form_engine.dto.template.questionTemplate.TimeTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.Form;
 import com.sougata.form_service.model.formSchema.Question;

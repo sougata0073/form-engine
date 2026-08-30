@@ -1,7 +1,7 @@
 package com.sougata.form_service.service.template.questionTemplateManager;
 
-import com.sougata.form_service.constant.QuestionType;
-import com.sougata.form_service.dto.template.questionTemplate.QuestionTemplateDetails;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.template.questionTemplate.QuestionTemplateDetails;
 import com.sougata.form_service.exception.NoQuestionTemplateManagerFoundException;
 import com.sougata.form_service.model.template.AnyTypeQuestionTemplate;
 import com.sougata.form_service.service.template.QuestionTemplateManager;

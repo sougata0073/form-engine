@@ -1,6 +1,6 @@
 package com.sougata.form_engine.constant.cache;
 
-public class FormCacheNames {
+public final class FormCacheNames {
 
     public static final String FORM_DETAILS = "formDetails";
     public static final String FORM_INFO = "formInfo";

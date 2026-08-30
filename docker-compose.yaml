@@ -1,0 +1,214 @@
+services:
+  configuration-service:
+    build:
+      context: ./form-engine-backend/configuration-service
+      dockerfile: Dockerfile
+      args:
+        - SERVER_PORT=${CONFIGURATION_SERVICE_CONTAINER_PORT}
+    ports:
+      - "${CONFIGURATION_SERVICE_HOST_PORT}:${CONFIGURATION_SERVICE_CONTAINER_PORT}"
+    env_file:
+      - ./form-engine-backend/env-docker/configuration-service.env
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:${CONFIGURATION_SERVICE_CONTAINER_PORT}/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 1m
+    develop:
+      watch:
+        - action: rebuild
+          path: ./form-engine-backend/docker-compose.watch
+  service-registry:
+    build:
+      context: ./form-engine-backend/service-registry
+      dockerfile: Dockerfile
+      args:
+        - SERVER_PORT=${SERVICE_REGISTRY_CONTAINER_PORT}
+    ports:
+      - "${SERVICE_REGISTRY_HOST_PORT}:${SERVICE_REGISTRY_CONTAINER_PORT}"
+    env_file:
+      - ./form-engine-backend/env-docker/service-registry.env
+    depends_on:
+      configuration-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:${SERVICE_REGISTRY_CONTAINER_PORT}/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 1m
+    develop:
+      watch:
+        - action: rebuild
+          path: ./form-engine-backend/docker-compose.watch
+  redis:
+    image: redis/redis-stack:latest
+    ports:
+      - "${REDIS_SERVER_HOST_PORT}:${REDIS_SERVER_CONTAINER_PORT}"
+      - "${REDIS_INSIGHT_HOST_PORT}:${REDIS_INSIGHT_CONTAINER_PORT}"
+    env_file:
+      - ./redis.env
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+  # admin-service:
+  #   build:
+  #     context: ./form-engine-backend/admin-service
+  #     dockerfile: Dockerfile
+  #     args:
+  #       - SERVER_PORT=${ADMIN_SERVICE_CONTAINER_PORT}
+  #   ports:
+  #     - "${ADMIN_SERVICE_HOST_PORT}:${ADMIN_SERVICE_CONTAINER_PORT}"
+  #   env_file:
+  #     - ./form-engine-backend/env-docker/admin-service.env
+  #   depends_on:
+  #     configuration-service:
+  #       condition: service_healthy
+  #     service-registry:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test: ["CMD", "curl", "http://localhost:${ADMIN_SERVICE_CONTAINER_PORT}/actuator/health"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
+  #     start_period: 1m
+  #   develop:
+  #     watch:
+  #       - action: rebuild
+  #         path: ./form-engine-backend/docker-compose.watch
+  auth-service:
+    build:
+      context: ./form-engine-backend/auth-service
+      dockerfile: Dockerfile
+      args:
+        - SERVER_PORT=${AUTH_SERVICE_CONTAINER_PORT}
+    ports:
+      - "${AUTH_SERVICE_HOST_PORT}:${AUTH_SERVICE_CONTAINER_PORT}"
+    env_file:
+      - ./form-engine-backend/env-docker/auth-service.env
+    depends_on:
+      configuration-service:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:${AUTH_SERVICE_CONTAINER_PORT}/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 1m
+    develop:
+      watch:
+        - action: rebuild
+          path: ./form-engine-backend/docker-compose.watch
+  form-data-service:
+    build:
+      context: ./form-engine-backend/form-data-service
+      dockerfile: Dockerfile
+      args:
+        - SERVER_PORT=${FORM_DATA_SERVICE_CONTAINER_PORT}
+    ports:
+      - "${FORM_DATA_SERVICE_HOST_PORT}:${FORM_DATA_SERVICE_CONTAINER_PORT}"
+    env_file:
+      - ./form-engine-backend/env-docker/form-data-service.env
+    depends_on:
+      configuration-service:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:${FORM_DATA_SERVICE_CONTAINER_PORT}/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 1m
+    develop:
+      watch:
+        - action: rebuild
+          path: ./form-engine-backend/docker-compose.watch
+  form-response-service:
+    build:
+      context: ./form-engine-backend/form-response-service
+      dockerfile: Dockerfile
+      args:
+        - SERVER_PORT=${FORM_RESPONSE_SERVICE_CONTAINER_PORT}
+    ports:
+      - "${FORM_RESPONSE_SERVICE_HOST_PORT}:${FORM_RESPONSE_SERVICE_CONTAINER_PORT}"
+    env_file:
+      - ./form-engine-backend/env-docker/form-response-service.env
+    depends_on:
+      configuration-service:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:${FORM_RESPONSE_SERVICE_CONTAINER_PORT}/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 1m
+    develop:
+      watch:
+        - action: rebuild
+          path: ./form-engine-backend/docker-compose.watch
+  form-service:
+    build:
+      context: ./form-engine-backend/form-service
+      dockerfile: Dockerfile
+      args:
+        - SERVER_PORT=${FORM_SERVICE_CONTAINER_PORT}
+    ports:
+      - "${FORM_SERVICE_HOST_PORT}:${FORM_SERVICE_CONTAINER_PORT}"
+    env_file:
+      - ./form-engine-backend/env-docker/form-service.env
+    depends_on:
+      configuration-service:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:${FORM_SERVICE_CONTAINER_PORT}/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 1m
+    develop:
+      watch:
+        - action: rebuild
+          path: ./form-engine-backend/docker-compose.watch
+  client:
+    build:
+      context: ./form-engine-frontend
+      dockerfile: Dockerfile
+      args:
+        - CLIENT_PORT=${CLIENT_CONTAINER_PORT}
+    ports:
+      - "${CLIENT_HOST_PORT}:${CLIENT_CONTAINER_PORT}"
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      form-data-service:
+        condition: service_healthy
+      form-response-service:
+        condition: service_healthy
+      form-service:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./form-engine-frontend
+          target: /app
+        - action: rebuild
+          path: ./form-engine-frontend/package.json

@@ -1,11 +1,11 @@
 package com.sougata.form_data_service.formValidation.service.questionSchemaManager;
 
-import com.sougata.form_data_service.constant.QuestionType;
-import com.sougata.form_data_service.dto.question.request.CheckboxResponsePutReqDto;
-import com.sougata.form_data_service.dto.question.response.CheckboxDetailsDto;
+import com.sougata.form_engine.dto.question.details.CheckboxDetailsDto;
 import com.sougata.form_data_service.formValidation.exception.ResponseValidationException;
 import com.sougata.form_data_service.formValidation.responseValidator.ResponseValidatorFactory;
 import com.sougata.form_data_service.formValidation.service.QuestionSchemaManager;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.responseRequest.CheckboxResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +24,7 @@ public class CheckboxSchemaManager extends QuestionSchemaManager<CheckboxDetails
 
     @Override
     public boolean validateResponse(CheckboxResponsePutReqDto validationDto, CheckboxDetailsDto cb) {
-        var optionIdSet = new HashSet<>(cb.getOptions().stream().map(CheckboxDetailsDto.CheckboxOptionResDto::id).toList());
+        var optionIdSet = new HashSet<>(cb.getOptions().stream().map(CheckboxDetailsDto.Option::getId).toList());
         var invalidResponseOptionIds = new ArrayList<Long>();
 
         validationDto.getResponseOptionIds().forEach(id -> {

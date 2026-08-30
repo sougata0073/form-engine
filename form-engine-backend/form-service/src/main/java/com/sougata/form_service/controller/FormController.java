@@ -1,14 +1,14 @@
 package com.sougata.form_service.controller;
 
-import com.sougata.form_service.constant.cacheNames.FormCacheNames;
-import com.sougata.form_service.constant.cacheNames.QuestionCacheNames;
-import com.sougata.form_service.dto.common.SuccessMessageDto;
-import com.sougata.form_service.dto.form.*;
-import com.sougata.form_service.dto.question.QuestionSummariesDto;
-import com.sougata.form_service.dto.question.QuestionSummaryDto;
-import com.sougata.form_service.dto.question.request.QuestionOrderUpdateReqDto;
-import com.sougata.form_service.dto.question.request.QuestionPutReqDto;
-import com.sougata.form_service.dto.question.response.QuestionDetails;
+import com.sougata.form_engine.constant.cache.FormCacheNames;
+import com.sougata.form_engine.constant.cache.QuestionCacheNames;
+import com.sougata.form_engine.dto.form.*;
+import com.sougata.form_engine.dto.others.SuccessMessageDto;
+import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
+import com.sougata.form_engine.dto.question.schemaRequest.QuestionOrderUpdateReqDto;
+import com.sougata.form_engine.dto.question.schemaRequest.QuestionPutReqDto;
+import com.sougata.form_engine.dto.question.summary.QuestionSummariesDto;
+import com.sougata.form_engine.dto.question.summary.QuestionSummaryDto;
 import com.sougata.form_service.service.formSchema.FormService;
 import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.QuestionService;
@@ -131,7 +131,7 @@ public class FormController {
 
     @GetMapping(path = "{formId}/questions/{questionId}")
     @Cacheable(cacheNames = {QuestionCacheNames.QUESTION_DETAILS}, key = "#questionId")
-    public QuestionDetails getQuestion(
+    public QuestionDetailsDto getQuestion(
             @PathVariable("formId") UUID formId,
             @PathVariable("questionId") Long questionId
     ) {
@@ -139,7 +139,7 @@ public class FormController {
     }
 
     @PostMapping(path = "{formId}/questions")
-    public ResponseEntity<QuestionDetails> addQuestion(
+    public ResponseEntity<QuestionDetailsDto> addQuestion(
             @PathVariable("formId") UUID formId,
             @Valid @RequestBody QuestionPutReqDto body
     ) {
@@ -148,7 +148,7 @@ public class FormController {
     }
 
     @PutMapping(path = "{formId}/questions/{questionId}")
-    public QuestionDetails updateQuestion(
+    public QuestionDetailsDto updateQuestion(
             @PathVariable("formId") UUID formId,
             @PathVariable("questionId") Long questionId,
             @Valid @RequestBody QuestionPutReqDto body

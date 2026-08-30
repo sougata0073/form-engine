@@ -1,6 +1,6 @@
 package com.sougata.form_service.repository.template;
 
-import com.sougata.form_service.dto.template.TemplateSummaryDto;
+import com.sougata.form_engine.dto.template.TemplateSummaryDto;
 import com.sougata.form_service.model.template.RecentlyUsedTemplate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -16,7 +16,7 @@ public interface RecentlyUsedTemplateRepository extends JpaRepository<RecentlyUs
 
     @Query("""
             select
-            new com.sougata.form_service.dto.template.TemplateSummaryDto(
+            new com.sougata.form_engine.dto.template.TemplateSummaryDto(
                 t.id,
                 t.name,
                 'Recently used'

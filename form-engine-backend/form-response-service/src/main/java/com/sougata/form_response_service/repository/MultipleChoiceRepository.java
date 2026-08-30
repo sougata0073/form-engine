@@ -33,10 +33,11 @@ public interface MultipleChoiceRepository extends AnyTypeQuestionResponseReposit
             and qr.question_id = :questionId
             left join multiple_choices mc
             on qr.id = mc.question_response_id
+            where fr.form_id = :formId
             group by mc.response_option_id
             order by responseCount desc, mc.response_option_id asc
             """, nativeQuery = true)
-    List<Tuple> groupedByResponseOption(long questionId, Pageable pageable);
+    List<Tuple> groupedByResponseOption(UUID formId, long questionId, Pageable pageable);
 
     @Query("""
             select
@@ -57,11 +58,11 @@ public interface MultipleChoiceRepository extends AnyTypeQuestionResponseReposit
             and qr.question_id = :questionId
             left join multiple_choices mc
             on qr.id = mc.question_response_id
-            where (
+            where fr.form_id = :formId and (
                 (:response is null and mc.response_option_id is null)
                 or mc.response_option_id = :response
             )
             order by fr.created_at, fr.id
             """, nativeQuery = true)
-    List<Tuple> getResponseIdsByGroupedResponse(long questionId, Long response, Pageable pageable);
+    List<Tuple> getResponseIdsByGroupedResponse(UUID formId, long questionId, Long response, Pageable pageable);
 }

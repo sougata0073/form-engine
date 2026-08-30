@@ -1,9 +1,8 @@
 package com.sougata.form_service.service.formSchema.impl;
 
 import com.sougata.form_engine.constant.cache.FormCacheNames;
-import com.sougata.form_service.configuration.AppConfiguration;
-import com.sougata.form_service.dto.form.FormDetailsDto;
-import com.sougata.form_service.dto.question.response.QuestionDetails;
+import com.sougata.form_engine.dto.form.FormDetailsDto;
+import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
 import com.sougata.form_service.exception.FormNotFoundException;
 import com.sougata.form_service.model.formSchema.Form;
 import com.sougata.form_service.model.formSchema.Question;
@@ -14,9 +13,7 @@ import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.questionManager.QuestionManagerFactory;
 import com.sougata.form_service.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -79,7 +76,7 @@ public class FormServiceCachedImpl implements FormServiceCached {
 
         Form f = formRepository.findById(formId).orElseThrow(() -> new FormNotFoundException(formId));
 
-        List<QuestionDetails> questionResponses = new ArrayList<>();
+        List<QuestionDetailsDto> questionResponses = new ArrayList<>();
 
         var questions = questionRepository.findAllByFormId(formId);
         var questionIdMap = questions.stream().collect(Collectors.toMap(
@@ -105,7 +102,7 @@ public class FormServiceCachedImpl implements FormServiceCached {
             questionResponses.addAll(qResList);
         });
 
-        questionResponses.sort(Comparator.comparingInt(QuestionDetails::getOrderIndex));
+        questionResponses.sort(Comparator.comparingInt(QuestionDetailsDto::getOrderIndex));
 
         var formDetails = new FormDetailsDto(
                 f.getId(),

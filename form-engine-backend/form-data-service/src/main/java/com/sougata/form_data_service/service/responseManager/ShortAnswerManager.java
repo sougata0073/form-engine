@@ -1,11 +1,11 @@
 package com.sougata.form_data_service.service.responseManager;
 
-import com.sougata.form_data_service.constant.QuestionType;
-import com.sougata.form_data_service.dto.question.request.ShortAnswerResponsePutReqDto;
 import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.model.ShortAnswer;
 import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_data_service.repository.ShortAnswerRepository;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.responseRequest.ShortAnswerResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,9 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service("SHORT_ANSWER_RESPONSE_MANAGER")
-public class ShortAnswerManager extends ResponseManager<
-        ShortAnswerResponsePutReqDto
-        > {
+public class ShortAnswerManager extends ResponseManager<ShortAnswerResponsePutReqDto> {
 
     private final ShortAnswerRepository shortAnswerRepository;
 

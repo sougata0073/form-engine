@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository("FILE_UPLOAD_RESPONSE_REPOSITORY")
 public interface FileUploadRepository extends AnyTypeQuestionResponseRepository<FileUpload, Long> {
@@ -35,10 +36,11 @@ public interface FileUploadRepository extends AnyTypeQuestionResponseRepository<
             and qr.question_id = :questionId
             left join file_uploads f
             on qr.id = f.question_response_id
+            where fr.form_id = :formId
             group by f.file_name, f.file_url, f.file_mime_type
             order by responseCount desc, f.file_name asc, f.file_url asc, f.file_mime_type asc
             """, nativeQuery = true)
-    List<Tuple> groupedByFile(long questionId, Pageable pageable);
+    List<Tuple> groupedByFile(UUID formId, long questionId, Pageable pageable);
 
     @Query("""
             select
@@ -61,7 +63,7 @@ public interface FileUploadRepository extends AnyTypeQuestionResponseRepository<
             and qr.question_id = :questionId
             left join file_uploads f
             on qr.id = f.question_response_id
-            where (
+            where fr.form_id = :formId and (
                 (:fileName is null and f.file_name is null)
                 or f.file_name = :fileName
             ) and (
@@ -73,6 +75,6 @@ public interface FileUploadRepository extends AnyTypeQuestionResponseRepository<
             )
             order by fr.created_at, fr.id
             """, nativeQuery = true)
-    List<Tuple> getResponseIdsByGroupedResponse(long questionId, String fileName, String fileUrl, String fileMimeType, Pageable pageable);
+    List<Tuple> getResponseIdsByGroupedResponse(UUID formId, long questionId, String fileName, String fileUrl, String fileMimeType, Pageable pageable);
 
 }

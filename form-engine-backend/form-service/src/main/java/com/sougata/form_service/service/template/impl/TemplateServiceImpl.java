@@ -1,8 +1,8 @@
 package com.sougata.form_service.service.template.impl;
 
-import com.sougata.form_service.dto.template.TemplateSummariesDto;
-import com.sougata.form_service.dto.template.TemplateSummaryDto;
-import com.sougata.form_service.dto.template.TemplateToFormBuildResDto;
+import com.sougata.form_engine.dto.template.TemplateSummariesDto;
+import com.sougata.form_engine.dto.template.TemplateSummaryDto;
+import com.sougata.form_engine.dto.template.TemplateToFormBuildResDto;
 import com.sougata.form_service.exception.TemplateNotFoundException;
 import com.sougata.form_service.model.template.RecentlyUsedTemplate;
 import com.sougata.form_service.repository.template.RecentlyUsedTemplateRepository;

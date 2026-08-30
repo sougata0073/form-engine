@@ -1,11 +1,11 @@
 package com.sougata.form_data_service.service.responseManager;
 
-import com.sougata.form_data_service.constant.QuestionType;
-import com.sougata.form_data_service.dto.question.request.RatingResponsePutReqDto;
 import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.model.Rating;
 import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_data_service.repository.RatingRepository;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.responseRequest.RatingResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,9 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service("RATING_RESPONSE_MANAGER")
-public class RatingManager extends ResponseManager<
-        RatingResponsePutReqDto
-        > {
+public class RatingManager extends ResponseManager<RatingResponsePutReqDto> {
 
     private final RatingRepository ratingRepository;
 

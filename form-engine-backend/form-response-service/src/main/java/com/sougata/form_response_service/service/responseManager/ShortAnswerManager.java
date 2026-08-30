@@ -90,7 +90,7 @@ public class ShortAnswerManager extends ResponseManager<
     @Override
     public ShortAnswerResponseQuestionDto getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
 
-        var grouped = shortAnswerRepository.groupedByText(questionId, pageable);
+        var grouped = shortAnswerRepository.groupedByText(formId, questionId, pageable);
 
         var sa = new ShortAnswerResponseQuestionDto();
 
@@ -148,7 +148,7 @@ public class ShortAnswerManager extends ResponseManager<
 
         var groupedResponse = text.getFirst();
 
-        return shortAnswerRepository.getResponseIdsByGroupedResponse(questionId, groupedResponse, pageable);
+        return shortAnswerRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
     }
 
     @Override

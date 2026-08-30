@@ -97,7 +97,7 @@ public class FileUploadManager extends ResponseManager<
 
     @Override
     public FileUploadResponseQuestionDto getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
-        var grouped = fileUploadRepository.groupedByFile(questionId, pageable);
+        var grouped = fileUploadRepository.groupedByFile(formId, questionId, pageable);
 
         var fu = new FileUploadResponseQuestionDto();
 
@@ -167,7 +167,7 @@ public class FileUploadManager extends ResponseManager<
         var fUrl = fileUrl.getFirst();
         var fMimeType = fileMimeType.getFirst();
 
-        return fileUploadRepository.getResponseIdsByGroupedResponse(questionId, fName, fUrl, fMimeType, pageable);
+        return fileUploadRepository.getResponseIdsByGroupedResponse(formId, questionId, fName, fUrl, fMimeType, pageable);
     }
 
     @Override

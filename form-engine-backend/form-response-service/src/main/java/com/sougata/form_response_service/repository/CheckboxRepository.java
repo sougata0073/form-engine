@@ -77,6 +77,7 @@ public interface CheckboxRepository extends AnyTypeQuestionResponseRepository<Ch
               and qr.question_id = :questionId
               left join checkboxes c on qr.id = c.question_response_id
               left join checkbox_options co on co.checkbox_id = c.question_response_id
+            where fr.form_id = :formId
             group by
               fr.id
             having
@@ -92,5 +93,5 @@ public interface CheckboxRepository extends AnyTypeQuestionResponseRepository<Ch
               fr.created_at,
               fr.id
             """, nativeQuery = true)
-    List<Tuple> getResponseIdsByGroupedResponse(long questionId, Long[] response, Pageable pageable);
+    List<Tuple> getResponseIdsByGroupedResponse(UUID formId, long questionId, Long[] response, Pageable pageable);
 }

@@ -106,7 +106,7 @@ public class DropdownManager extends ResponseManager<
 
     @Override
     public DropdownResponseQuestionDto getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
-        var grouped = dropdownRepository.groupedByResponseOption(questionId, pageable);
+        var grouped = dropdownRepository.groupedByResponseOption(formId, questionId, pageable);
 
         var d = new DropdownResponseQuestionDto();
 
@@ -164,7 +164,7 @@ public class DropdownManager extends ResponseManager<
 
         var groupedResponse = optionId.getFirst() == null ? null : Long.parseLong(optionId.getFirst());
 
-        return dropdownRepository.getResponseIdsByGroupedResponse(questionId, groupedResponse, pageable);
+        return dropdownRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
     }
 
     @Override

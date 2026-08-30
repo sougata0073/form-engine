@@ -1,11 +1,11 @@
 package com.sougata.form_data_service.service.responseManager;
 
-import com.sougata.form_data_service.constant.QuestionType;
-import com.sougata.form_data_service.dto.question.request.MultipleChoiceResponsePutReqDto;
 import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.model.MultipleChoice;
 import com.sougata.form_data_service.repository.MultipleChoiceRepository;
 import com.sougata.form_data_service.repository.QuestionResponseRepository;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.responseRequest.MultipleChoiceResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,9 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service("MULTIPLE_CHOICE_RESPONSE_MANAGER")
-public class MultipleChoiceManager extends ResponseManager<
-        MultipleChoiceResponsePutReqDto
-        > {
+public class MultipleChoiceManager extends ResponseManager<MultipleChoiceResponsePutReqDto> {
 
     private final MultipleChoiceRepository multipleChoiceRepository;
 

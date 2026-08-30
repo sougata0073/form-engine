@@ -7,13 +7,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface FormResponseRepository extends JpaRepository<FormResponse, Long> {
-
-    Optional<FormResponse> findByFormIdAndId(UUID formId, Long id);
 
     @Query("""
             select

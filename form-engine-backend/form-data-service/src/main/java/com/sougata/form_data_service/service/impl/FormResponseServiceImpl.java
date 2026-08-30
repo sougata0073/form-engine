@@ -1,22 +1,20 @@
 package com.sougata.form_data_service.service.impl;
 
-import com.sougata.form_data_service.dto.common.SuccessMessageDto;
-import com.sougata.form_data_service.dto.form.FormResponsePutReqDto;
-import com.sougata.form_data_service.dto.form.FormResponsePutResDto;
-import com.sougata.form_data_service.dto.validation.ResponseValidationRequestDto;
+import com.sougata.form_engine.dto.others.SuccessMessageDto;
+import com.sougata.form_engine.dto.form.FormResponsePutResDto;
 import com.sougata.form_data_service.exception.FormSubmitException;
 import com.sougata.form_data_service.feignClient.FormServiceFeignClient;
 import com.sougata.form_data_service.formValidation.service.FormSchemaService;
 import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.repository.FormResponseRepository;
-import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_data_service.service.FormResponseService;
 import com.sougata.form_data_service.service.responseManager.ResponseManagerFactory;
-import com.sougata.form_engine.constant.MessagingChannelNames;
+import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
+import com.sougata.form_engine.dto.form.FormResponsePutReqDto;
 import com.sougata.form_engine.dto.messaging.FormResponseDeleteMessage;
 import com.sougata.form_engine.dto.messaging.FormResponseSavedMessage;
+import com.sougata.form_engine.dto.validation.request.ResponseValidationRequestDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +34,7 @@ public class FormResponseServiceImpl implements FormResponseService {
 
     @Override
     @Transactional
-    public FormResponsePutResDto saveResponse(UUID formId, FormResponsePutReqDto req, UUID userId) {
+    public FormResponsePutResDto saveResponse(UUID formId, FormResponsePutReqDto req, UUID responderId) {
 
         var formDetails = formServiceFeignClient.getFormDetails(formId);
 
@@ -62,7 +60,7 @@ public class FormResponseServiceImpl implements FormResponseService {
         var formResponse = new FormResponse();
 
         formResponse.setFormId(formId);
-        formResponse.setUserId(userId);
+        formResponse.setUserId(responderId);
 
         var savedFormResponse = formResponseRepository.save(formResponse);
 
@@ -73,18 +71,18 @@ public class FormResponseServiceImpl implements FormResponseService {
             responseManager.create(response, savedFormResponse);
         });
 
-        redisTemplate.convertAndSend(MessagingChannelNames.FORM_RESPONSE_SAVED, new FormResponseSavedMessage(formId));
+        redisTemplate.convertAndSend(MessagingChannelNames.FORM_RESPONSE_SAVED, new FormResponseSavedMessage(formId, responderId, req.getResponses()));
 
         return new FormResponsePutResDto(savedFormResponse.getId());
     }
 
     @Override
-    public SuccessMessageDto deleteFormResponse(UUID formId, UUID userId, Long formResponseId) {
+    public SuccessMessageDto deleteFormResponse(UUID formId, UUID responderId, Long formResponseId) {
         formResponseRepository.deleteByFormResponseId(formResponseId);
 
         redisTemplate.convertAndSend(
                 MessagingChannelNames.FORM_RESPONSE_DELETED,
-                new FormResponseDeleteMessage(formId, formResponseId, userId)
+                new FormResponseDeleteMessage(formId, formResponseId, responderId)
         );
 
         return SuccessMessageDto.create("Response deleted successfully. Form id: " + formId + " Form response ID: " + formResponseId);

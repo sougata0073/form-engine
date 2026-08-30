@@ -1,10 +1,10 @@
 package com.sougata.form_data_service.formValidation.service.questionSchemaManager;
 
-import com.sougata.form_data_service.constant.QuestionType;
-import com.sougata.form_data_service.dto.question.request.MultipleChoiceGridResponsePutReqDto;
-import com.sougata.form_data_service.dto.question.response.MultipleChoiceGridDetailsDto;
 import com.sougata.form_data_service.formValidation.exception.ResponseValidationException;
 import com.sougata.form_data_service.formValidation.service.QuestionSchemaManager;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.details.MultipleChoiceGridDetailsDto;
+import com.sougata.form_engine.dto.question.responseRequest.MultipleChoiceGridResponsePutReqDto;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -37,8 +37,8 @@ public class MultipleChoiceGridSchemaManager extends QuestionSchemaManager<Multi
             );
         }
 
-        var rowSet = new HashSet<>(mcg.getRows().stream().map(MultipleChoiceGridDetailsDto.MultipleChoiceGridRowResDto::id).toList());
-        var columnSet = new HashSet<>(mcg.getColumns().stream().map(MultipleChoiceGridDetailsDto.MultipleChoiceGridColumnResDto::id).toList());
+        var rowSet = new HashSet<>(mcg.getRows().stream().map(MultipleChoiceGridDetailsDto.Row::getId).toList());
+        var columnSet = new HashSet<>(mcg.getColumns().stream().map(MultipleChoiceGridDetailsDto.Column::getId).toList());
         var invalidRows = new ArrayList<Long>();
         var invalidColumns = new HashMap<Long, ArrayList<Long>>();
 

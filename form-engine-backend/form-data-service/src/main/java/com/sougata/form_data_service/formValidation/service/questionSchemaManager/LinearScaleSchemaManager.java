@@ -1,11 +1,11 @@
 package com.sougata.form_data_service.formValidation.service.questionSchemaManager;
 
 import com.sougata.form_data_service.constant.ExceptionMessages;
-import com.sougata.form_data_service.constant.QuestionType;
-import com.sougata.form_data_service.dto.question.request.LinearScaleResponsePutReqDto;
-import com.sougata.form_data_service.dto.question.response.LinearScaleDetailsDto;
 import com.sougata.form_data_service.formValidation.exception.ResponseValidationException;
 import com.sougata.form_data_service.formValidation.service.QuestionSchemaManager;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.details.LinearScaleDetailsDto;
+import com.sougata.form_engine.dto.question.responseRequest.LinearScaleResponsePutReqDto;
 import org.springframework.stereotype.Service;
 
 @Service("LINEAR_SCALE_QUESTION_SCHEMA_MANAGER")

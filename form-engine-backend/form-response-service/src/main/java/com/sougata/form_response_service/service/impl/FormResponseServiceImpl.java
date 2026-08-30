@@ -15,8 +15,8 @@ import com.sougata.form_engine.dto.user.UserSummaryShortDto;
 import com.sougata.form_response_service.configuration.AppConfiguration;
 import com.sougata.form_response_service.feignClient.AuthServiceFeignClient;
 import com.sougata.form_response_service.feignClient.FormServiceFeignClient;
-import com.sougata.form_response_service.model.QuestionResponse;
 import com.sougata.form_response_service.repository.FormResponseRepository;
+import com.sougata.form_response_service.repository.QuestionResponseRepository;
 import com.sougata.form_response_service.service.FormResponseService;
 import com.sougata.form_response_service.service.responseManager.ResponseManagerFactory;
 import com.sougata.form_response_service.util.CacheUtil;
@@ -38,6 +38,7 @@ public class FormResponseServiceImpl implements FormResponseService {
     private final FormServiceFeignClient formServiceFeignClient;
     private final AuthServiceFeignClient authServiceFeignClient;
     private final ResponseManagerFactory responseManagerFactory;
+    private final QuestionResponseRepository questionResponseRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final AppConfiguration appConfiguration;
 
@@ -156,11 +157,11 @@ public class FormResponseServiceImpl implements FormResponseService {
         var formResponse = formResponseRepository.findById(formResponseId)
                 .orElseThrow(() -> new IllegalArgumentException("Form response not found with ID: " + formResponseId));
 
-        var questionTypeMap = formResponse.getQuestionResponses().stream().collect(Collectors.groupingBy(QuestionResponse::getQuestionType));
+        var formResponseQuestionTypes = questionResponseRepository.findDistinctQuestionTypesByFormResponseId(formResponseId);
 
         var result = new ArrayList<ResponseIndividualDto>();
 
-        questionTypeMap.keySet().forEach(qType -> {
+        formResponseQuestionTypes.forEach(qType -> {
             var manager = responseManagerFactory.get(qType);
 
             var indiResponses = manager.getIndividualResponses(formId, formResponseId);

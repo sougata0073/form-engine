@@ -1,9 +1,9 @@
 package com.sougata.form_service.service.formSchema;
 
-import com.sougata.form_service.constant.QuestionType;
-import com.sougata.form_service.dto.question.request.QuestionPutReqDto;
-import com.sougata.form_service.dto.question.response.QuestionDetails;
-import com.sougata.form_service.dto.template.questionTemplate.QuestionTemplateDetails;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
+import com.sougata.form_engine.dto.question.schemaRequest.QuestionPutReqDto;
+import com.sougata.form_engine.dto.template.questionTemplate.QuestionTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.AnyTypeQuestion;
 import com.sougata.form_service.model.formSchema.Form;
@@ -16,7 +16,7 @@ public abstract class
 QuestionManager<
         Q extends AnyTypeQuestion,
         QAUR extends QuestionPutReqDto,
-        QR extends QuestionDetails,
+        QR extends QuestionDetailsDto,
         QTD extends QuestionTemplateDetails
         > {
 

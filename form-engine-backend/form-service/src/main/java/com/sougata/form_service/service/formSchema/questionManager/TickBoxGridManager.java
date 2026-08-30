@@ -1,9 +1,9 @@
 package com.sougata.form_service.service.formSchema.questionManager;
 
-import com.sougata.form_service.constant.QuestionType;
-import com.sougata.form_service.dto.question.request.TickBoxGridPutReqDto;
-import com.sougata.form_service.dto.question.response.TickBoxGridDetailsDto;
-import com.sougata.form_service.dto.template.questionTemplate.TickBoxGridTemplateDetails;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.details.TickBoxGridDetailsDto;
+import com.sougata.form_engine.dto.question.schemaRequest.TickBoxGridPutReqDto;
+import com.sougata.form_engine.dto.template.questionTemplate.TickBoxGridTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.*;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;

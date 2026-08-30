@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Repository("DATE_RESPONSE_REPOSITORY")
 public interface DateRepository extends AnyTypeQuestionResponseRepository<Date, Long> {
@@ -16,7 +17,7 @@ public interface DateRepository extends AnyTypeQuestionResponseRepository<Date, 
             select
             x.year as year,
             x.month as month,
-            array_agg(to_char(x.date, 'YYYY-MM-DD"T"HH24:MI:SSOF') order by x.date) dates,
+            array_agg(to_char(x.date, 'YYYY-MM-DD"T"HH24:MI:SSTZH:TZM') order by x.date) dates,
             array_agg(x.dateCount order by x.date) dateCounts
             from (
                 select
@@ -47,10 +48,11 @@ public interface DateRepository extends AnyTypeQuestionResponseRepository<Date, 
             and qr.question_id = :questionId
             left join dates d
             on qr.id = d.question_response_id
+            where fr.form_id = :formId
             group by d.date
             order by responseCount desc, d.date asc
             """, nativeQuery = true)
-    List<Tuple> groupedByDate(long questionId, Pageable pageable);
+    List<Tuple> groupedByDate(UUID formId, long questionId, Pageable pageable);
 
     @Query("""
             select
@@ -71,11 +73,11 @@ public interface DateRepository extends AnyTypeQuestionResponseRepository<Date, 
             and qr.question_id = :questionId
             left join dates d
             on qr.id = d.question_response_id
-            where (
+            where fr.form_id = :formId and (
                 (cast(:response as timestamp with time zone) is null and d.date is null)
                 or d.date = :response
             )
             order by fr.created_at, fr.id
             """, nativeQuery = true)
-    List<Tuple> getResponseIdsByGroupedResponse(long questionId, Instant response, Pageable pageable);
+    List<Tuple> getResponseIdsByGroupedResponse(UUID formId, long questionId, Instant response, Pageable pageable);
 }

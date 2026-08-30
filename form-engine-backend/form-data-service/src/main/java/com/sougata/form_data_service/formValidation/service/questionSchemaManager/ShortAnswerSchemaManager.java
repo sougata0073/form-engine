@@ -1,10 +1,10 @@
 package com.sougata.form_data_service.formValidation.service.questionSchemaManager;
 
-import com.sougata.form_data_service.constant.QuestionType;
-import com.sougata.form_data_service.dto.question.request.ShortAnswerResponsePutReqDto;
-import com.sougata.form_data_service.dto.question.response.ShortAnswerDetailsDto;
 import com.sougata.form_data_service.formValidation.responseValidator.ResponseValidatorFactory;
 import com.sougata.form_data_service.formValidation.service.QuestionSchemaManager;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.details.ShortAnswerDetailsDto;
+import com.sougata.form_engine.dto.question.responseRequest.ShortAnswerResponsePutReqDto;
 import org.springframework.stereotype.Service;
 
 @Service("SHORT_ANSWER_QUESTION_SCHEMA_MANAGER")

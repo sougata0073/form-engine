@@ -1,8 +1,8 @@
 package com.sougata.form_service.service.template.questionTemplateManager;
 
-import com.sougata.form_service.constant.QuestionType;
-import com.sougata.form_service.dto.question.response.FileTypeDetails;
-import com.sougata.form_service.dto.template.questionTemplate.FileUploadTemplateDetails;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.others.FileTypeDetails;
+import com.sougata.form_engine.dto.template.questionTemplate.FileUploadTemplateDetails;
 import com.sougata.form_service.model.template.FileUploadTemplate;
 import com.sougata.form_service.service.template.QuestionTemplateManager;
 import org.springframework.stereotype.Service;

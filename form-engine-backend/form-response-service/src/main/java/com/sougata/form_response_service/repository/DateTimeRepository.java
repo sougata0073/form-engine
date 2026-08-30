@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Repository("DATE_TIME_RESPONSE_REPOSITORY")
 public interface DateTimeRepository extends AnyTypeQuestionResponseRepository<DateTime, Long> {
@@ -38,10 +39,11 @@ public interface DateTimeRepository extends AnyTypeQuestionResponseRepository<Da
             and qr.question_id = :questionId
             left join date_times dt
             on qr.id = dt.question_response_id
+            where fr.form_id = :formId
             group by dt.date_time
             order by responseCount desc, dt.date_time asc
             """, nativeQuery = true)
-    List<Tuple> groupedByDateTimes(long questionId, Pageable pageable);
+    List<Tuple> groupedByDateTimes(UUID formId, long questionId, Pageable pageable);
 
     @Query("""
             select
@@ -62,11 +64,11 @@ public interface DateTimeRepository extends AnyTypeQuestionResponseRepository<Da
             and qr.question_id = :questionId
             left join date_times dt
             on qr.id = dt.question_response_id
-            where (
+            where fr.form_id = :formId and (
                 (cast(:response as timestamp with time zone) is null and dt.date_time is null)
                 or dt.date_time = :response
             )
             order by fr.created_at, fr.id
             """, nativeQuery = true)
-    List<Tuple> getResponseIdsByGroupedResponse(long questionId, Instant response, Pageable pageable);
+    List<Tuple> getResponseIdsByGroupedResponse(UUID formId, long questionId, Instant response, Pageable pageable);
 }

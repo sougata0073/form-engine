@@ -2,7 +2,6 @@ package com.sougata.form_response_service.configuration;
 
 import com.sougata.form_engine.constant.cache.CommonCacheNames;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;

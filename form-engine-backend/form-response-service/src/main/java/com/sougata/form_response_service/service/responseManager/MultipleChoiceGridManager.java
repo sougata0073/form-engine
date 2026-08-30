@@ -141,6 +141,7 @@ public class MultipleChoiceGridManager extends ResponseManager<
         }
 
         var grouped = multipleChoiceGridRepository.groupedByResponseRowColumn(
+                formId,
                 questionId,
                 rowId,
                 pageable
@@ -218,7 +219,7 @@ public class MultipleChoiceGridManager extends ResponseManager<
         var rowIdResponse = rowId.getFirst() == null ? null :  Long.parseLong(rowId.getFirst());
         var columnIdResponse = columnId.getFirst() == null ? null : Long.parseLong(columnId.getFirst());
 
-        return multipleChoiceGridRepository.getResponseIdsByGroupedResponse(questionId, rowIdResponse, columnIdResponse, pageable);
+        return multipleChoiceGridRepository.getResponseIdsByGroupedResponse(formId, questionId, rowIdResponse, columnIdResponse, pageable);
     }
 
     @Override

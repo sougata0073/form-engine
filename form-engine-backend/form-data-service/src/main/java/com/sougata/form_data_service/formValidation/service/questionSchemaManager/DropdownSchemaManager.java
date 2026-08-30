@@ -1,10 +1,10 @@
 package com.sougata.form_data_service.formValidation.service.questionSchemaManager;
 
-import com.sougata.form_data_service.constant.QuestionType;
-import com.sougata.form_data_service.dto.question.request.DropdownResponsePutReqDto;
-import com.sougata.form_data_service.dto.question.response.DropdownDetailsDto;
 import com.sougata.form_data_service.formValidation.exception.ResponseValidationException;
 import com.sougata.form_data_service.formValidation.service.QuestionSchemaManager;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.details.DropdownDetailsDto;
+import com.sougata.form_engine.dto.question.responseRequest.DropdownResponsePutReqDto;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -15,7 +15,7 @@ public class DropdownSchemaManager extends QuestionSchemaManager<DropdownDetails
     @Override
     public boolean validateResponse(DropdownResponsePutReqDto validationDto, DropdownDetailsDto dd) {
         var present = dd.getOptions().stream()
-                .anyMatch(op -> Objects.equals(op.id(), validationDto.getResponseOptionId()));
+                .anyMatch(op -> Objects.equals(op.getId(), validationDto.getResponseOptionId()));
 
         if (!present) {
             throw new ResponseValidationException(

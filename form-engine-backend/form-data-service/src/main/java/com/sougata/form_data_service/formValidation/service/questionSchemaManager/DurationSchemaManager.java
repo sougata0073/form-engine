@@ -1,9 +1,9 @@
 package com.sougata.form_data_service.formValidation.service.questionSchemaManager;
 
-import com.sougata.form_data_service.constant.QuestionType;
-import com.sougata.form_data_service.dto.question.request.DurationResponsePutReqDto;
-import com.sougata.form_data_service.dto.question.response.DurationDetailsDto;
 import com.sougata.form_data_service.formValidation.service.QuestionSchemaManager;
+import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.details.DurationDetailsDto;
+import com.sougata.form_engine.dto.question.responseRequest.DurationResponsePutReqDto;
 import org.springframework.stereotype.Service;
 
 @Service("DURATION_QUESTION_SCHEMA_MANAGER")
