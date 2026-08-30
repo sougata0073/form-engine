@@ -6,7 +6,7 @@ import com.sougata.form_data_service.formValidation.service.QuestionSchemaManage
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.others.FileTypeDetails;
 import com.sougata.form_engine.dto.question.details.FileUploadDetailsDto;
-import com.sougata.form_engine.dto.question.responseRequest.FileUploadResponsePutReqDto;
+import com.sougata.form_engine.dto.question.responseputrequest.FileUploadResponsePutReqDto;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -5,7 +5,7 @@ import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.repository.DurationRepository;
 import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_engine.constant.QuestionType;
-import com.sougata.form_engine.dto.question.responseRequest.DurationResponsePutReqDto;
+import com.sougata.form_engine.dto.question.responseputrequest.DurationResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

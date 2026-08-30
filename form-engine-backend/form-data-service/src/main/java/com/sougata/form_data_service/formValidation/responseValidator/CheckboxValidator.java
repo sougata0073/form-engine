@@ -2,7 +2,7 @@ package com.sougata.form_data_service.formValidation.responseValidator;
 
 import com.sougata.form_data_service.constant.ExceptionMessages;
 import com.sougata.form_data_service.formValidation.exception.ResponseValidationException;
-import com.sougata.form_engine.dto.question.responseRequest.CheckboxResponsePutReqDto;
+import com.sougata.form_engine.dto.question.responseputrequest.CheckboxResponsePutReqDto;
 import com.sougata.form_engine.dto.validation.config.CheckboxValidationConfig;
 import com.sougata.form_engine.dto.validation.config.NoneValidationConfig;
 

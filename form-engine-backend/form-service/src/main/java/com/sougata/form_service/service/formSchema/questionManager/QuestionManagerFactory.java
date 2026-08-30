@@ -2,7 +2,7 @@ package com.sougata.form_service.service.formSchema.questionManager;
 
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
-import com.sougata.form_engine.dto.question.schemaRequest.QuestionPutReqDto;
+import com.sougata.form_engine.dto.question.schemaputrequest.QuestionPutReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.QuestionTemplateDetails;
 import com.sougata.form_service.exception.NoQuestionManagerFoundException;
 import com.sougata.form_service.model.formSchema.AnyTypeQuestion;

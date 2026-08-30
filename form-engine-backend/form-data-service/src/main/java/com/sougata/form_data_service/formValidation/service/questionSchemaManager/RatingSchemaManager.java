@@ -5,7 +5,7 @@ import com.sougata.form_data_service.formValidation.exception.ResponseValidation
 import com.sougata.form_data_service.formValidation.service.QuestionSchemaManager;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.RatingDetailsDto;
-import com.sougata.form_engine.dto.question.responseRequest.RatingResponsePutReqDto;
+import com.sougata.form_engine.dto.question.responseputrequest.RatingResponsePutReqDto;
 import org.springframework.stereotype.Service;
 
 @Service("RATING_QUESTION_SCHEMA_MANAGER")

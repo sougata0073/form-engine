@@ -5,7 +5,7 @@ import com.sougata.form_data_service.formValidation.exception.ResponseValidation
 import com.sougata.form_engine.dto.validation.config.NoneValidationConfig;
 import com.sougata.form_engine.dto.validation.config.ShortAnswerValidationConfig;
 import com.sougata.form_engine.util.StringUtil;
-import com.sougata.form_engine.dto.question.responseRequest.ShortAnswerResponsePutReqDto;
+import com.sougata.form_engine.dto.question.responseputrequest.ShortAnswerResponsePutReqDto;
 
 public class ShortAnswerValidator {
 

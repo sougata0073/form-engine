@@ -3,7 +3,7 @@ package com.sougata.form_service.service.formSchema.questionManager;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.ParagraphDetailsDto;
-import com.sougata.form_engine.dto.question.schemaRequest.ParagraphPutReqDto;
+import com.sougata.form_engine.dto.question.schemaputrequest.ParagraphPutReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.ParagraphTemplateDetails;
 import com.sougata.form_engine.dto.validation.config.ValidationConfig;
 import com.sougata.form_engine.util.JsonUtil;

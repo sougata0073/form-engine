@@ -2,7 +2,7 @@ package com.sougata.form_data_service.service.responseManager;
 
 import com.sougata.form_data_service.exception.NoResponseManagerFoundException;
 import com.sougata.form_engine.constant.QuestionType;
-import com.sougata.form_engine.dto.question.responseRequest.QuestionResponsePutReqDto;
+import com.sougata.form_engine.dto.question.responseputrequest.QuestionResponsePutReqDto;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;

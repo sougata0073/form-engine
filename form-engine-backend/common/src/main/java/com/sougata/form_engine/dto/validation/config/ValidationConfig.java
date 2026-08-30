@@ -20,11 +20,13 @@ import lombok.Setter;
         @JsonSubTypes.Type(value = CheckboxValidationConfig.SelectAtMost.class, name = "CHECKBOX_SELECT_AT_MOST"),
         @JsonSubTypes.Type(value = CheckboxValidationConfig.SelectExactly.class, name = "CHECKBOX_SELECT_EXACTLY"),
         @JsonSubTypes.Type(value = NoneValidationConfig.class, name = "CHECKBOX_NONE"),
+
         @JsonSubTypes.Type(value = ParagraphValidationConfig.MaxCharacterCount.class, name = "PARAGRAPH_LENGTH_MAX_CHARACTER_COUNT"),
         @JsonSubTypes.Type(value = ParagraphValidationConfig.MinCharacterCount.class, name = "PARAGRAPH_LENGTH_MIN_CHARACTER_COUNT"),
         @JsonSubTypes.Type(value = ParagraphValidationConfig.Matches.class, name = "PARAGRAPH_REGEX_MATCHES"),
         @JsonSubTypes.Type(value = ParagraphValidationConfig.DoesNotMatch.class, name = "PARAGRAPH_REGEX_DOES_NOT_MATCHES"),
         @JsonSubTypes.Type(value = NoneValidationConfig.class, name = "PARAGRAPH_NONE"),
+
         @JsonSubTypes.Type(value = ShortAnswerValidationConfig.Between.class, name = "SHORT_ANSWER_NUMBER_BETWEEN"),
         @JsonSubTypes.Type(value = ShortAnswerValidationConfig.EqualTo.class, name = "SHORT_ANSWER_NUMBER_EQUAL_TO"),
         @JsonSubTypes.Type(value = ShortAnswerValidationConfig.GreaterThan.class, name = "SHORT_ANSWER_NUMBER_GREATER_THAN"),

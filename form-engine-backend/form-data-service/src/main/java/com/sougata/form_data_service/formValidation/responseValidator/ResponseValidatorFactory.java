@@ -1,7 +1,7 @@
 package com.sougata.form_data_service.formValidation.responseValidator;
 
 import com.sougata.form_engine.constant.ValidationId;
-import com.sougata.form_engine.dto.question.responseRequest.QuestionResponsePutReqDto;
+import com.sougata.form_engine.dto.question.responseputrequest.QuestionResponsePutReqDto;
 import com.sougata.form_engine.dto.validation.config.ValidationConfig;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

@@ -4,7 +4,7 @@ import com.sougata.form_data_service.formValidation.exception.ResponseValidation
 import com.sougata.form_data_service.formValidation.service.QuestionSchemaManager;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.TickBoxGridDetailsDto;
-import com.sougata.form_engine.dto.question.responseRequest.TickBoxGridResponsePutReqDto;
+import com.sougata.form_engine.dto.question.responseputrequest.TickBoxGridResponsePutReqDto;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

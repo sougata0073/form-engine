@@ -4,7 +4,7 @@ import com.sougata.form_data_service.formValidation.exception.ResponseValidation
 import com.sougata.form_data_service.formValidation.service.QuestionSchemaManager;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.MultipleChoiceGridDetailsDto;
-import com.sougata.form_engine.dto.question.responseRequest.MultipleChoiceGridResponsePutReqDto;
+import com.sougata.form_engine.dto.question.responseputrequest.MultipleChoiceGridResponsePutReqDto;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

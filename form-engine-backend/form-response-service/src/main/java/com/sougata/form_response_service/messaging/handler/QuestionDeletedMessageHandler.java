@@ -1,14 +1,12 @@
 package com.sougata.form_response_service.messaging.handler;
 
+import com.sougata.form_engine.constant.cache.FormResponseCacheNames;
 import com.sougata.form_engine.constant.messaging.CommonMessagingNames;
 import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
-import com.sougata.form_engine.constant.cache.FormResponseCacheNames;
 import com.sougata.form_engine.dto.messaging.QuestionDeleteMessage;
 import com.sougata.form_response_service.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -23,24 +21,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class QuestionDeletedMessageHandler implements MessageListener {
 
-    private static final String CACHE_FORM_RESPONSE_SUMMARY_SHORT = "formResponseSummaryShort";
-    private static final String CACHE_RESPONSE_SUMMARIES = "responseSummaries";
-    private static final String CACHE_RESPONSE_BY_QUESTION = "responseByQuestion";
-    private static final String CACHE_FORM_RESPONSE_SUMMARIES = "formResponseSummaries";
-    private static final String CACHE_RESPONSE_SUMMARY = "responseSummary";
-    private static final String CACHE_INDIVIDUAL_FORM_RESPONSE = "individualFormResponse";
-    private static final String CACHE_INDIVIDUAL_FORM_RESPONSE_BY_PAGE = "individualFormResponseByPage";
-    private static final String CACHE_IS_RESPONSE_ALREADY_SUBMITTED = "isResponseAlreadySubmitted";
-
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
 
-    @Caching(evict = {
-            @CacheEvict(
-                    cacheNames = {CACHE_INDIVIDUAL_FORM_RESPONSE},
-                    allEntries = true
-            )
-    })
     @Override
     public void onMessage(Message message, byte @Nullable [] pattern) {
 

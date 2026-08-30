@@ -4,7 +4,7 @@ import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.model.QuestionResponse;
 import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_engine.constant.QuestionType;
-import com.sougata.form_engine.dto.question.responseRequest.QuestionResponsePutReqDto;
+import com.sougata.form_engine.dto.question.responseputrequest.QuestionResponsePutReqDto;
 
 import java.util.UUID;
 

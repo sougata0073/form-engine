@@ -3,7 +3,7 @@ package com.sougata.form_data_service.formValidation.service.questionSchemaManag
 import com.sougata.form_data_service.formValidation.service.QuestionSchemaManager;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
-import com.sougata.form_engine.dto.question.responseRequest.QuestionResponsePutReqDto;
+import com.sougata.form_engine.dto.question.responseputrequest.QuestionResponsePutReqDto;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;

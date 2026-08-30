@@ -2,7 +2,7 @@ package com.sougata.form_engine.util;
 
 import java.util.*;
 
-public class IdUtil {
+public final class IdUtil {
 
     private static final String partValueDelimiter = "\u001F";
     private static final String partsDelimiter = "\u001E";

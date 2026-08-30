@@ -43,6 +43,14 @@ spring:
       ssl:
         enabled: ${REDIS_SSL_ENABLED}
       timeout: ${REDIS_TIMEOUT}
+  cloud:
+    openfeign:
+      httpclient:
+        hc5:
+          enabled: true
+          max-connections: 200
+          max-connections-per-route: 50
+          connection-time-to-live: 900
 
 eureka:
   instance:

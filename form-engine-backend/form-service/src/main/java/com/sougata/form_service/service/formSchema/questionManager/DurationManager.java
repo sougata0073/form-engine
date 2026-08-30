@@ -2,7 +2,7 @@ package com.sougata.form_service.service.formSchema.questionManager;
 
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.DurationDetailsDto;
-import com.sougata.form_engine.dto.question.schemaRequest.DurationPutReqDto;
+import com.sougata.form_engine.dto.question.schemaputrequest.DurationPutReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.DurationTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.Duration;

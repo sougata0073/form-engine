@@ -5,7 +5,7 @@ import com.sougata.form_data_service.model.LinearScale;
 import com.sougata.form_data_service.repository.LinearScaleRepository;
 import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_engine.constant.QuestionType;
-import com.sougata.form_engine.dto.question.responseRequest.LinearScaleResponsePutReqDto;
+import com.sougata.form_engine.dto.question.responseputrequest.LinearScaleResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,9 +1,9 @@
 package com.sougata.form_data_service.controller;
 
-import com.sougata.form_engine.dto.others.SuccessMessageDto;
-import com.sougata.form_engine.dto.form.FormResponsePutResDto;
 import com.sougata.form_data_service.service.FormResponseService;
 import com.sougata.form_engine.dto.form.FormResponsePutReqDto;
+import com.sougata.form_engine.dto.form.FormResponsePutResDto;
+import com.sougata.form_engine.dto.others.SuccessMessageDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(path = "api/v1/forms")
+@RequestMapping("api/v1/forms")
 @CrossOrigin
 @RequiredArgsConstructor
 public class FormResponseController {

@@ -1,6 +1,6 @@
 package com.sougata.form_engine.util;
 
-public class JsonUtil {
+public final class JsonUtil {
 
     private static final com.fasterxml.jackson.databind.ObjectMapper oldMapper =
             new com.fasterxml.jackson.databind.ObjectMapper();

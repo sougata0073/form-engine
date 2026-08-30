@@ -2,7 +2,7 @@ package com.sougata.form_service.service.formSchema.questionManager;
 
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.MultipleChoiceGridDetailsDto;
-import com.sougata.form_engine.dto.question.schemaRequest.MultipleChoiceGridPutReqDto;
+import com.sougata.form_engine.dto.question.schemaputrequest.MultipleChoiceGridPutReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.MultipleChoiceGridTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.*;

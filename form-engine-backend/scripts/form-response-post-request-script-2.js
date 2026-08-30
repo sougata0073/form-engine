@@ -4,7 +4,15 @@
 
 const FORM_IDS = [
     "d962ea10-f3c8-4d69-81b0-6aaf8d35f736",
-    "b91cb39f-a944-4c89-b47d-43da924cef6f"
+    "b91cb39f-a944-4c89-b47d-43da924cef6f",
+    "f2f78c70-83bf-4127-822f-889d60bdd3a7",
+    "eab292f7-695d-4896-a0bf-08159731042f",
+    "d2a43247-04c6-4ee6-9c0b-6fa46452e657",
+    "956fc4a2-45ee-4ef3-988a-e5157fb16036",
+    "e1dde034-4055-4446-9e6a-46ebb6ce9470",
+    "a45aea97-5e39-4162-b1df-2e3dd49a2a68",
+    "574e74c2-3cd0-47ba-92c2-fb05ce85d057",
+    "0110bed7-7a54-4fa0-8681-31408f1b86c0"
 ];
 
 const VIEW_URL = "http://localhost:9092/api/v1/forms";
@@ -12,7 +20,7 @@ const RESPONSE_URL = "http://localhost:9093/api/v1/forms";
 
 
 // TOTAL number of response requests across ALL forms
-const NUMBER_OF_REQUESTS = 5000;
+const NUMBER_OF_REQUESTS = 10000;
 
 // Maximum requests PER FORM in each batch
 //
@@ -714,7 +722,7 @@ async function submitOneResponse(
         // ====================================================
 
         const postUrl =
-            `${RESPONSE_URL}/${formId}/response`;
+            `${RESPONSE_URL}/${formId}/responses`;
 
 
         const response =

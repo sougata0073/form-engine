@@ -55,31 +55,31 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-  # admin-service:
-  #   build:
-  #     context: ./form-engine-backend/admin-service
-  #     dockerfile: Dockerfile
-  #     args:
-  #       - SERVER_PORT=${ADMIN_SERVICE_CONTAINER_PORT}
-  #   ports:
-  #     - "${ADMIN_SERVICE_HOST_PORT}:${ADMIN_SERVICE_CONTAINER_PORT}"
-  #   env_file:
-  #     - ./form-engine-backend/env-docker/admin-service.env
-  #   depends_on:
-  #     configuration-service:
-  #       condition: service_healthy
-  #     service-registry:
-  #       condition: service_healthy
-  #   healthcheck:
-  #     test: ["CMD", "curl", "http://localhost:${ADMIN_SERVICE_CONTAINER_PORT}/actuator/health"]
-  #     interval: 5s
-  #     timeout: 5s
-  #     retries: 5
-  #     start_period: 1m
-  #   develop:
-  #     watch:
-  #       - action: rebuild
-  #         path: ./form-engine-backend/docker-compose.watch
+  admin-service:
+    build:
+      context: ./form-engine-backend/admin-service
+      dockerfile: Dockerfile
+      args:
+        - SERVER_PORT=${ADMIN_SERVICE_CONTAINER_PORT}
+    ports:
+      - "${ADMIN_SERVICE_HOST_PORT}:${ADMIN_SERVICE_CONTAINER_PORT}"
+    env_file:
+      - ./form-engine-backend/env-docker/admin-service.env
+    depends_on:
+      configuration-service:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:${ADMIN_SERVICE_CONTAINER_PORT}/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 1m
+    develop:
+      watch:
+        - action: rebuild
+          path: ./form-engine-backend/docker-compose.watch
   auth-service:
     build:
       context: ./form-engine-backend/auth-service

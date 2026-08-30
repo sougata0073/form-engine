@@ -4,7 +4,7 @@ import com.sougata.form_data_service.formValidation.responseValidator.ResponseVa
 import com.sougata.form_data_service.formValidation.service.QuestionSchemaManager;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.ShortAnswerDetailsDto;
-import com.sougata.form_engine.dto.question.responseRequest.ShortAnswerResponsePutReqDto;
+import com.sougata.form_engine.dto.question.responseputrequest.ShortAnswerResponsePutReqDto;
 import org.springframework.stereotype.Service;
 
 @Service("SHORT_ANSWER_QUESTION_SCHEMA_MANAGER")
