@@ -3,6 +3,7 @@ package com.sougata.form_service.service.formSchema.impl;
 import com.sougata.form_engine.constant.cache.FormCacheNames;
 import com.sougata.form_engine.dto.form.FormDetailsDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
+import com.sougata.form_service.configuration.AppConfiguration;
 import com.sougata.form_service.exception.FormNotFoundException;
 import com.sougata.form_service.model.formSchema.Form;
 import com.sougata.form_service.model.formSchema.Question;
@@ -19,6 +20,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -39,6 +41,7 @@ public class FormServiceCachedImpl implements FormServiceCached {
     private final QuestionRepository questionRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final Executor cacheLoaderExecutor;
+    private final AppConfiguration appConfiguration;
 
     @Autowired
     @Lazy
@@ -120,7 +123,7 @@ public class FormServiceCachedImpl implements FormServiceCached {
 
         var formDetailsCacheKey = CacheUtil.buildKey(FormCacheNames.FORM_DETAILS, formId);
 
-        redisTemplate.opsForValue().set(formDetailsCacheKey, formDetails);
+        redisTemplate.opsForValue().set(formDetailsCacheKey, formDetails, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
 
         return formDetails;
     }

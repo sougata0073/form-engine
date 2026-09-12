@@ -84,6 +84,15 @@ export class EditFormMultipleChoiceGrid extends EditFormQuestionComponent<Multip
   }
 
   protected removeRow(rowId: string) {
+    if (this.rows().length <= 1) {
+      this.dialog.open(
+        SimpleDialog, {
+          data: SimpleDialog.configure('Error', 'At least 1 row is required', 'Close')
+        }
+      )
+      return
+    }
+
     this.rows.update(val => {
         const newArray = val
           .filter(v => v.id !== rowId)
@@ -142,6 +151,18 @@ export class EditFormMultipleChoiceGrid extends EditFormQuestionComponent<Multip
   }
 
   protected removeColumn(columnId: string) {
+    if (this.columns().length <= 1) {
+      this.dialog.open(
+        SimpleDialog, {
+          data: SimpleDialog.configure(
+            'Error',
+            'At least 1 column is required',
+            'Close'
+          )
+        }
+      )
+      return
+    }
     this.columns.update(val => {
       return [...val.filter(v => v.id !== columnId)]
     })

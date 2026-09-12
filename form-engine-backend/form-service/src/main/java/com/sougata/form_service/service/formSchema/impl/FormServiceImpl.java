@@ -10,7 +10,6 @@ import com.sougata.form_service.configuration.AppConfiguration;
 import com.sougata.form_service.exception.FormNotAcceptingResponseException;
 import com.sougata.form_service.exception.FormNotFoundException;
 import com.sougata.form_service.exception.FormResponseAlreadySubmittedException;
-import com.sougata.form_service.feignClient.FormDataServiceFeignClient;
 import com.sougata.form_service.feignClient.FormResponseServiceFeignClient;
 import com.sougata.form_service.model.formSchema.Form;
 import com.sougata.form_service.repository.formSchema.FormRepository;
@@ -33,7 +32,6 @@ import java.util.UUID;
 public class FormServiceImpl implements FormService {
 
     private final FormRepository formRepo;
-    private final FormDataServiceFeignClient formDataServiceFeignClient;
     private final FormResponseServiceFeignClient formResponseServiceFeignClient;
     private final FormServiceCached formServiceCached;
     private final QuestionManagerFactory questionManagerFactory;

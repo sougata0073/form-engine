@@ -141,6 +141,15 @@ export class EditFormCheckbox
   }
 
   protected removeOption(optionId: string) {
+    if (this.options().length <= 1) {
+      this.dialog.open(
+        SimpleDialog, {
+          data: SimpleDialog.configure('Error', 'At least 1 option is required', 'Close')
+        }
+      )
+      return
+    }
+
     this.options.update(val =>
       [...val.filter(v => v.id !== optionId)]
     )
@@ -178,10 +187,10 @@ export class EditFormCheckbox
     const allOptionsValid = this.options().every(op => op.valid)
     if (this.moreMenuItemIds().has('responseValidation')) {
       this.hasError.emit(isFormInvalid || !allOptionsValid)
-      this.canSaveQuestion.emit(canSave && allOptionsValid)
+      this.canSaveQuestion.emit(canSave && allOptionsValid && !!this.options().length)
     } else {
       this.hasError.emit(!allOptionsValid)
-      this.canSaveQuestion.emit(allOptionsValid)
+      this.canSaveQuestion.emit(allOptionsValid && !!this.options().length)
     }
   }
 

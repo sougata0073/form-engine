@@ -1,0 +1,78 @@
+services:
+    cass-1:
+        image: cassandra:latest
+        environment:
+            - MAX_HEAP_SIZE=500M
+            - HEAP_NEWSIZE=500M
+            - CASSANDRA_SEEDS=cass-1
+            - CASSANDRA_CLUSTER_NAME=form-engine-cluster
+            - CASSANDRA_DC=north
+            - CASSANDRA_RACK=rack-1
+            - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+        ports:
+            - 9042:9042
+        networks:
+            - cassandra-net
+    cass-2:
+        image: cassandra:latest
+        environment:
+            - MAX_HEAP_SIZE=500M
+            - HEAP_NEWSIZE=500M
+            - CASSANDRA_SEEDS=cass-1
+            - CASSANDRA_CLUSTER_NAME=form-engine-cluster
+            - CASSANDRA_DC=north
+            - CASSANDRA_RACK=rack-2
+            - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+        networks:
+            - cassandra-net
+    cass-3:
+        image: cassandra:latest
+        environment:
+            - MAX_HEAP_SIZE=500M
+            - HEAP_NEWSIZE=500M
+            - CASSANDRA_SEEDS=cass-1
+            - CASSANDRA_CLUSTER_NAME=form-engine-cluster
+            - CASSANDRA_DC=east
+            - CASSANDRA_RACK=rack-1
+            - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+        networks:
+            - cassandra-net
+    cass-4:
+        image: cassandra:latest
+        environment:
+            - MAX_HEAP_SIZE=500M
+            - HEAP_NEWSIZE=500M
+            - CASSANDRA_SEEDS=cass-1
+            - CASSANDRA_CLUSTER_NAME=form-engine-cluster
+            - CASSANDRA_DC=east
+            - CASSANDRA_RACK=rack-2
+            - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+        networks:
+            - cassandra-net
+    cass-5:
+        image: cassandra:latest
+        environment:
+            - MAX_HEAP_SIZE=500M
+            - HEAP_NEWSIZE=500M
+            - CASSANDRA_SEEDS=cass-1
+            - CASSANDRA_CLUSTER_NAME=form-engine-cluster
+            - CASSANDRA_DC=west
+            - CASSANDRA_RACK=rack-1
+            - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+        networks:
+            - cassandra-net
+    cass-6:
+        image: cassandra:latest
+        environment:
+            - MAX_HEAP_SIZE=500M
+            - HEAP_NEWSIZE=500M
+            - CASSANDRA_SEEDS=cass-1
+            - CASSANDRA_CLUSTER_NAME=form-engine-cluster
+            - CASSANDRA_DC=south
+            - CASSANDRA_RACK=rack-1
+            - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+        networks:
+            - cassandra-net
+
+networks:
+    cassandra-net:

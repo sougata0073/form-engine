@@ -69,6 +69,15 @@ export class EditFormMultipleChoice extends EditFormQuestionComponent<MultipleCh
   }
 
   protected removeOption(optionId: string) {
+    if (this.options().length <= 1) {
+      this.dialog.open(
+        SimpleDialog, {
+          data: SimpleDialog.configure('Error', 'At least 1 option is required', 'Close')
+        }
+      )
+      return
+    }
+    
     this.options.update(val => {
       return [...val.filter(v => v.id !== optionId)]
     })
@@ -96,7 +105,7 @@ export class EditFormMultipleChoice extends EditFormQuestionComponent<MultipleCh
 
   protected emitCanSaveHasError() {
     const allValid = this.options().every(op => op.valid)
-    this.canSaveQuestion.emit(allValid)
+    this.canSaveQuestion.emit(allValid && !!this.options().length)
     this.hasError.emit(!allValid)
   }
 
