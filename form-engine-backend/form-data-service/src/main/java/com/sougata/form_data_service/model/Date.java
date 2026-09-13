@@ -1,26 +1,22 @@
 package com.sougata.form_data_service.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.data.cassandra.core.mapping.Column;
+import org.springframework.data.cassandra.core.mapping.Table;
 
 import java.time.Instant;
 
-@Entity
-@Table(name = "dates")
-@EntityListeners(AuditingEntityListener.class)
+@Table("dates")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 public class Date extends AnyTypeQuestionResponse {
 
-    @Column(nullable = false)
+    @Column("date")
     private Instant date;
+
 }

@@ -1,5 +1,6 @@
 package com.sougata.form_data_service.service.responseManager;
 
+import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.DateTime;
 import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.repository.DateTimeRepository;
@@ -9,8 +10,6 @@ import com.sougata.form_engine.dto.question.responseputrequest.DateTimeResponseP
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service("DATE_TIME_RESPONSE_MANAGER")
 public class DateTimeManager extends ResponseManager<DateTimeResponsePutReqDto> {
@@ -30,8 +29,8 @@ public class DateTimeManager extends ResponseManager<DateTimeResponsePutReqDto> 
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
 
+        dateTime.setKey(new AnyTypeQuestionResponse.PartitionKey(response.getQuestionId(), qr.getKey().getQuestionResponseId()));
         dateTime.setDateTime(response.getDateTime());
-        dateTime.setQuestionResponse(qr);
 
         dateTimeRepository.save(dateTime);
     }
@@ -42,12 +41,13 @@ public class DateTimeManager extends ResponseManager<DateTimeResponsePutReqDto> 
     }
 
     @Override
-    public void deleteResponsesByQuestion(UUID formId, Long questionId) {
-        dateTimeRepository.deleteAllByFormIdAndQuestionId(formId, questionId);
+    public void deleteResponsesByQuestionId(Long questionId) {
+        dateTimeRepository.deleteAllByQuestionId(questionId);
     }
 
     @Override
-    public void deleteResponsesByFormResponse(UUID formId, Long formResponseId) {
-        dateTimeRepository.deleteAllByFormIdAndFormResponseId(formId, formResponseId);
+    public void deleteResponsesByQuestionIdAndQuestionResponseId(Long questionId, Long questionResponseId) {
+        dateTimeRepository.deleteAllByQuestionIdAndQuestionResponseId(questionId, questionResponseId);
     }
+
 }

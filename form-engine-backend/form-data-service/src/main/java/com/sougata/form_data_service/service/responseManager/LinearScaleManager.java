@@ -1,5 +1,6 @@
 package com.sougata.form_data_service.service.responseManager;
 
+import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.model.LinearScale;
 import com.sougata.form_data_service.repository.LinearScaleRepository;
@@ -9,8 +10,6 @@ import com.sougata.form_engine.dto.question.responseputrequest.LinearScaleRespon
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service("LINEAR_SCALE_RESPONSE_MANAGER")
 public class LinearScaleManager extends ResponseManager<LinearScaleResponsePutReqDto> {
@@ -30,8 +29,8 @@ public class LinearScaleManager extends ResponseManager<LinearScaleResponsePutRe
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
 
+        linearScale.setKey(new AnyTypeQuestionResponse.PartitionKey(response.getQuestionId(), qr.getKey().getQuestionResponseId()));
         linearScale.setScale(response.getScale());
-        linearScale.setQuestionResponse(qr);
 
         linearScaleRepository.save(linearScale);
     }
@@ -42,12 +41,13 @@ public class LinearScaleManager extends ResponseManager<LinearScaleResponsePutRe
     }
 
     @Override
-    public void deleteResponsesByQuestion(UUID formId, Long questionId) {
-        linearScaleRepository.deleteAllByFormIdAndQuestionId(formId, questionId);
+    public void deleteResponsesByQuestionId(Long questionId) {
+        linearScaleRepository.deleteAllByQuestionId(questionId);
     }
 
     @Override
-    public void deleteResponsesByFormResponse(UUID formId, Long formResponseId) {
-        linearScaleRepository.deleteAllByFormIdAndFormResponseId(formId, formResponseId);
+    public void deleteResponsesByQuestionIdAndQuestionResponseId(Long questionId, Long questionResponseId) {
+        linearScaleRepository.deleteAllByQuestionIdAndQuestionResponseId(questionId, questionResponseId);
     }
+
 }

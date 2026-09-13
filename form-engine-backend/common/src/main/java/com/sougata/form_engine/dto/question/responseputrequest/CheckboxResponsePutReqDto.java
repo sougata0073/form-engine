@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
+import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,6 +17,6 @@ public class CheckboxResponsePutReqDto extends QuestionResponsePutReqDto {
 
     @NotNull
     @Size(max = 20)
-    private List<@NotNull Long> responseOptionIds;
+    private Set<@NotNull Long> responseOptionIds;
 
 }

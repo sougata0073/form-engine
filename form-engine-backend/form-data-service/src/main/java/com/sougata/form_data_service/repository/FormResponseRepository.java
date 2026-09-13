@@ -1,16 +1,14 @@
 package com.sougata.form_data_service.repository;
 
 import com.sougata.form_data_service.model.FormResponse;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.cassandra.repository.Query;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
 @Repository
-public interface FormResponseRepository extends JpaRepository<FormResponse, Long> {
+public interface FormResponseRepository extends CassandraRepository<FormResponse, FormResponse.PartitionKey> {
 
     @Query("""
             select
@@ -20,8 +18,6 @@ public interface FormResponseRepository extends JpaRepository<FormResponse, Long
             """)
     Long getFormResponseCount(UUID formId);
 
-    @Modifying
-    @Transactional
     @Query("delete from FormResponse fr where fr.id = :formResponseId")
     void deleteByFormResponseId(Long formResponseId);
 

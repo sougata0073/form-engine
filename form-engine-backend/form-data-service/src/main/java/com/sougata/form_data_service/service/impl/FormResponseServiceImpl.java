@@ -13,6 +13,7 @@ import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.dto.form.FormResponsePutReqDto;
 import com.sougata.form_engine.dto.messaging.FormResponseDeleteMessage;
 import com.sougata.form_engine.dto.messaging.FormResponseSavedMessage;
+import com.sougata.form_engine.dto.question.responseputrequest.QuestionResponsePutReqDto;
 import com.sougata.form_engine.dto.validation.request.ResponseValidationRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -59,8 +61,14 @@ public class FormResponseServiceImpl implements FormResponseService {
 
         var formResponse = new FormResponse();
 
-        formResponse.setFormId(formId);
+        var formResponsePartitionKey = new FormResponse.PartitionKey();
+        formResponsePartitionKey.setFormId(formId);
+
+        formResponse.setKey(formResponsePartitionKey);
         formResponse.setUserId(responderId);
+        formResponse.setRespondedQuestionIds(
+                req.getResponses().stream().map(QuestionResponsePutReqDto::getQuestionId).collect(Collectors.toSet())
+        );
 
         var savedFormResponse = formResponseRepository.save(formResponse);
 
@@ -73,7 +81,7 @@ public class FormResponseServiceImpl implements FormResponseService {
 
         redisTemplate.convertAndSend(MessagingChannelNames.FORM_RESPONSE_SAVED, new FormResponseSavedMessage(formId, responderId, req.getResponses()));
 
-        return new FormResponsePutResDto(savedFormResponse.getId());
+        return new FormResponsePutResDto(savedFormResponse.getKey().getFormResponseId());
     }
 
     @Override

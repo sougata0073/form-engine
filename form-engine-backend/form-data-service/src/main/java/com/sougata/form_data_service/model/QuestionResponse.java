@@ -2,51 +2,43 @@ package com.sougata.form_data_service.model;
 
 import com.github.f4b6a3.tsid.TsidCreator;
 import com.sougata.form_engine.constant.QuestionType;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
-import org.springframework.data.domain.Persistable;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
+import org.springframework.data.cassandra.core.mapping.*;
 
-@Entity
-@Table(name = "question_responses")
-@EntityListeners(AuditingEntityListener.class)
+@Table("question_responses")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-public class QuestionResponse implements Persistable<Long> {
+public class QuestionResponse {
 
-    @Id
-    private Long id = TsidCreator.getTsid().toLong();
+    @PrimaryKey
+    private PartitionKey key;
 
-    @Column(nullable = false)
-    private Long questionId;
-
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
+    @Column("question_type")
+    @CassandraType(type = CassandraType.Name.TEXT)
     private QuestionType questionType;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false, name = "form_response_id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private FormResponse formResponse;
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    @Setter
+    @PrimaryKeyClass
+    public static class PartitionKey {
 
-    @Transient
-    private boolean isNew = true;
+        @PrimaryKeyColumn(name = "question_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
+        private Long questionId;
 
-    @Override
-    public boolean isNew() {
-        return isNew;
+        @PrimaryKeyColumn(name = "form_response_id", ordinal = 1, type = PrimaryKeyType.CLUSTERED)
+        private Long formResponseId;
+
+        @PrimaryKeyColumn(name = "question_response_id", ordinal = 2, type = PrimaryKeyType.CLUSTERED)
+        private Long questionResponseId = TsidCreator.getTsid().toLong();
+
     }
 
-    @PostPersist
-    @PostLoad
-    void markNotNew() {
-        isNew = false;
-    }
 }

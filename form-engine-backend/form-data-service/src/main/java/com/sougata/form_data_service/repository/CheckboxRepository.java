@@ -1,9 +1,22 @@
 package com.sougata.form_data_service.repository;
 
+import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.Checkbox;
+import org.springframework.data.cassandra.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository("CHECKBOX_RESPONSE_REPOSITORY")
-public interface CheckboxRepository extends AnyTypeQuestionResponseRepository<Checkbox, Long> {
+public interface CheckboxRepository extends AnyTypeQuestionResponseRepository<Checkbox, AnyTypeQuestionResponse.PartitionKey> {
+
+    @Query("delete from checkboxes where question_id = :questionId")
+    void deleteAllByQuestionId(Long questionId);
+
+    @Query("""
+            delete
+            from checkboxes
+            where question_id = :questionId
+            and question_response_id = :questionResponseId
+            """)
+    void deleteAllByQuestionIdAndQuestionResponseId(Long questionId, Long questionResponseId);
 
 }

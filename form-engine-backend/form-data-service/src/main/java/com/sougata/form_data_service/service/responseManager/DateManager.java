@@ -1,5 +1,6 @@
 package com.sougata.form_data_service.service.responseManager;
 
+import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.Date;
 import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.repository.DateRepository;
@@ -10,12 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
-
 @Service("DATE_RESPONSE_MANAGER")
-public class DateManager extends ResponseManager<
-        DateResponsePutReqDto
-        > {
+public class DateManager extends ResponseManager<DateResponsePutReqDto> {
 
     private final DateRepository dateRepository;
 
@@ -31,7 +28,7 @@ public class DateManager extends ResponseManager<
         Date date = new Date();
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
 
-        date.setQuestionResponse(qr);
+        date.setKey(new AnyTypeQuestionResponse.PartitionKey(response.getQuestionId(), qr.getKey().getQuestionResponseId()));
         date.setDate(response.getDate());
 
         dateRepository.save(date);
@@ -43,12 +40,13 @@ public class DateManager extends ResponseManager<
     }
 
     @Override
-    public void deleteResponsesByQuestion(UUID formId, Long questionId) {
-        dateRepository.deleteAllByFormIdAndQuestionId(formId, questionId);
+    public void deleteResponsesByQuestionId(Long questionId) {
+        dateRepository.deleteAllByQuestionId(questionId);
     }
 
     @Override
-    public void deleteResponsesByFormResponse(UUID formId, Long formResponseId) {
-        dateRepository.deleteAllByFormIdAndFormResponseId(formId, formResponseId);
+    public void deleteResponsesByQuestionIdAndQuestionResponseId(Long questionId, Long questionResponseId) {
+        dateRepository.deleteAllByQuestionIdAndQuestionResponseId(questionId, questionResponseId);
     }
+
 }

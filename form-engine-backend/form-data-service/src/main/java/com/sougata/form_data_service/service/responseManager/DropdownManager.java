@@ -1,5 +1,6 @@
 package com.sougata.form_data_service.service.responseManager;
 
+import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.Dropdown;
 import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.repository.DropdownRepository;
@@ -9,8 +10,6 @@ import com.sougata.form_engine.dto.question.responseputrequest.DropdownResponseP
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service("DROPDOWN_RESPONSE_MANAGER")
 public class DropdownManager extends ResponseManager<DropdownResponsePutReqDto> {
@@ -30,8 +29,8 @@ public class DropdownManager extends ResponseManager<DropdownResponsePutReqDto> 
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
 
+        dropdown.setKey(new AnyTypeQuestionResponse.PartitionKey(response.getQuestionId(), qr.getKey().getQuestionResponseId()));
         dropdown.setResponseOptionId(response.getResponseOptionId());
-        dropdown.setQuestionResponse(qr);
 
         dropdownRepository.save(dropdown);
     }
@@ -42,12 +41,13 @@ public class DropdownManager extends ResponseManager<DropdownResponsePutReqDto> 
     }
 
     @Override
-    public void deleteResponsesByQuestion(UUID formId, Long questionId) {
-        dropdownRepository.deleteAllByFormIdAndQuestionId(formId, questionId);
+    public void deleteResponsesByQuestionId(Long questionId) {
+        dropdownRepository.deleteAllByQuestionId(questionId);
     }
 
     @Override
-    public void deleteResponsesByFormResponse(UUID formId, Long formResponseId) {
-        dropdownRepository.deleteAllByFormIdAndFormResponseId(formId, formResponseId);
+    public void deleteResponsesByQuestionIdAndQuestionResponseId(Long questionId, Long questionResponseId) {
+        dropdownRepository.deleteAllByQuestionIdAndQuestionResponseId(questionId, questionResponseId);
     }
+
 }

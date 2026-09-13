@@ -1,5 +1,6 @@
 package com.sougata.form_data_service.service.responseManager;
 
+import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.model.Rating;
 import com.sougata.form_data_service.repository.QuestionResponseRepository;
@@ -9,8 +10,6 @@ import com.sougata.form_engine.dto.question.responseputrequest.RatingResponsePut
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service("RATING_RESPONSE_MANAGER")
 public class RatingManager extends ResponseManager<RatingResponsePutReqDto> {
@@ -30,8 +29,8 @@ public class RatingManager extends ResponseManager<RatingResponsePutReqDto> {
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
 
+        rating.setKey(new AnyTypeQuestionResponse.PartitionKey(response.getQuestionId(), qr.getKey().getQuestionResponseId()));
         rating.setRating(response.getRating());
-        rating.setQuestionResponse(qr);
 
         ratingRepository.save(rating);
     }
@@ -43,12 +42,13 @@ public class RatingManager extends ResponseManager<RatingResponsePutReqDto> {
     }
 
     @Override
-    public void deleteResponsesByQuestion(UUID formId, Long questionId) {
-        ratingRepository.deleteAllByFormIdAndQuestionId(formId, questionId);
+    public void deleteResponsesByQuestionId(Long questionId) {
+        ratingRepository.deleteAllByQuestionId(questionId);
     }
 
     @Override
-    public void deleteResponsesByFormResponse(UUID formId, Long formResponseId) {
-        ratingRepository.deleteAllByFormIdAndFormResponseId(formId, formResponseId);
+    public void deleteResponsesByQuestionIdAndQuestionResponseId(Long questionId, Long questionResponseId) {
+        ratingRepository.deleteAllByQuestionIdAndQuestionResponseId(questionId, questionResponseId);
     }
+
 }

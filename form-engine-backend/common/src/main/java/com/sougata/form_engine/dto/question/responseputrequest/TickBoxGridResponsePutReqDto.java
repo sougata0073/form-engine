@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -30,6 +31,6 @@ public class TickBoxGridResponsePutReqDto extends QuestionResponsePutReqDto {
 
         @NotNull
         @Size(max = 20)
-        private List<@NotNull Long> responseColumnIds;
+        private Set<@NotNull Long> responseColumnIds;
     }
 }

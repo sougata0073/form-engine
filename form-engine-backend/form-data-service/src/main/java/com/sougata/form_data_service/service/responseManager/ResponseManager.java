@@ -6,8 +6,6 @@ import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.QuestionResponsePutReqDto;
 
-import java.util.UUID;
-
 public abstract class ResponseManager<QR extends QuestionResponsePutReqDto> {
 
     private final QuestionResponseRepository questionResponseRepository;
@@ -18,17 +16,21 @@ public abstract class ResponseManager<QR extends QuestionResponsePutReqDto> {
 
     public abstract void create(QR response, FormResponse formResponse);
 
-    public abstract void deleteResponsesByQuestion(UUID formId, Long questionId);
+    public abstract void deleteResponsesByQuestionId(Long questionId);
 
-    public abstract void deleteResponsesByFormResponse(UUID formId, Long formResponseId);
+    public abstract void deleteResponsesByQuestionIdAndQuestionResponseId(Long questionId, Long questionResponseId);
 
     public abstract QuestionType getQuestionType();
 
     public QuestionResponse createQuestionResponse(Long questionId, FormResponse formResponse) {
         var qr = new QuestionResponse();
 
-        qr.setQuestionId(questionId);
-        qr.setFormResponse(formResponse);
+        var partitionKey = new QuestionResponse.PartitionKey();
+
+        partitionKey.setQuestionId(questionId);
+        partitionKey.setFormResponseId(formResponse.getKey().getFormResponseId());
+
+        qr.setKey(partitionKey);
         qr.setQuestionType(getQuestionType());
 
         return questionResponseRepository.save(qr);

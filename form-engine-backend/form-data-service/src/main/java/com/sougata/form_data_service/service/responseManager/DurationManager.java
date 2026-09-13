@@ -1,5 +1,6 @@
 package com.sougata.form_data_service.service.responseManager;
 
+import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.Duration;
 import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.repository.DurationRepository;
@@ -9,8 +10,6 @@ import com.sougata.form_engine.dto.question.responseputrequest.DurationResponseP
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service("DURATION_RESPONSE_MANAGER")
 public class DurationManager extends ResponseManager<DurationResponsePutReqDto> {
@@ -30,10 +29,10 @@ public class DurationManager extends ResponseManager<DurationResponsePutReqDto> 
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
 
+        duration.setKey(new AnyTypeQuestionResponse.PartitionKey(response.getQuestionId(), qr.getKey().getQuestionResponseId()));
         duration.setHours(response.getHours());
         duration.setMinutes(response.getMinutes());
         duration.setSeconds(response.getSeconds());
-        duration.setQuestionResponse(qr);
 
         durationRepository.save(duration);
     }
@@ -44,12 +43,12 @@ public class DurationManager extends ResponseManager<DurationResponsePutReqDto> 
     }
 
     @Override
-    public void deleteResponsesByQuestion(UUID formId, Long questionId) {
-        durationRepository.deleteAllByFormIdAndQuestionId(formId, questionId);
+    public void deleteResponsesByQuestionId(Long questionId) {
+        durationRepository.deleteAllByQuestionId(questionId);
     }
 
     @Override
-    public void deleteResponsesByFormResponse(UUID formId, Long formResponseId) {
-        durationRepository.deleteAllByFormIdAndFormResponseId(formId, formResponseId);
+    public void deleteResponsesByQuestionIdAndQuestionResponseId(Long questionId, Long questionResponseId) {
+        durationRepository.deleteAllByQuestionIdAndQuestionResponseId(questionId, questionResponseId);
     }
 }

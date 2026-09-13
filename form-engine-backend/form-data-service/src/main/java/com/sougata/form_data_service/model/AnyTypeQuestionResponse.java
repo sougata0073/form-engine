@@ -1,27 +1,36 @@
 package com.sougata.form_data_service.model;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 
-@MappedSuperclass
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 public class AnyTypeQuestionResponse {
 
-    @Id
-    private Long questionResponseId;
+    @PrimaryKey
+    private PartitionKey key;
 
-    @MapsId
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false, unique = true, name = "question_response_id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private QuestionResponse questionResponse;
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    @Setter
+    @PrimaryKeyClass
+    public static class PartitionKey {
+
+        @PrimaryKeyColumn(name = "question_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
+        private Long questionId;
+
+        @PrimaryKeyColumn(name = "question_response_id", ordinal = 1, type = PrimaryKeyType.CLUSTERED)
+        private Long questionResponseId;
+
+    }
 
 }

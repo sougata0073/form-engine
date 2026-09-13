@@ -1,25 +1,22 @@
 package com.sougata.form_data_service.model;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.data.cassandra.core.mapping.Column;
+import org.springframework.data.cassandra.core.mapping.Table;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
-@Entity
-@Table(name = "multiple_choice_grids")
-@EntityListeners(AuditingEntityListener.class)
+@Table("multiple_choice_grids")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 public class MultipleChoiceGrid extends AnyTypeQuestionResponse {
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "multipleChoiceGrid")
-    private List<MultipleChoiceGridRow> responses = new ArrayList<>();
+    @Column("responses")
+    private Map<Long, Long> responses;
 
 }

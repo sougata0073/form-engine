@@ -1,5 +1,6 @@
 package com.sougata.form_data_service.service.responseManager;
 
+import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.FileUpload;
 import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.repository.FileUploadRepository;
@@ -9,8 +10,6 @@ import com.sougata.form_engine.dto.question.responseputrequest.FileUploadRespons
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service("FILE_UPLOAD_RESPONSE_MANAGER")
 public class FileUploadManager extends ResponseManager<FileUploadResponsePutReqDto> {
@@ -30,11 +29,11 @@ public class FileUploadManager extends ResponseManager<FileUploadResponsePutReqD
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
 
+        fileUpload.setKey(new AnyTypeQuestionResponse.PartitionKey(response.getQuestionId(), qr.getKey().getQuestionResponseId()));
         fileUpload.setFileName(response.getFileName());
         fileUpload.setFileUrl(response.getFileUrl());
         fileUpload.setFileMimeType(response.getFileMimeType());
         fileUpload.setFileSize(response.getFileSize());
-        fileUpload.setQuestionResponse(qr);
 
         fileUploadRepository.save(fileUpload);
     }
@@ -45,12 +44,13 @@ public class FileUploadManager extends ResponseManager<FileUploadResponsePutReqD
     }
 
     @Override
-    public void deleteResponsesByQuestion(UUID formId, Long questionId) {
-        fileUploadRepository.deleteAllByFormIdAndQuestionId(formId, questionId);
+    public void deleteResponsesByQuestionId(Long questionId) {
+        fileUploadRepository.deleteAllByQuestionId(questionId);
     }
 
     @Override
-    public void deleteResponsesByFormResponse(UUID formId, Long formResponseId) {
-        fileUploadRepository.deleteAllByFormIdAndFormResponseId(formId, formResponseId);
+    public void deleteResponsesByQuestionIdAndQuestionResponseId(Long questionId, Long questionResponseId) {
+        fileUploadRepository.deleteAllByQuestionIdAndQuestionResponseId(questionId, questionResponseId);
     }
+
 }

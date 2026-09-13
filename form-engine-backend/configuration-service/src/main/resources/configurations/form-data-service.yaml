@@ -2,30 +2,6 @@ server:
   port: ${SERVER_PORT}
 
 spring:
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 30
-      minimum-idle: 10
-      connection-timeout: 60000
-      max-lifetime: 1800000
-      idle-timeout: 600000
-  jpa:
-    open-in-view: false
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        highlight_sql: true
-        jdbc:
-          batch_size: 100
-        order_inserts: true
-        order_updates: true
   devtools:
     restart:
       enabled: true
@@ -79,3 +55,7 @@ info:
 app:
   cache:
     default-ttl-minutes: ${CACHE_DEFAULT_TTL_MINUTES}
+  cassandra:
+    contact-points: ${CASSANDRA_CONTACT_POINTS}
+    local-data-center: ${CASSANDRA_LOCAL_DATA_CENTER}
+    request-timeout-seconds: ${CASSANDRA_REQUEST_TIMEOUT_SECONDS}

@@ -1,9 +1,21 @@
 package com.sougata.form_data_service.repository;
 
+import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.TickBoxGrid;
+import org.springframework.data.cassandra.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository("TICK_BOX_GRID_RESPONSE_REPOSITORY")
-public interface TickBoxGridRepository extends AnyTypeQuestionResponseRepository<TickBoxGrid, Long> {
+public interface TickBoxGridRepository extends AnyTypeQuestionResponseRepository<TickBoxGrid, AnyTypeQuestionResponse.PartitionKey> {
 
+    @Query("delete from tick_box_grids where question_id = :questionId")
+    void deleteAllByQuestionId(Long questionId);
+
+    @Query("""
+            delete
+            from tick_box_grids
+            where question_id = :questionId
+            and question_response_id = :questionResponseId
+            """)
+    void deleteAllByQuestionIdAndQuestionResponseId(Long questionId, Long questionResponseId);
 }

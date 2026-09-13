@@ -1,5 +1,6 @@
 package com.sougata.form_data_service.service.responseManager;
 
+import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.model.MultipleChoice;
 import com.sougata.form_data_service.repository.MultipleChoiceRepository;
@@ -9,8 +10,6 @@ import com.sougata.form_engine.dto.question.responseputrequest.MultipleChoiceRes
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service("MULTIPLE_CHOICE_RESPONSE_MANAGER")
 public class MultipleChoiceManager extends ResponseManager<MultipleChoiceResponsePutReqDto> {
@@ -30,8 +29,8 @@ public class MultipleChoiceManager extends ResponseManager<MultipleChoiceRespons
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
 
+        multipleChoice.setKey(new AnyTypeQuestionResponse.PartitionKey(response.getQuestionId(), qr.getKey().getQuestionResponseId()));
         multipleChoice.setResponseOptionId(response.getResponseOptionId());
-        multipleChoice.setQuestionResponse(qr);
 
         multipleChoiceRepository.save(multipleChoice);
     }
@@ -42,12 +41,13 @@ public class MultipleChoiceManager extends ResponseManager<MultipleChoiceRespons
     }
 
     @Override
-    public void deleteResponsesByQuestion(UUID formId, Long questionId) {
-        multipleChoiceRepository.deleteAllByFormIdAndQuestionId(formId, questionId);
+    public void deleteResponsesByQuestionId(Long questionId) {
+        multipleChoiceRepository.deleteAllByQuestionId(questionId);
     }
 
     @Override
-    public void deleteResponsesByFormResponse(UUID formId, Long formResponseId) {
-        multipleChoiceRepository.deleteAllByFormIdAndFormResponseId(formId, formResponseId);
+    public void deleteResponsesByQuestionIdAndQuestionResponseId(Long questionId, Long questionResponseId) {
+        multipleChoiceRepository.deleteAllByQuestionIdAndQuestionResponseId(questionId, questionResponseId);
     }
+
 }

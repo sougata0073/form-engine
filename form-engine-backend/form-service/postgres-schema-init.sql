@@ -1,0 +1,2 @@
+CREATE SCHEMA IF NOT EXISTS form_schema;
+CREATE SCHEMA IF NOT EXISTS form_template;

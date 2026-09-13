@@ -1,5 +1,6 @@
 package com.sougata.form_data_service.service.responseManager;
 
+import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.model.ShortAnswer;
 import com.sougata.form_data_service.repository.QuestionResponseRepository;
@@ -9,8 +10,6 @@ import com.sougata.form_engine.dto.question.responseputrequest.ShortAnswerRespon
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service("SHORT_ANSWER_RESPONSE_MANAGER")
 public class ShortAnswerManager extends ResponseManager<ShortAnswerResponsePutReqDto> {
@@ -30,8 +29,8 @@ public class ShortAnswerManager extends ResponseManager<ShortAnswerResponsePutRe
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
 
+        shortAnswer.setKey(new AnyTypeQuestionResponse.PartitionKey(response.getQuestionId(), qr.getKey().getQuestionResponseId()));
         shortAnswer.setText(response.getText());
-        shortAnswer.setQuestionResponse(qr);
 
         shortAnswerRepository.save(shortAnswer);
     }
@@ -42,12 +41,13 @@ public class ShortAnswerManager extends ResponseManager<ShortAnswerResponsePutRe
     }
 
     @Override
-    public void deleteResponsesByQuestion(UUID formId, Long questionId) {
-        shortAnswerRepository.deleteAllByFormIdAndQuestionId(formId, questionId);
+    public void deleteResponsesByQuestionId(Long questionId) {
+        shortAnswerRepository.deleteAllByQuestionId(questionId);
     }
 
     @Override
-    public void deleteResponsesByFormResponse(UUID formId, Long formResponseId) {
-        shortAnswerRepository.deleteAllByFormIdAndFormResponseId(formId, formResponseId);
+    public void deleteResponsesByQuestionIdAndQuestionResponseId(Long questionId, Long questionResponseId) {
+        shortAnswerRepository.deleteAllByQuestionIdAndQuestionResponseId(questionId, questionResponseId);
     }
+
 }

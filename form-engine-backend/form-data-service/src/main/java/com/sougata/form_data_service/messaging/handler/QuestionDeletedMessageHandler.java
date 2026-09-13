@@ -27,6 +27,6 @@ public class QuestionDeletedMessageHandler implements MessageListener {
                 new String(message.getBody(), StandardCharsets.UTF_8), QuestionDeleteMessage.class
         );
 
-        questionResponseService.deleteQuestionResponses(messageData.getQuestionId());
+        questionResponseService.deleteAllByQuestionId(messageData.getQuestionId());
     }
 }

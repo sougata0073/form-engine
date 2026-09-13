@@ -1,58 +1,49 @@
 package com.sougata.form_data_service.model;
 
 import com.github.f4b6a3.tsid.TsidCreator;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.domain.Persistable;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
+import org.springframework.data.cassandra.core.mapping.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 
-@Entity
-@Table(
-        name = "form_responses",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "unique_form_id_user_id",
-                        columnNames = {"form_id", "user_id"}
-                )
-        }
-)
-@EntityListeners(AuditingEntityListener.class)
+@Table("form_responses")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class FormResponse extends Auditable implements Persistable<Long> {
+public class FormResponse {
 
-    @Id
-    private Long id = TsidCreator.getTsid().toLong();
+    @PrimaryKey
+    private PartitionKey key;
 
-    @Column(nullable = false)
-    private UUID formId;
-
-    @Column(nullable = false)
+    @Column("user_id")
     private UUID userId;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "formResponse")
-    private List<QuestionResponse> questionResponses = new ArrayList<>();
+    @Column("responded_question_ids")
+    private Set<Long> respondedQuestionIds;
 
-    @Transient
-    private boolean isNew = true;
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    @Setter
+    @PrimaryKeyClass
+    public static class PartitionKey {
 
-    @Override
-    public boolean isNew() {
-        return isNew;
+        @PrimaryKeyColumn(name = "form_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
+        private UUID formId;
+
+        @PrimaryKeyColumn(name = "form_response_id", ordinal = 1, type = PrimaryKeyType.CLUSTERED)
+        private Long formResponseId = TsidCreator.getTsid().toLong();
+
+        @PrimaryKeyColumn(name = "submitted_on", ordinal = 2, type = PrimaryKeyType.CLUSTERED)
+        private Instant submittedOn = Instant.now();
+
     }
 
-    @PostPersist
-    @PostLoad
-    void markNotNew() {
-        isNew = false;
-    }
 }

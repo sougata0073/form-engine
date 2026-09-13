@@ -1,18 +1,17 @@
 package com.sougata.form_data_service.repository;
 
 import com.sougata.form_data_service.model.QuestionResponse;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.cassandra.repository.Query;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 @Repository
-public interface QuestionResponseRepository extends JpaRepository<QuestionResponse, Long> {
+public interface QuestionResponseRepository extends CassandraRepository<QuestionResponse, QuestionResponse.PartitionKey> {
 
-    @Modifying
-    @Transactional
-    @Query("delete from QuestionResponse qr where qr.questionId = :questionId")
+    @Query("delete from question_responses where question_id = :questionId")
     void deleteAllByQuestionId(long questionId);
+
+    @Query("delete from question_responses where question_id = :questionId and form_response_id = :formResponseId")
+    void deleteAllByQuestionIdAndFormResponseId(Long questionId, Long formResponseId);
 
 }

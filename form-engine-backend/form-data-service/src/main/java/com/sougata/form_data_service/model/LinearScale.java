@@ -1,25 +1,20 @@
 package com.sougata.form_data_service.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.data.cassandra.core.mapping.Column;
+import org.springframework.data.cassandra.core.mapping.Table;
 
-@Entity
-@Table(name = "linear_scales")
-@EntityListeners(AuditingEntityListener.class)
+@Table("linear_scales")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 public class LinearScale extends AnyTypeQuestionResponse {
 
-    @Column(nullable = false)
+    @Column("scale")
     private Integer scale;
 
 }

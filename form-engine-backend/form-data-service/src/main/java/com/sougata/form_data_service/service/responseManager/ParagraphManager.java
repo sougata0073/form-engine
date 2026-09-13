@@ -1,5 +1,6 @@
 package com.sougata.form_data_service.service.responseManager;
 
+import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.model.Paragraph;
 import com.sougata.form_data_service.repository.ParagraphRepository;
@@ -9,8 +10,6 @@ import com.sougata.form_engine.dto.question.responseputrequest.ParagraphResponse
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service("PARAGRAPH_RESPONSE_MANAGER")
 public class ParagraphManager extends ResponseManager<ParagraphResponsePutReqDto> {
@@ -30,8 +29,8 @@ public class ParagraphManager extends ResponseManager<ParagraphResponsePutReqDto
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
 
+        paragraph.setKey(new AnyTypeQuestionResponse.PartitionKey(response.getQuestionId(), qr.getKey().getQuestionResponseId()));
         paragraph.setText(response.getText());
-        paragraph.setQuestionResponse(qr);
 
         paragraphRepository.save(paragraph);
     }
@@ -42,12 +41,13 @@ public class ParagraphManager extends ResponseManager<ParagraphResponsePutReqDto
     }
 
     @Override
-    public void deleteResponsesByQuestion(UUID formId, Long questionId) {
-        paragraphRepository.deleteAllByFormIdAndQuestionId(formId, questionId);
+    public void deleteResponsesByQuestionId(Long questionId) {
+        paragraphRepository.deleteAllByQuestionId(questionId);
     }
 
     @Override
-    public void deleteResponsesByFormResponse(UUID formId, Long formResponseId) {
-        paragraphRepository.deleteAllByFormIdAndFormResponseId(formId, formResponseId);
+    public void deleteResponsesByQuestionIdAndQuestionResponseId(Long questionId, Long questionResponseId) {
+        paragraphRepository.deleteAllByQuestionIdAndQuestionResponseId(questionId, questionResponseId);
     }
+
 }
