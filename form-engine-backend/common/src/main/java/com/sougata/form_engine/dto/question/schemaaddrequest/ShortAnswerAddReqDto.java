@@ -1,4 +1,4 @@
-package com.sougata.form_engine.dto.question.schemaputrequest;
+package com.sougata.form_engine.dto.question.schemaaddrequest;
 
 import com.sougata.form_engine.dto.validation.config.ValidationConfig;
 import jakarta.validation.Valid;
@@ -10,7 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class ShortAnswerPutReqDto extends QuestionPutReqDto {
+public class ShortAnswerAddReqDto extends QuestionAddReqDto {
 
     @Valid
     @NotNull

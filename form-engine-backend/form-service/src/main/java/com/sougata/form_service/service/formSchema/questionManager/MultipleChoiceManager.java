@@ -2,7 +2,7 @@ package com.sougata.form_service.service.formSchema.questionManager;
 
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.MultipleChoiceDetailsDto;
-import com.sougata.form_engine.dto.question.schemaputrequest.MultipleChoicePutReqDto;
+import com.sougata.form_engine.dto.question.schemaaddrequest.MultipleChoiceAddReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.MultipleChoiceTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.Form;
@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service("MULTIPLE_CHOICE_QUESTION_MANAGER")
-public class MultipleChoiceManager extends QuestionManager<MultipleChoice, MultipleChoicePutReqDto, MultipleChoiceDetailsDto, MultipleChoiceTemplateDetails> {
+public class MultipleChoiceManager extends QuestionManager<MultipleChoice, MultipleChoiceAddReqDto, MultipleChoiceDetailsDto, MultipleChoiceTemplateDetails> {
 
     private final MultipleChoiceRepository multipleChoiceRepository;
 
@@ -36,7 +36,7 @@ public class MultipleChoiceManager extends QuestionManager<MultipleChoice, Multi
 
     @Override
     @Transactional
-    public MultipleChoiceDetailsDto create(UUID formId, MultipleChoicePutReqDto crudDto) {
+    public MultipleChoiceDetailsDto create(UUID formId, MultipleChoiceAddReqDto crudDto) {
         var newMc = new MultipleChoice();
 
         var question = createQuestion(crudDto, formId);
@@ -50,12 +50,12 @@ public class MultipleChoiceManager extends QuestionManager<MultipleChoice, Multi
 
     @Override
     @Transactional
-    public MultipleChoiceDetailsDto create(UUID formId, Long questionId, MultipleChoicePutReqDto questionAddUpdateReq) {
+    public MultipleChoiceDetailsDto create(UUID formId, Long questionId, MultipleChoiceAddReqDto questionAddReq) {
         var newMc = new MultipleChoice();
 
-        var question = updateQuestion(questionId, questionAddUpdateReq);
+        var question = updateQuestion(questionId, questionAddReq);
 
-        setPropertiesForNew(questionAddUpdateReq, newMc, question);
+        setPropertiesForNew(questionAddReq, newMc, question);
 
         var saved = multipleChoiceRepository.save(newMc);
 
@@ -64,7 +64,7 @@ public class MultipleChoiceManager extends QuestionManager<MultipleChoice, Multi
 
     @Override
     @Transactional
-    public MultipleChoiceDetailsDto update(UUID formId, Long questionId, MultipleChoicePutReqDto questionAddUpdateReq) {
+    public MultipleChoiceDetailsDto update(UUID formId, Long questionId, MultipleChoiceAddReqDto questionAddUpdateReq) {
         MultipleChoice mc = multipleChoiceRepository.findByQuestionId(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(QuestionType.MULTIPLE_CHOICE, questionId));
 
@@ -74,7 +74,7 @@ public class MultipleChoiceManager extends QuestionManager<MultipleChoice, Multi
                 .collect(Collectors.toMap(MultipleChoiceOption::getId, option -> option));
 
         Set<Long> requestOptionIds = questionAddUpdateReq.getOptions().stream()
-                .map(MultipleChoicePutReqDto.Option::getId)
+                .map(MultipleChoiceAddReqDto.Option::getId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
@@ -131,14 +131,14 @@ public class MultipleChoiceManager extends QuestionManager<MultipleChoice, Multi
     }
 
     @Override
-    public MultipleChoicePutReqDto toQuestionAddUpdateReq(MultipleChoiceDetailsDto questionRes) {
-        var mc = new MultipleChoicePutReqDto();
+    public MultipleChoiceAddReqDto toQuestionAddUpdateReq(MultipleChoiceDetailsDto questionRes) {
+        var mc = new MultipleChoiceAddReqDto();
 
         populateCommonFields(questionRes, mc);
 
         mc.setOptions(
                 questionRes.getOptions().stream()
-                        .map(op -> new MultipleChoicePutReqDto.Option(null, op.getOption()))
+                        .map(op -> new MultipleChoiceAddReqDto.Option(null, op.getOption()))
                         .toList()
         );
 
@@ -174,11 +174,11 @@ public class MultipleChoiceManager extends QuestionManager<MultipleChoice, Multi
 
     @Override
     @Transactional
-    public void delete(UUID formId, Long questionId) {
+    public void delete(Long questionId) {
         multipleChoiceRepository.deleteQuestion(questionId);
     }
 
-    private void setPropertiesForNew(MultipleChoicePutReqDto source, MultipleChoice target, Question question) {
+    private void setPropertiesForNew(MultipleChoiceAddReqDto source, MultipleChoice target, Question question) {
         var options = new ArrayList<MultipleChoiceOption>();
 
         for (int i = 0; i < source.getOptions().size(); i++) {

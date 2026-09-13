@@ -1,7 +1,5 @@
 package com.sougata.form_data_service.service.impl;
 
-import com.sougata.form_engine.dto.others.SuccessMessageDto;
-import com.sougata.form_engine.dto.form.FormResponsePutResDto;
 import com.sougata.form_data_service.exception.FormSubmitException;
 import com.sougata.form_data_service.feignClient.FormServiceFeignClient;
 import com.sougata.form_data_service.formValidation.service.FormSchemaService;
@@ -11,14 +9,15 @@ import com.sougata.form_data_service.service.FormResponseService;
 import com.sougata.form_data_service.service.responseManager.ResponseManagerFactory;
 import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.dto.form.FormResponsePutReqDto;
+import com.sougata.form_engine.dto.form.FormResponsePutResDto;
 import com.sougata.form_engine.dto.messaging.FormResponseDeleteMessage;
 import com.sougata.form_engine.dto.messaging.FormResponseSavedMessage;
+import com.sougata.form_engine.dto.others.SuccessMessageDto;
 import com.sougata.form_engine.dto.question.responseputrequest.QuestionResponsePutReqDto;
 import com.sougata.form_engine.dto.validation.request.ResponseValidationRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -35,7 +34,6 @@ public class FormResponseServiceImpl implements FormResponseService {
     private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
-    @Transactional
     public FormResponsePutResDto saveResponse(UUID formId, FormResponsePutReqDto req, UUID responderId) {
 
         var formDetails = formServiceFeignClient.getFormDetails(formId);

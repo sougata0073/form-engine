@@ -1,19 +1,19 @@
-package com.sougata.form_engine.dto.question.schemaputrequest;
+package com.sougata.form_engine.dto.question.schemaupdatereq;
 
 import com.sougata.form_engine.dto.validation.config.ValidationConfig;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.FieldNameConstants;
 
 @NoArgsConstructor
 @Getter
 @Setter
-public class ParagraphPutReqDto extends QuestionPutReqDto {
+@FieldNameConstants
+public class ShortAnswerUpdateReqDto extends QuestionUpdateReqDto {
 
     @Valid
-    @NotNull
     private ValidationConfig validationConfig;
 
 }

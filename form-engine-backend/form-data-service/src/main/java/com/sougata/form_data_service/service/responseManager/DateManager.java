@@ -9,7 +9,6 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.DateResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service("DATE_RESPONSE_MANAGER")
 public class DateManager extends ResponseManager<DateResponsePutReqDto> {
@@ -23,7 +22,6 @@ public class DateManager extends ResponseManager<DateResponsePutReqDto> {
     }
 
     @Override
-    @Transactional
     public void create(DateResponsePutReqDto response, FormResponse formResponse) {
         Date date = new Date();
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);

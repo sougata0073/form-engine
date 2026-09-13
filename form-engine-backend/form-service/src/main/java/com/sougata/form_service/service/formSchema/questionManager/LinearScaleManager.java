@@ -2,7 +2,7 @@ package com.sougata.form_service.service.formSchema.questionManager;
 
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.LinearScaleDetailsDto;
-import com.sougata.form_engine.dto.question.schemaputrequest.LinearScalePutReqDto;
+import com.sougata.form_engine.dto.question.schemaaddrequest.LinearScaleAddReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.LinearScaleTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.Form;
@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service("LINEAR_SCALE_QUESTION_MANAGER")
-public class LinearScaleManager extends QuestionManager<LinearScale, LinearScalePutReqDto, LinearScaleDetailsDto, LinearScaleTemplateDetails> {
+public class LinearScaleManager extends QuestionManager<LinearScale, LinearScaleAddReqDto, LinearScaleDetailsDto, LinearScaleTemplateDetails> {
 
     private final LinearScaleRepository linearScaleRepository;
 
@@ -34,7 +34,7 @@ public class LinearScaleManager extends QuestionManager<LinearScale, LinearScale
 
     @Override
     @Transactional
-    public LinearScaleDetailsDto create(UUID formId, LinearScalePutReqDto crudDto) {
+    public LinearScaleDetailsDto create(UUID formId, LinearScaleAddReqDto crudDto) {
         var newLs = new LinearScale();
 
         var question = createQuestion(crudDto, formId);
@@ -48,12 +48,12 @@ public class LinearScaleManager extends QuestionManager<LinearScale, LinearScale
 
     @Override
     @Transactional
-    public LinearScaleDetailsDto create(UUID formId, Long questionId, LinearScalePutReqDto questionAddUpdateReq) {
+    public LinearScaleDetailsDto create(UUID formId, Long questionId, LinearScaleAddReqDto questionAddReq) {
         var newCb = new LinearScale();
 
-        var question = updateQuestion(questionId, questionAddUpdateReq);
+        var question = updateQuestion(questionId, questionAddReq);
 
-        setPropertiesForNew(questionAddUpdateReq, newCb, question);
+        setPropertiesForNew(questionAddReq, newCb, question);
 
         var saved = linearScaleRepository.save(newCb);
 
@@ -62,7 +62,7 @@ public class LinearScaleManager extends QuestionManager<LinearScale, LinearScale
 
     @Override
     @Transactional
-    public LinearScaleDetailsDto update(UUID formId, Long questionId, LinearScalePutReqDto questionAddUpdateReq) {
+    public LinearScaleDetailsDto update(UUID formId, Long questionId, LinearScaleAddReqDto questionAddUpdateReq) {
         LinearScale ls = linearScaleRepository.findByQuestionId(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(QuestionType.LINEAR_SCALE, questionId));
 
@@ -94,8 +94,8 @@ public class LinearScaleManager extends QuestionManager<LinearScale, LinearScale
     }
 
     @Override
-    public LinearScalePutReqDto toQuestionAddUpdateReq(LinearScaleDetailsDto questionRes) {
-        var ls = new LinearScalePutReqDto();
+    public LinearScaleAddReqDto toQuestionAddUpdateReq(LinearScaleDetailsDto questionRes) {
+        var ls = new LinearScaleAddReqDto();
 
         populateCommonFields(questionRes, ls);
 
@@ -123,11 +123,11 @@ public class LinearScaleManager extends QuestionManager<LinearScale, LinearScale
     }
 
     @Override
-    public void delete(UUID formId, Long questionId) {
+    public void delete(Long questionId) {
         linearScaleRepository.deleteQuestion(questionId);
     }
 
-    private void setPropertiesForNew(LinearScalePutReqDto source, LinearScale target, Question question) {
+    private void setPropertiesForNew(LinearScaleAddReqDto source, LinearScale target, Question question) {
         target.setQuestion(question);
         target.setFromNumber(source.getFromNumber());
         target.setToNumber(source.getToNumber());

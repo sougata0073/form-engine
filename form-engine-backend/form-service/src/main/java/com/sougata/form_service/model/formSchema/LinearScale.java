@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.FieldNameConstants;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Table(name = "linear_scales", schema = "form_schema")
@@ -14,6 +16,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
+@FieldNameConstants
+@DynamicUpdate
 public class LinearScale extends AnyTypeQuestion {
 
     @Column(nullable = false)

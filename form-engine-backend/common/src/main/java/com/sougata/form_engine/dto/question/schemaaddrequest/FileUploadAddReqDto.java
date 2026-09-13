@@ -1,4 +1,4 @@
-package com.sougata.form_engine.dto.question.schemaputrequest;
+package com.sougata.form_engine.dto.question.schemaaddrequest;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-public class FileUploadPutReqDto extends QuestionPutReqDto {
+public class FileUploadAddReqDto extends QuestionAddReqDto {
 
     @NotNull
     private List<String> allowedFileCategories;

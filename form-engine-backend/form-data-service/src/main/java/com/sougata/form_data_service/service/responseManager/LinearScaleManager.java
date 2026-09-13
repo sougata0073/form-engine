@@ -9,7 +9,6 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.LinearScaleResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service("LINEAR_SCALE_RESPONSE_MANAGER")
 public class LinearScaleManager extends ResponseManager<LinearScaleResponsePutReqDto> {
@@ -23,7 +22,6 @@ public class LinearScaleManager extends ResponseManager<LinearScaleResponsePutRe
     }
 
     @Override
-    @Transactional
     public void create(LinearScaleResponsePutReqDto response, FormResponse formResponse) {
         LinearScale linearScale = new LinearScale();
 

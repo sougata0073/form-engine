@@ -2,7 +2,7 @@ package com.sougata.form_service.service.formSchema.questionManager;
 
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.RatingDetailsDto;
-import com.sougata.form_engine.dto.question.schemaputrequest.RatingPutReqDto;
+import com.sougata.form_engine.dto.question.schemaaddrequest.RatingAddReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.RatingTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.Form;
@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service("RATING_QUESTION_MANAGER")
-public class RatingManager extends QuestionManager<Rating, RatingPutReqDto, RatingDetailsDto, RatingTemplateDetails> {
+public class RatingManager extends QuestionManager<Rating, RatingAddReqDto, RatingDetailsDto, RatingTemplateDetails> {
 
     private final RatingRepository ratingRepository;
 
@@ -34,7 +34,7 @@ public class RatingManager extends QuestionManager<Rating, RatingPutReqDto, Rati
 
     @Override
     @Transactional
-    public RatingDetailsDto create(UUID formId, RatingPutReqDto crudDto) {
+    public RatingDetailsDto create(UUID formId, RatingAddReqDto crudDto) {
         var newR = new Rating();
 
         var question = createQuestion(crudDto, formId);
@@ -48,12 +48,12 @@ public class RatingManager extends QuestionManager<Rating, RatingPutReqDto, Rati
 
     @Override
     @Transactional
-    public RatingDetailsDto create(UUID formId, Long questionId, RatingPutReqDto questionAddUpdateReq) {
+    public RatingDetailsDto create(UUID formId, Long questionId, RatingAddReqDto questionAddReq) {
         var newR = new Rating();
 
-        var question = updateQuestion(questionId, questionAddUpdateReq);
+        var question = updateQuestion(questionId, questionAddReq);
 
-        setPropertiesForNew(questionAddUpdateReq, newR, question);
+        setPropertiesForNew(questionAddReq, newR, question);
 
         var saved = ratingRepository.save(newR);
 
@@ -62,7 +62,7 @@ public class RatingManager extends QuestionManager<Rating, RatingPutReqDto, Rati
 
     @Override
     @Transactional
-    public RatingDetailsDto update(UUID formId, Long questionId, RatingPutReqDto questionAddUpdateReq) {
+    public RatingDetailsDto update(UUID formId, Long questionId, RatingAddReqDto questionAddUpdateReq) {
         Rating r = ratingRepository.findByQuestionId(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(getQuestionType(), questionId));
 
@@ -94,8 +94,8 @@ public class RatingManager extends QuestionManager<Rating, RatingPutReqDto, Rati
     }
 
     @Override
-    public RatingPutReqDto toQuestionAddUpdateReq(RatingDetailsDto questionRes) {
-        var r = new RatingPutReqDto();
+    public RatingAddReqDto toQuestionAddUpdateReq(RatingDetailsDto questionRes) {
+        var r = new RatingAddReqDto();
 
         populateCommonFields(questionRes, r);
 
@@ -123,11 +123,11 @@ public class RatingManager extends QuestionManager<Rating, RatingPutReqDto, Rati
     }
 
     @Override
-    public void delete(UUID formId, Long questionId) {
+    public void delete(Long questionId) {
         ratingRepository.deleteQuestion(questionId);
     }
 
-    private void setPropertiesForNew(RatingPutReqDto source, Rating target, Question question) {
+    private void setPropertiesForNew(RatingAddReqDto source, Rating target, Question question) {
         target.setQuestion(question);
         target.setMaxRatingNumber(source.getMaxRatingNumber());
         target.setRatingIcon(source.getRatingIcon());

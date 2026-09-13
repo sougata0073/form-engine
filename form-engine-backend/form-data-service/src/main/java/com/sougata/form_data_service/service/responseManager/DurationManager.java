@@ -9,7 +9,6 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.DurationResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service("DURATION_RESPONSE_MANAGER")
 public class DurationManager extends ResponseManager<DurationResponsePutReqDto> {
@@ -23,7 +22,6 @@ public class DurationManager extends ResponseManager<DurationResponsePutReqDto> 
     }
 
     @Override
-    @Transactional
     public void create(DurationResponsePutReqDto response, FormResponse formResponse) {
         Duration duration = new Duration();
 

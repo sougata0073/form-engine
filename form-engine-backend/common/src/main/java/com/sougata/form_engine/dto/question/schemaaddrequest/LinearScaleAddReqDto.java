@@ -1,4 +1,4 @@
-package com.sougata.form_engine.dto.question.schemaputrequest;
+package com.sougata.form_engine.dto.question.schemaaddrequest;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class LinearScalePutReqDto extends QuestionPutReqDto {
+public class LinearScaleAddReqDto extends QuestionAddReqDto {
 
     @NotNull
     private Integer fromNumber;

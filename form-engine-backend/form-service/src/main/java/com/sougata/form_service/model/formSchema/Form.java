@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.FieldNameConstants;
+import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
@@ -20,6 +22,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
+@FieldNameConstants
+@DynamicUpdate
 public class Form extends Auditable {
 
     @Id

@@ -1,4 +1,4 @@
-package com.sougata.form_engine.dto.question.schemaputrequest;
+package com.sougata.form_engine.dto.question.schemaaddrequest;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-public class MultipleChoicePutReqDto extends QuestionPutReqDto {
+public class DropdownAddReqDto extends QuestionAddReqDto {
 
     @NotNull
     @Size(min = 1, max = 20)
@@ -28,5 +28,4 @@ public class MultipleChoicePutReqDto extends QuestionPutReqDto {
         private Long id;
         private @Length(min = 1) String option;
     }
-
 }

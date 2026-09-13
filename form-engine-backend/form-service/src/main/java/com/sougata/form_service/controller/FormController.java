@@ -5,8 +5,8 @@ import com.sougata.form_engine.constant.cache.QuestionCacheNames;
 import com.sougata.form_engine.dto.form.*;
 import com.sougata.form_engine.dto.others.SuccessMessageDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
-import com.sougata.form_engine.dto.question.schemaputrequest.QuestionOrderUpdateReqDto;
-import com.sougata.form_engine.dto.question.schemaputrequest.QuestionPutReqDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.QuestionOrderUpdateReqDto;
+import com.sougata.form_engine.dto.question.schemaaddrequest.QuestionAddReqDto;
 import com.sougata.form_engine.dto.question.summary.QuestionSummariesDto;
 import com.sougata.form_engine.dto.question.summary.QuestionSummaryDto;
 import com.sougata.form_service.service.formSchema.FormService;
@@ -141,7 +141,7 @@ public class FormController {
     @PostMapping(path = "{formId}/questions")
     public ResponseEntity<QuestionDetailsDto> addQuestion(
             @PathVariable("formId") UUID formId,
-            @Valid @RequestBody QuestionPutReqDto body
+            @Valid @RequestBody QuestionAddReqDto body
     ) {
         var res = questionService.createQuestion(formId, body);
         return new ResponseEntity<>(res, HttpStatus.CREATED);
@@ -151,7 +151,7 @@ public class FormController {
     public QuestionDetailsDto updateQuestion(
             @PathVariable("formId") UUID formId,
             @PathVariable("questionId") Long questionId,
-            @Valid @RequestBody QuestionPutReqDto body
+            @Valid @RequestBody QuestionAddReqDto body
     ) {
         return questionService.updateQuestion(formId, questionId, body);
     }

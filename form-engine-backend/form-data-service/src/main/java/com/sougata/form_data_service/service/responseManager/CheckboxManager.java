@@ -9,7 +9,6 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.CheckboxResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service("CHECKBOX_RESPONSE_MANAGER")
 public class CheckboxManager extends ResponseManager<CheckboxResponsePutReqDto> {
@@ -23,7 +22,6 @@ public class CheckboxManager extends ResponseManager<CheckboxResponsePutReqDto> 
     }
 
     @Override
-    @Transactional
     public void create(CheckboxResponsePutReqDto response, FormResponse formResponse) {
         Checkbox cb = new Checkbox();
 

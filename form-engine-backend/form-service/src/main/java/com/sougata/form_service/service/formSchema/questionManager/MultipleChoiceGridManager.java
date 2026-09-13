@@ -2,7 +2,7 @@ package com.sougata.form_service.service.formSchema.questionManager;
 
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.MultipleChoiceGridDetailsDto;
-import com.sougata.form_engine.dto.question.schemaputrequest.MultipleChoiceGridPutReqDto;
+import com.sougata.form_engine.dto.question.schemaaddrequest.MultipleChoiceGridAddReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.MultipleChoiceGridTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.*;
@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service("MULTIPLE_CHOICE_GRID_QUESTION_MANAGER")
-public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGrid, MultipleChoiceGridPutReqDto, MultipleChoiceGridDetailsDto, MultipleChoiceGridTemplateDetails> {
+public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGrid, MultipleChoiceGridAddReqDto, MultipleChoiceGridDetailsDto, MultipleChoiceGridTemplateDetails> {
 
     private final MultipleChoiceGridRepository multipleChoiceGridRepository;
 
@@ -33,7 +33,7 @@ public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGri
 
     @Override
     @Transactional
-    public MultipleChoiceGridDetailsDto create(UUID formId, MultipleChoiceGridPutReqDto crudDto) {
+    public MultipleChoiceGridDetailsDto create(UUID formId, MultipleChoiceGridAddReqDto crudDto) {
         var newMcg = new MultipleChoiceGrid();
 
         var question = createQuestion(crudDto, formId);
@@ -47,12 +47,12 @@ public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGri
 
     @Override
     @Transactional
-    public MultipleChoiceGridDetailsDto create(UUID formId, Long questionId, MultipleChoiceGridPutReqDto questionAddUpdateReq) {
+    public MultipleChoiceGridDetailsDto create(UUID formId, Long questionId, MultipleChoiceGridAddReqDto questionAddReq) {
         var newMcg = new MultipleChoiceGrid();
 
-        var question = updateQuestion(questionId, questionAddUpdateReq);
+        var question = updateQuestion(questionId, questionAddReq);
 
-        setPropertiesForNew(questionAddUpdateReq, newMcg, question);
+        setPropertiesForNew(questionAddReq, newMcg, question);
 
         var saved = multipleChoiceGridRepository.save(newMcg);
 
@@ -61,7 +61,7 @@ public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGri
 
     @Override
     @Transactional
-    public MultipleChoiceGridDetailsDto update(UUID formId, Long questionId, MultipleChoiceGridPutReqDto questionAddUpdateReq) {
+    public MultipleChoiceGridDetailsDto update(UUID formId, Long questionId, MultipleChoiceGridAddReqDto questionAddUpdateReq) {
         MultipleChoiceGrid mcg = multipleChoiceGridRepository.findByQuestionId(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(QuestionType.MULTIPLE_CHOICE_GRID, questionId));
 
@@ -71,7 +71,7 @@ public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGri
         Map<Long, MultipleChoiceGridRow> existingRows = mcg.getRows().stream()
                 .collect(Collectors.toMap(MultipleChoiceGridRow::getId, row -> row));
         Set<Long> requestRowIds = questionAddUpdateReq.getRows().stream()
-                .map(MultipleChoiceGridPutReqDto.Row::getId)
+                .map(MultipleChoiceGridAddReqDto.Row::getId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
@@ -102,7 +102,7 @@ public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGri
         Map<Long, MultipleChoiceGridColumn> existingColumns = mcg.getColumns().stream()
                 .collect(Collectors.toMap(MultipleChoiceGridColumn::getId, column -> column));
         Set<Long> requestColumnIds = questionAddUpdateReq.getColumns().stream()
-                .map(MultipleChoiceGridPutReqDto.Column::getId)
+                .map(MultipleChoiceGridAddReqDto.Column::getId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
@@ -168,19 +168,19 @@ public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGri
     }
 
     @Override
-    public MultipleChoiceGridPutReqDto toQuestionAddUpdateReq(MultipleChoiceGridDetailsDto questionRes) {
-        var mcg = new MultipleChoiceGridPutReqDto();
+    public MultipleChoiceGridAddReqDto toQuestionAddUpdateReq(MultipleChoiceGridDetailsDto questionRes) {
+        var mcg = new MultipleChoiceGridAddReqDto();
 
         populateCommonFields(questionRes, mcg);
 
         mcg.setRows(
                 questionRes.getRows().stream()
-                        .map(r -> new MultipleChoiceGridPutReqDto.Row(null, r.getRow()))
+                        .map(r -> new MultipleChoiceGridAddReqDto.Row(null, r.getRow()))
                         .toList()
         );
         mcg.setColumns(
                 questionRes.getColumns().stream()
-                        .map(c -> new MultipleChoiceGridPutReqDto.Column(null, c.getColumn()))
+                        .map(c -> new MultipleChoiceGridAddReqDto.Column(null, c.getColumn()))
                         .toList()
         );
         mcg.setEachRowRequired(questionRes.getEachRowRequired());
@@ -233,11 +233,11 @@ public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGri
 
     @Override
     @Transactional
-    public void delete(UUID formId, Long questionId) {
+    public void delete(Long questionId) {
         multipleChoiceGridRepository.deleteQuestion(questionId);
     }
 
-    private void setPropertiesForNew(MultipleChoiceGridPutReqDto source, MultipleChoiceGrid target, Question question) {
+    private void setPropertiesForNew(MultipleChoiceGridAddReqDto source, MultipleChoiceGrid target, Question question) {
         var rows = new ArrayList<MultipleChoiceGridRow>();
         var columns = new ArrayList<MultipleChoiceGridColumn>();
 

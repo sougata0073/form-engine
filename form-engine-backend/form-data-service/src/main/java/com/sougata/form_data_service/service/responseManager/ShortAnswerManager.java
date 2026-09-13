@@ -9,7 +9,6 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.ShortAnswerResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service("SHORT_ANSWER_RESPONSE_MANAGER")
 public class ShortAnswerManager extends ResponseManager<ShortAnswerResponsePutReqDto> {
@@ -23,7 +22,6 @@ public class ShortAnswerManager extends ResponseManager<ShortAnswerResponsePutRe
     }
 
     @Override
-    @Transactional
     public void create(ShortAnswerResponsePutReqDto response, FormResponse formResponse) {
         ShortAnswer shortAnswer = new ShortAnswer();
 

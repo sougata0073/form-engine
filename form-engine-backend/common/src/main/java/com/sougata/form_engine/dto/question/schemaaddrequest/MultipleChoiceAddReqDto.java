@@ -1,6 +1,5 @@
-package com.sougata.form_engine.dto.question.schemaputrequest;
+package com.sougata.form_engine.dto.question.schemaaddrequest;
 
-import com.sougata.form_engine.dto.validation.config.ValidationConfig;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -15,15 +14,11 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-public class CheckboxPutReqDto extends QuestionPutReqDto {
+public class MultipleChoiceAddReqDto extends QuestionAddReqDto {
 
     @NotNull
     @Size(min = 1, max = 20)
     private List<@Valid Option> options;
-
-    @Valid
-    @NotNull
-    private ValidationConfig validationConfig;
 
     @Getter
     @Setter

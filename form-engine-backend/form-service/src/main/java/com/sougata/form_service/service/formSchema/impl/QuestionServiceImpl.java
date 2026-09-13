@@ -8,8 +8,9 @@ import com.sougata.form_engine.dto.form.FormDetailsDto;
 import com.sougata.form_engine.dto.messaging.QuestionDeleteMessage;
 import com.sougata.form_engine.dto.others.SuccessMessageDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
-import com.sougata.form_engine.dto.question.schemaputrequest.QuestionOrderUpdateReqDto;
-import com.sougata.form_engine.dto.question.schemaputrequest.QuestionPutReqDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.QuestionOrderUpdateReqDto;
+import com.sougata.form_engine.dto.question.schemaaddrequest.QuestionAddReqDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.QuestionUpdateReqDto;
 import com.sougata.form_engine.dto.question.summary.QuestionSummariesDto;
 import com.sougata.form_engine.dto.question.summary.QuestionSummaryDto;
 import com.sougata.form_service.configuration.AppConfiguration;
@@ -45,7 +46,7 @@ public class QuestionServiceImpl implements QuestionService {
     private final AppConfiguration appConfiguration;
 
     @Override
-    public QuestionDetailsDto createQuestion(UUID formId, QuestionPutReqDto dto) {
+    public QuestionDetailsDto createQuestion(UUID formId, QuestionAddReqDto dto) {
         var questionManager = questionManagerFactory.get(dto.getQuestionType());
         var question = questionManager.create(formId, dto);
 
@@ -59,7 +60,7 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     @Transactional
-    public QuestionDetailsDto updateQuestion(UUID formId, Long questionId, QuestionPutReqDto dto) {
+    public QuestionDetailsDto updateQuestion(UUID formId, Long questionId, QuestionUpdateReqDto dto) {
 
         var prevQType = questionRepository.findQuestionTypeById(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(questionId))
@@ -75,7 +76,7 @@ public class QuestionServiceImpl implements QuestionService {
             var prevManager = questionManagerFactory.get(prevQType);
             var newManager = questionManagerFactory.get(dto.getQuestionType());
 
-            prevManager.delete(formId, questionId);
+            prevManager.delete(questionId);
 
             question = newManager.create(formId, questionId, dto);
         }

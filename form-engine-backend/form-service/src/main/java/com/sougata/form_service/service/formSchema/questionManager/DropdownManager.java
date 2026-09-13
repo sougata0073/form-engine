@@ -2,7 +2,8 @@ package com.sougata.form_service.service.formSchema.questionManager;
 
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.DropdownDetailsDto;
-import com.sougata.form_engine.dto.question.schemaputrequest.DropdownPutReqDto;
+import com.sougata.form_engine.dto.question.schemaaddrequest.DropdownAddReqDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.DropdownUpdateReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.DropdownTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.Dropdown;
@@ -16,11 +17,12 @@ import com.sougata.form_service.service.formSchema.QuestionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.UUID;
 
 @Service("DROPDOWN_QUESTION_MANAGER")
-public class DropdownManager extends QuestionManager<Dropdown, DropdownPutReqDto, DropdownDetailsDto, DropdownTemplateDetails> {
+public class DropdownManager extends QuestionManager<Dropdown, DropdownAddReqDto, DropdownUpdateReqDto, DropdownDetailsDto, DropdownTemplateDetails> {
 
     private final DropdownRepository dropdownRepository;
 
@@ -36,7 +38,7 @@ public class DropdownManager extends QuestionManager<Dropdown, DropdownPutReqDto
 
     @Override
     @Transactional
-    public DropdownDetailsDto create(UUID formId, DropdownPutReqDto crudDto) {
+    public DropdownDetailsDto create(UUID formId, DropdownAddReqDto crudDto) {
         var newDd = new Dropdown();
 
         var question = createQuestion(crudDto, formId);
@@ -50,12 +52,12 @@ public class DropdownManager extends QuestionManager<Dropdown, DropdownPutReqDto
 
     @Override
     @Transactional
-    public DropdownDetailsDto create(UUID formId, Long questionId, DropdownPutReqDto questionAddUpdateReq) {
+    public DropdownDetailsDto create(UUID formId, Long questionId, DropdownAddReqDto questionAddReq) {
         var newDd = new Dropdown();
 
-        var question = updateQuestion(questionId, questionAddUpdateReq);
+        var question = updateQuestion(questionId, questionAddReq);
 
-        setPropertiesForNew(questionAddUpdateReq, newDd, question);
+        setPropertiesForNew(questionAddReq, newDd, question);
 
         var saved = dropdownRepository.save(newDd);
 
@@ -64,40 +66,42 @@ public class DropdownManager extends QuestionManager<Dropdown, DropdownPutReqDto
 
     @Override
     @Transactional
-    public DropdownDetailsDto update(UUID formId, Long questionId, DropdownPutReqDto questionAddUpdateReq) {
+    public DropdownDetailsDto update(UUID formId, Long questionId, DropdownUpdateReqDto questionUpdateReq) {
         Dropdown dd = dropdownRepository.findByQuestionId(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(QuestionType.DROPDOWN, questionId));
 
-        var question = updateQuestion(questionId, questionAddUpdateReq);
+        var question = updateQuestion(questionId, questionUpdateReq);
 
-        Map<Long, DropdownOption> existingOptions = dd.getOptions().stream()
-                .collect(Collectors.toMap(DropdownOption::getId, option -> option));
-        Set<Long> requestOptionIds = questionAddUpdateReq.getOptions().stream()
-                .map(DropdownPutReqDto.Option::getId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+//        Map<Long, DropdownOption> existingOptions = dd.getOptions().stream()
+//                .collect(Collectors.toMap(DropdownOption::getId, option -> option));
+//        Set<Long> requestOptionIds = questionUpdateReq.getOptions().stream()
+//                .map(DropdownAddReqDto.Option::getId)
+//                .filter(Objects::nonNull)
+//                .collect(Collectors.toSet());
+//
+//        dd.getOptions().removeIf(option -> !requestOptionIds.contains(option.getId()));
+//
+//        for (int i = 0; i < questionUpdateReq.getOptions().size(); i++) {
+//            var dto = questionUpdateReq.getOptions().get(i);
+//
+//            if (dto.getId() == null) {
+//                DropdownOption option = new DropdownOption();
+//                option.setOption(dto.getOption());
+//                option.setOrderIndex(i);
+//                option.setDropdown(dd);
+//
+//                dd.getOptions().add(option);
+//            } else {
+//                DropdownOption option = existingOptions.get(dto.getId());
+//                if (option == null) {
+//                    throw new IllegalArgumentException("Invalid dropdown option id: " + dto.getId());
+//                }
+//                option.setOption(dto.getOption());
+//                option.setOrderIndex(i);
+//            }
+//        }
 
-        dd.getOptions().removeIf(option -> !requestOptionIds.contains(option.getId()));
-
-        for (int i = 0; i < questionAddUpdateReq.getOptions().size(); i++) {
-            var dto = questionAddUpdateReq.getOptions().get(i);
-
-            if (dto.getId() == null) {
-                DropdownOption option = new DropdownOption();
-                option.setOption(dto.getOption());
-                option.setOrderIndex(i);
-                option.setDropdown(dd);
-
-                dd.getOptions().add(option);
-            } else {
-                DropdownOption option = existingOptions.get(dto.getId());
-                if (option == null) {
-                    throw new IllegalArgumentException("Invalid dropdown option id: " + dto.getId());
-                }
-                option.setOption(dto.getOption());
-                option.setOrderIndex(i);
-            }
-        }
+        questionUpdateReq.getUpdateFields().contains()
 
         dropdownRepository.save(dd);
 
@@ -111,7 +115,7 @@ public class DropdownManager extends QuestionManager<Dropdown, DropdownPutReqDto
 
     @Override
     @Transactional
-    public void delete(UUID formId, Long questionId) {
+    public void delete(Long questionId) {
         dropdownRepository.deleteQuestion(questionId);
     }
 
@@ -137,14 +141,14 @@ public class DropdownManager extends QuestionManager<Dropdown, DropdownPutReqDto
     }
 
     @Override
-    public DropdownPutReqDto toQuestionAddUpdateReq(DropdownDetailsDto questionRes) {
-        var dd = new DropdownPutReqDto();
+    public DropdownAddReqDto toQuestionAddUpdateReq(DropdownDetailsDto questionRes) {
+        var dd = new DropdownAddReqDto();
 
         populateCommonFields(questionRes, dd);
 
         dd.setOptions(
                 questionRes.getOptions().stream()
-                        .map(op -> new DropdownPutReqDto.Option(null, op.getOption()))
+                        .map(op -> new DropdownAddReqDto.Option(null, op.getOption()))
                         .toList()
         );
 
@@ -173,7 +177,7 @@ public class DropdownManager extends QuestionManager<Dropdown, DropdownPutReqDto
         return dropdownRepository.save(d);
     }
 
-    private void setPropertiesForNew(DropdownPutReqDto source, Dropdown target, Question question) {
+    private void setPropertiesForNew(DropdownAddReqDto source, Dropdown target, Question question) {
         var options = new ArrayList<DropdownOption>();
 
         for (int i = 0; i < source.getOptions().size(); i++) {

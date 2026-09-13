@@ -2,7 +2,8 @@ package com.sougata.form_service.service.formSchema.questionManager;
 
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
-import com.sougata.form_engine.dto.question.schemaputrequest.QuestionPutReqDto;
+import com.sougata.form_engine.dto.question.schemaaddrequest.QuestionAddReqDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.QuestionUpdateReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.QuestionTemplateDetails;
 import com.sougata.form_service.exception.NoQuestionManagerFoundException;
 import com.sougata.form_service.model.formSchema.AnyTypeQuestion;
@@ -24,8 +25,8 @@ public class QuestionManagerFactory {
     }
 
     @SuppressWarnings("unchecked")
-    public <Q extends AnyTypeQuestion, QAUR extends QuestionPutReqDto, QR extends QuestionDetailsDto, QTD extends QuestionTemplateDetails>
-    QuestionManager<Q, QAUR, QR, QTD> get(QuestionType questionType) {
+    public <Q extends AnyTypeQuestion, QAR extends QuestionAddReqDto, QUR extends QuestionUpdateReqDto, QR extends QuestionDetailsDto, QTD extends QuestionTemplateDetails>
+    QuestionManager<Q, QAR, QUR, QR, QTD> get(QuestionType questionType) {
         try {
             return applicationContext.getBean(
                     String.format("%s_QUESTION_MANAGER", questionType.name()),
@@ -37,10 +38,10 @@ public class QuestionManagerFactory {
     }
 
     @SuppressWarnings("unchecked")
-    public <Q extends AnyTypeQuestion, QAUR extends QuestionPutReqDto, QR extends QuestionDetailsDto, QTD extends QuestionTemplateDetails>
-    List<QuestionManager<Q, QAUR, QR, QTD>> getAll() {
+    public <Q extends AnyTypeQuestion, QAR extends QuestionAddReqDto, QUR extends QuestionUpdateReqDto, QR extends QuestionDetailsDto, QTD extends QuestionTemplateDetails>
+    List<QuestionManager<Q, QAR, QUR, QR, QTD>> getAll() {
 
-        List<QuestionManager<Q, QAUR, QR, QTD>> repos = new ArrayList<>();
+        List<QuestionManager<Q, QAR, QUR, QR, QTD>> repos = new ArrayList<>();
 
         for (QuestionType questionType : QuestionType.values()) {
             var repo = applicationContext.getBean(

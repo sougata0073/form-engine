@@ -1,4 +1,4 @@
-package com.sougata.form_engine.dto.question.schemaputrequest;
+package com.sougata.form_engine.dto.question.schemaaddrequest;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -14,8 +14,9 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-public class TickBoxGridPutReqDto extends QuestionPutReqDto {
+public class MultipleChoiceGridAddReqDto extends QuestionAddReqDto {
 
+    @NotNull
     private Boolean eachRowRequired;
 
     @NotNull
@@ -43,5 +44,4 @@ public class TickBoxGridPutReqDto extends QuestionPutReqDto {
         private Long id;
         private @Length(min = 1) String column;
     }
-
 }

@@ -2,7 +2,8 @@ package com.sougata.form_service.service.formSchema;
 
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
-import com.sougata.form_engine.dto.question.schemaputrequest.QuestionPutReqDto;
+import com.sougata.form_engine.dto.question.schemaaddrequest.QuestionAddReqDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.QuestionUpdateReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.QuestionTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.AnyTypeQuestion;
@@ -15,7 +16,8 @@ import java.util.UUID;
 public abstract class
 QuestionManager<
         Q extends AnyTypeQuestion,
-        QAUR extends QuestionPutReqDto,
+        QAR extends QuestionAddReqDto,
+        QUR extends QuestionUpdateReqDto,
         QR extends QuestionDetailsDto,
         QTD extends QuestionTemplateDetails
         > {
@@ -30,21 +32,21 @@ QuestionManager<
 
     public abstract QR get(UUID formId, Long questionId);
 
-    public abstract QR create(UUID formId, QAUR crudDto);
+    public abstract QR create(UUID formId, QAR crudDto);
 
-    public abstract QR create(UUID formId, Long questionId, QAUR questionAddUpdateReq);
+    public abstract QR create(UUID formId, Long questionId, QAR questionAddReq);
 
-    public abstract QR update(UUID formId, Long questionId, QAUR questionAddUpdateReq);
+    public abstract QR update(UUID formId, Long questionId, QUR questionUpdateReq);
 
     public abstract QuestionType getQuestionType();
 
-    public abstract void delete(UUID formId, Long questionId);
+    public abstract void delete(Long questionId);
 
     public abstract QR toQuestionResDto(Q childQuestion);
 
     public abstract QR toQuestionResDto(Q childQuestion, Question parentQuestion);
 
-    public abstract QAUR toQuestionAddUpdateReq(QR questionRes);
+    public abstract QAR toQuestionAddUpdateReq(QR questionRes);
 
     public abstract Q createFromTemplate(QTD template, Form form);
 
@@ -66,14 +68,14 @@ QuestionManager<
         questionRes.setRequired(parentQuestion.getRequired());
     }
 
-    public void populateCommonFields(QR questionRes, QAUR questionAddUpdateRequest) {
+    public void populateCommonFields(QR questionRes, QAR questionAddUpdateRequest) {
         questionAddUpdateRequest.setQuestion(questionRes.getQuestion());
         questionAddUpdateRequest.setQuestionType(getQuestionType());
         questionAddUpdateRequest.setDescription(questionRes.getDescription());
         questionAddUpdateRequest.setRequired(questionRes.getRequired());
     }
 
-    public Question createQuestion(QAUR source, UUID formId) {
+    public Question createQuestion(QAR source, UUID formId) {
         var newQ = new Question();
 
         newQ.setForm(formService.getFormById(formId));
@@ -87,7 +89,7 @@ QuestionManager<
         return questionRepository.save(newQ);
     }
 
-    public Question updateQuestion(Long questionId, QAUR source) {
+    public Question updateQuestion(Long questionId, QAR source) {
         var q = questionRepository.findById(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(questionId));
 
@@ -95,6 +97,22 @@ QuestionManager<
         q.setDescription(source.getDescription());
         q.setRequired(source.getRequired());
         q.setQuestionType(getQuestionType());
+
+        return questionRepository.save(q);
+    }
+
+    public Question updateQuestion(Long questionId, QUR source) {
+        var q = questionRepository.findById(questionId)
+                .orElseThrow(() -> new QuestionNotFoundException(questionId));
+
+        source.getUpdateFields().forEach(field -> {
+            switch (field) {
+                case QUR.Fields.question -> q.setQuestion(source.getQuestion());
+                case QUR.Fields.description -> q.setDescription(source.getDescription());
+                case QUR.Fields.required -> q.setRequired(source.getRequired());
+                case QUR.Fields.questionType -> q.setQuestionType(getQuestionType());
+            }
+        });
 
         return questionRepository.save(q);
     }

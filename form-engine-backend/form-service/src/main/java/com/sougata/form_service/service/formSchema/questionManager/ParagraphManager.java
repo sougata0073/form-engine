@@ -3,7 +3,7 @@ package com.sougata.form_service.service.formSchema.questionManager;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.ParagraphDetailsDto;
-import com.sougata.form_engine.dto.question.schemaputrequest.ParagraphPutReqDto;
+import com.sougata.form_engine.dto.question.schemaaddrequest.ParagraphAddReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.ParagraphTemplateDetails;
 import com.sougata.form_engine.dto.validation.config.ValidationConfig;
 import com.sougata.form_engine.util.JsonUtil;
@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service("PARAGRAPH_QUESTION_MANAGER")
-public class ParagraphManager extends QuestionManager<Paragraph, ParagraphPutReqDto, ParagraphDetailsDto, ParagraphTemplateDetails> {
+public class ParagraphManager extends QuestionManager<Paragraph, ParagraphAddReqDto, ParagraphDetailsDto, ParagraphTemplateDetails> {
 
     private final ParagraphRepository paragraphRepository;
 
@@ -38,7 +38,7 @@ public class ParagraphManager extends QuestionManager<Paragraph, ParagraphPutReq
 
     @Override
     @Transactional
-    public ParagraphDetailsDto create(UUID formId, ParagraphPutReqDto crudDto) {
+    public ParagraphDetailsDto create(UUID formId, ParagraphAddReqDto crudDto) {
         var newP = new Paragraph();
 
         var question = createQuestion(crudDto, formId);
@@ -52,12 +52,12 @@ public class ParagraphManager extends QuestionManager<Paragraph, ParagraphPutReq
 
     @Override
     @Transactional
-    public ParagraphDetailsDto create(UUID formId, Long questionId, ParagraphPutReqDto questionAddUpdateReq) {
+    public ParagraphDetailsDto create(UUID formId, Long questionId, ParagraphAddReqDto questionAddReq) {
         var newP = new Paragraph();
 
-        var question = updateQuestion(questionId, questionAddUpdateReq);
+        var question = updateQuestion(questionId, questionAddReq);
 
-        setPropertiesForNew(questionAddUpdateReq, newP, question);
+        setPropertiesForNew(questionAddReq, newP, question);
 
         var saved = paragraphRepository.save(newP);
 
@@ -66,7 +66,7 @@ public class ParagraphManager extends QuestionManager<Paragraph, ParagraphPutReq
 
     @Override
     @Transactional
-    public ParagraphDetailsDto update(UUID formId, Long questionId, ParagraphPutReqDto questionAddUpdateReq) {
+    public ParagraphDetailsDto update(UUID formId, Long questionId, ParagraphAddReqDto questionAddUpdateReq) {
         Paragraph p = paragraphRepository.findByQuestionId(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(QuestionType.PARAGRAPH, questionId));
 
@@ -99,8 +99,8 @@ public class ParagraphManager extends QuestionManager<Paragraph, ParagraphPutReq
     }
 
     @Override
-    public ParagraphPutReqDto toQuestionAddUpdateReq(ParagraphDetailsDto questionRes) {
-        var p = new ParagraphPutReqDto();
+    public ParagraphAddReqDto toQuestionAddUpdateReq(ParagraphDetailsDto questionRes) {
+        var p = new ParagraphAddReqDto();
 
         populateCommonFields(questionRes, p);
 
@@ -126,11 +126,11 @@ public class ParagraphManager extends QuestionManager<Paragraph, ParagraphPutReq
     }
 
     @Override
-    public void delete(UUID formId, Long questionId) {
+    public void delete(Long questionId) {
         paragraphRepository.deleteQuestion(questionId);
     }
 
-    private void setPropertiesForNew(ParagraphPutReqDto source, Paragraph target, Question question) {
+    private void setPropertiesForNew(ParagraphAddReqDto source, Paragraph target, Question question) {
         target.setQuestion(question);
         target.setValidationConfig(JsonUtil.objectToOldJsonNode(source.getValidationConfig()));
     }

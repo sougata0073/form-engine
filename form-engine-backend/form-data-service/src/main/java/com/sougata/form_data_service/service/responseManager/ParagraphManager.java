@@ -9,7 +9,6 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.ParagraphResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service("PARAGRAPH_RESPONSE_MANAGER")
 public class ParagraphManager extends ResponseManager<ParagraphResponsePutReqDto> {
@@ -23,7 +22,6 @@ public class ParagraphManager extends ResponseManager<ParagraphResponsePutReqDto
     }
 
     @Override
-    @Transactional
     public void create(ParagraphResponsePutReqDto response, FormResponse formResponse) {
         Paragraph paragraph = new Paragraph();
 

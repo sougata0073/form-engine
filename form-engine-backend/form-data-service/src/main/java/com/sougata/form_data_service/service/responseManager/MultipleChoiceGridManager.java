@@ -9,7 +9,6 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.MultipleChoiceGridResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.stream.Collectors;
 
@@ -25,7 +24,6 @@ public class MultipleChoiceGridManager extends ResponseManager<MultipleChoiceGri
     }
 
     @Override
-    @Transactional
     public void create(MultipleChoiceGridResponsePutReqDto response, FormResponse formResponse) {
         MultipleChoiceGrid multipleChoiceGrid = new MultipleChoiceGrid();
 

@@ -2,7 +2,7 @@ package com.sougata.form_service.service.formSchema.questionManager;
 
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.TimeDetailsDto;
-import com.sougata.form_engine.dto.question.schemaputrequest.TimePutReqDto;
+import com.sougata.form_engine.dto.question.schemaaddrequest.TimeAddReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.TimeTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.Form;
@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service("TIME_QUESTION_MANAGER")
-public class TimeManager extends QuestionManager<Time, TimePutReqDto, TimeDetailsDto, TimeTemplateDetails> {
+public class TimeManager extends QuestionManager<Time, TimeAddReqDto, TimeDetailsDto, TimeTemplateDetails> {
 
     private final TimeRepository timeRepository;
 
@@ -34,7 +34,7 @@ public class TimeManager extends QuestionManager<Time, TimePutReqDto, TimeDetail
 
     @Override
     @Transactional
-    public TimeDetailsDto create(UUID formId, TimePutReqDto crudDto) {
+    public TimeDetailsDto create(UUID formId, TimeAddReqDto crudDto) {
         var newTime = new Time();
 
         var question = createQuestion(crudDto, formId);
@@ -48,10 +48,10 @@ public class TimeManager extends QuestionManager<Time, TimePutReqDto, TimeDetail
 
     @Override
     @Transactional
-    public TimeDetailsDto create(UUID formId, Long questionId, TimePutReqDto questionAddUpdateReq) {
+    public TimeDetailsDto create(UUID formId, Long questionId, TimeAddReqDto questionAddReq) {
         var newTime = new Time();
 
-        var question = updateQuestion(questionId, questionAddUpdateReq);
+        var question = updateQuestion(questionId, questionAddReq);
 
         newTime.setQuestion(question);
 
@@ -62,7 +62,7 @@ public class TimeManager extends QuestionManager<Time, TimePutReqDto, TimeDetail
 
     @Override
     @Transactional
-    public TimeDetailsDto update(UUID formId, Long questionId, TimePutReqDto questionAddUpdateReq) {
+    public TimeDetailsDto update(UUID formId, Long questionId, TimeAddReqDto questionAddUpdateReq) {
         Time t = timeRepository.findByQuestionId(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(QuestionType.TIME, questionId));
 
@@ -88,8 +88,8 @@ public class TimeManager extends QuestionManager<Time, TimePutReqDto, TimeDetail
     }
 
     @Override
-    public TimePutReqDto toQuestionAddUpdateReq(TimeDetailsDto questionRes) {
-        var t = new TimePutReqDto();
+    public TimeAddReqDto toQuestionAddUpdateReq(TimeDetailsDto questionRes) {
+        var t = new TimeAddReqDto();
 
         populateCommonFields(questionRes, t);
 
@@ -112,7 +112,7 @@ public class TimeManager extends QuestionManager<Time, TimePutReqDto, TimeDetail
     }
 
     @Override
-    public void delete(UUID formId, Long questionId) {
+    public void delete(Long questionId) {
         timeRepository.deleteQuestion(questionId);
     }
 }

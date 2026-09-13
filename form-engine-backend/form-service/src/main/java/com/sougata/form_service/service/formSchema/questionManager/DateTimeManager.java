@@ -2,7 +2,8 @@ package com.sougata.form_service.service.formSchema.questionManager;
 
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.DateTimeDetailsDto;
-import com.sougata.form_engine.dto.question.schemaputrequest.DateTimePutReqDto;
+import com.sougata.form_engine.dto.question.schemaaddrequest.DateTimeAddReqDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.DateTimeUpdateReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.DateTimeTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.DateTime;
@@ -18,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service("DATE_TIME_QUESTION_MANAGER")
-public class DateTimeManager extends QuestionManager<DateTime, DateTimePutReqDto, DateTimeDetailsDto, DateTimeTemplateDetails> {
+public class DateTimeManager extends QuestionManager<DateTime, DateTimeAddReqDto, DateTimeUpdateReqDto, DateTimeDetailsDto, DateTimeTemplateDetails> {
 
     private final DateTimeRepository dateTimeRepository;
 
@@ -34,7 +35,7 @@ public class DateTimeManager extends QuestionManager<DateTime, DateTimePutReqDto
 
     @Override
     @Transactional
-    public DateTimeDetailsDto create(UUID formId, DateTimePutReqDto crudDto) {
+    public DateTimeDetailsDto create(UUID formId, DateTimeAddReqDto crudDto) {
         var newDt = new DateTime();
 
         var question = createQuestion(crudDto, formId);
@@ -48,10 +49,10 @@ public class DateTimeManager extends QuestionManager<DateTime, DateTimePutReqDto
 
     @Override
     @Transactional
-    public DateTimeDetailsDto create(UUID formId, Long questionId, DateTimePutReqDto questionAddUpdateReq) {
+    public DateTimeDetailsDto create(UUID formId, Long questionId, DateTimeAddReqDto questionAddReq) {
         var newDt = new DateTime();
 
-        var question = updateQuestion(questionId, questionAddUpdateReq);
+        var question = updateQuestion(questionId, questionAddReq);
 
         newDt.setQuestion(question);
 
@@ -62,11 +63,11 @@ public class DateTimeManager extends QuestionManager<DateTime, DateTimePutReqDto
 
     @Override
     @Transactional
-    public DateTimeDetailsDto update(UUID formId, Long questionId, DateTimePutReqDto questionAddUpdateReq) {
+    public DateTimeDetailsDto update(UUID formId, Long questionId, DateTimeUpdateReqDto questionUpdateReq) {
         var dt = dateTimeRepository.findByQuestionId(questionId)
-                .orElseThrow(() -> new QuestionNotFoundException(QuestionType.DATE_TIME, questionId));
+                .orElseThrow(() -> new QuestionNotFoundException(getQuestionType(), questionId));
 
-        var question = updateQuestion(questionId, questionAddUpdateReq);
+        var question = updateQuestion(questionId, questionUpdateReq);
 
         dateTimeRepository.save(dt);
 
@@ -79,7 +80,7 @@ public class DateTimeManager extends QuestionManager<DateTime, DateTimePutReqDto
     }
 
     @Override
-    public void delete(UUID formId, Long questionId) {
+    public void delete(Long questionId) {
         dateTimeRepository.deleteQuestion(questionId);
     }
 
@@ -98,8 +99,8 @@ public class DateTimeManager extends QuestionManager<DateTime, DateTimePutReqDto
     }
 
     @Override
-    public DateTimePutReqDto toQuestionAddUpdateReq(DateTimeDetailsDto questionRes) {
-        var dt = new DateTimePutReqDto();
+    public DateTimeAddReqDto toQuestionAddUpdateReq(DateTimeDetailsDto questionRes) {
+        var dt = new DateTimeAddReqDto();
 
         populateCommonFields(questionRes, dt);
 

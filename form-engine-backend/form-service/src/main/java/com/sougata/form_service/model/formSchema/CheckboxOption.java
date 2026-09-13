@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.FieldNameConstants;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.domain.Persistable;
@@ -16,6 +18,8 @@ import org.springframework.data.domain.Persistable;
 @NoArgsConstructor
 @Getter
 @Setter
+@FieldNameConstants
+@DynamicUpdate
 public class CheckboxOption implements Persistable<Long> {
 
     @Id

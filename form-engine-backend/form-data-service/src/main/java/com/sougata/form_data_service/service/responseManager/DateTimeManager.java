@@ -9,7 +9,6 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.DateTimeResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service("DATE_TIME_RESPONSE_MANAGER")
 public class DateTimeManager extends ResponseManager<DateTimeResponsePutReqDto> {
@@ -23,7 +22,6 @@ public class DateTimeManager extends ResponseManager<DateTimeResponsePutReqDto> 
     }
 
     @Override
-    @Transactional
     public void create(DateTimeResponsePutReqDto response, FormResponse formResponse) {
         DateTime dateTime = new DateTime();
 

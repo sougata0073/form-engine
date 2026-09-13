@@ -9,7 +9,6 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.DropdownResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service("DROPDOWN_RESPONSE_MANAGER")
 public class DropdownManager extends ResponseManager<DropdownResponsePutReqDto> {
@@ -23,7 +22,6 @@ public class DropdownManager extends ResponseManager<DropdownResponsePutReqDto> 
     }
 
     @Override
-    @Transactional
     public void create(DropdownResponsePutReqDto response, FormResponse formResponse) {
         Dropdown dropdown = new Dropdown();
 
