@@ -1,15 +1,16 @@
-import {Component, inject, OnInit, signal} from '@angular/core';
-import {EditFormQuestionComponent} from '../../../../type/edit-form-question-component';
-import {LinearScaleRes} from '../../../../model/edit-form/question/response/linear-scale-res';
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {NumberValidator} from '../../../../formValidator/number-validator';
-import {FormGroupValidator} from '../../../../formValidator/form-group-validator';
-import {MatError, MatFormField} from '@angular/material/input';
-import {MatOption, MatSelect} from '@angular/material/select';
-import {EditFormStateService} from '../../../../service/edit-form-state-service';
-import {MatIcon} from '@angular/material/icon';
-import {ArrayUtil} from '../../../../util/array-util';
-import {OnlyLinearScaleAddUpdateReq} from '../../../../model/edit-form/question/request/linear-scale-add-update-req';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { EditFormQuestionComponent } from '../../../../type/edit-form-question-component';
+import { LinearScaleRes } from '../../../../model/edit-form/question/response/linear-scale-res';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NumberValidator } from '../../../../formValidator/number-validator';
+import { FormGroupValidator } from '../../../../formValidator/form-group-validator';
+import { MatError, MatFormField } from '@angular/material/input';
+import { MatOption, MatSelect } from '@angular/material/select';
+import { EditFormStateService } from '../../../../service/edit-form-state-service';
+import { MatIcon } from '@angular/material/icon';
+import { ArrayUtil } from '../../../../util/array-util';
+import { OnlyLinearScaleAddUpdateReq } from '../../../../model/edit-form/question/addreq/linear-scale-add-req';
+import { LinearScaleUpdateReq, OnlyLinearScaleUpdateReq } from '../../../../model/edit-form/question/updatereq/linear-scale-update-req';
 
 @Component({
   selector: 'app-edit-form-linear-scale',
@@ -24,7 +25,7 @@ import {OnlyLinearScaleAddUpdateReq} from '../../../../model/edit-form/question/
   templateUrl: './edit-form-linear-scale.html',
   styleUrl: './edit-form-linear-scale.scss',
 })
-export class EditFormLinearScale extends EditFormQuestionComponent<LinearScaleRes, OnlyLinearScaleAddUpdateReq> implements OnInit {
+export class EditFormLinearScale extends EditFormQuestionComponent<LinearScaleRes, OnlyLinearScaleUpdateReq> implements OnInit {
 
   protected fromNumbers = signal<number[]>(ArrayUtil.fillByNumbers(1, 10))
   protected toNumbers = signal<number[]>(ArrayUtil.fillByNumbers(1, 10))
@@ -52,16 +53,19 @@ export class EditFormLinearScale extends EditFormQuestionComponent<LinearScaleRe
       this.previewNumbers.update(() => ArrayUtil.fillByNumbers(val.fromNumber ?? 0, val.toNumber ?? 0))
 
       this.emitCanSaveHasError()
-      this.updateQuestion.emit(this.getOnlyQuestionAddUpdateReq())
+
+      this.updateQuestion.emit(
+        {
+          fromNumber: this.question().fromNumber === val.fromNumber ? undefined : val.fromNumber!,
+          toNumber: this.question().toNumber === val.toNumber ? undefined : val.toNumber!,
+          updateFields: [
+            this.question().fromNumber === val.fromNumber ? undefined : 'fromNumber' satisfies keyof LinearScaleUpdateReq,
+            this.question().toNumber === val.fromNumber ? undefined : 'toNumber' satisfies keyof LinearScaleUpdateReq
+          ].filter(field => field !== undefined)
+        }
+      )
     })
     this.formGroup.statusChanges.subscribe(() => this.emitCanSaveHasError())
-  }
-
-  override getOnlyQuestionAddUpdateReq(): OnlyLinearScaleAddUpdateReq {
-    return {
-      fromNumber: this.formGroup.value.fromNumber!,
-      toNumber: this.formGroup.value.toNumber!
-    }
   }
 
   protected isNotFormValid(): string | null {

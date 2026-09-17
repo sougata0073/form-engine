@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.ShortAnswerDetailsDto;
 import com.sougata.form_engine.dto.question.schemaaddrequest.ShortAnswerAddReqDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.ShortAnswerUpdateReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.ShortAnswerTemplateDetails;
 import com.sougata.form_engine.dto.validation.config.ValidationConfig;
 import com.sougata.form_engine.util.JsonUtil;
@@ -22,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service("SHORT_ANSWER_QUESTION_MANAGER")
-public class ShortAnswerManager extends QuestionManager<ShortAnswer, ShortAnswerAddReqDto, ShortAnswerDetailsDto, ShortAnswerTemplateDetails> {
+public class ShortAnswerManager extends QuestionManager<ShortAnswer, ShortAnswerAddReqDto, ShortAnswerUpdateReqDto, ShortAnswerDetailsDto, ShortAnswerTemplateDetails> {
 
     private final ShortAnswerRepository shortAnswerRepository;
 
@@ -66,12 +67,15 @@ public class ShortAnswerManager extends QuestionManager<ShortAnswer, ShortAnswer
 
     @Override
     @Transactional
-    public ShortAnswerDetailsDto update(UUID formId, Long questionId, ShortAnswerAddReqDto questionAddUpdateReq) {
+    public ShortAnswerDetailsDto update(UUID formId, Long questionId, ShortAnswerUpdateReqDto questionUpdateReq) {
         ShortAnswer sa = shortAnswerRepository.findByQuestionId(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(QuestionType.SHORT_ANSWER, questionId));
 
-        updateQuestion(questionId, questionAddUpdateReq);
-        sa.setValidationConfig(JsonUtil.objectToOldJsonNode(questionAddUpdateReq.getValidationConfig()));
+        updateQuestion(questionId, questionUpdateReq);
+
+        if (questionUpdateReq.getUpdateFields().contains(ShortAnswerUpdateReqDto.Fields.validationConfig)) {
+            sa.setValidationConfig(JsonUtil.objectToOldJsonNode(questionUpdateReq.getValidationConfig()));
+        }
 
         shortAnswerRepository.save(sa);
 

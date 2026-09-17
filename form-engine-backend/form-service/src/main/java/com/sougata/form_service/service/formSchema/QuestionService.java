@@ -1,7 +1,9 @@
 package com.sougata.form_service.service.formSchema;
 
 import com.sougata.form_engine.dto.others.SuccessMessageDto;
+import com.sougata.form_engine.dto.question.details.MultipleQuestionDetailsDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.MultipleQuestionUpdateReqDto;
 import com.sougata.form_engine.dto.question.schemaupdatereq.QuestionOrderUpdateReqDto;
 import com.sougata.form_engine.dto.question.schemaaddrequest.QuestionAddReqDto;
 import com.sougata.form_engine.dto.question.summary.QuestionSummariesDto;
@@ -12,7 +14,7 @@ import java.util.UUID;
 public interface QuestionService {
     QuestionDetailsDto createQuestion(UUID formId, QuestionAddReqDto dto);
 
-    QuestionDetailsDto updateQuestion(UUID formId, Long questionId, QuestionAddReqDto dto);
+    MultipleQuestionDetailsDto updateQuestions(UUID formId, MultipleQuestionUpdateReqDto dto);
 
     SuccessMessageDto deleteQuestion(UUID formId, Long questionId);
 

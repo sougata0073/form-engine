@@ -1,19 +1,21 @@
-import {Component, inject, OnChanges, OnInit, signal, SimpleChanges} from '@angular/core';
-import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {MatError, MatFormField, MatInput, MatInputModule, MatLabel} from '@angular/material/input';
-import {EditFormQuestionComponent} from '../../../../type/edit-form-question-component';
-import {ShortAnswerRes} from '../../../../model/edit-form/question/response/short-answer-res';
-import {MatOption} from '@angular/material/core';
-import {MatSelect} from '@angular/material/select';
-import {ShortAnswerActiveValidationInputId, ShortAnswerConstant} from '../../../../constant/short-answer-constant';
-import {ValidationId} from '../../../../type/validation-id';
-import {AnyShortAnswerValidationConfig} from '../../../../type/any-short-answer-validation-config';
-import {FormGroupValidator} from '../../../../formValidator/form-group-validator';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {RegexValidator} from '../../../../formValidator/regex-validator';
-import {EditFormStateService} from '../../../../service/edit-form-state-service';
-import {QuestionType} from '../../../../type/question-type';
-import {OnlyShortAnswerAddUpdateReq} from '../../../../model/edit-form/question/request/short-answer-add-update-req';
+import { Component, inject, OnChanges, OnInit, signal, SimpleChanges } from '@angular/core';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatError, MatFormField, MatInput, MatInputModule, MatLabel } from '@angular/material/input';
+import { EditFormQuestionComponent } from '../../../../type/edit-form-question-component';
+import { ShortAnswerRes } from '../../../../model/edit-form/question/response/short-answer-res';
+import { MatOption } from '@angular/material/core';
+import { MatSelect } from '@angular/material/select';
+import { ShortAnswerActiveValidationInputId, ShortAnswerConstant } from '../../../../constant/short-answer-constant';
+import { ValidationId } from '../../../../type/validation-id';
+import { AnyShortAnswerValidationConfig } from '../../../../type/any-short-answer-validation-config';
+import { FormGroupValidator } from '../../../../formValidator/form-group-validator';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { RegexValidator } from '../../../../formValidator/regex-validator';
+import { EditFormStateService } from '../../../../service/edit-form-state-service';
+import { QuestionType } from '../../../../type/question-type';
+import { OnlyShortAnswerAddUpdateReq } from '../../../../model/edit-form/question/addreq/short-answer-add-req';
+import { OnlyParagraphUpdateReq } from '../../../../model/edit-form/question/updatereq/paragraph-update-req';
+import { ShortAnswerUpdateReq } from '../../../../model/edit-form/question/updatereq/short-answer-update-req';
 
 @Component({
   selector: 'app-edit-form-short-answer',
@@ -33,7 +35,7 @@ import {OnlyShortAnswerAddUpdateReq} from '../../../../model/edit-form/question/
   styleUrl: './edit-form-short-answer.scss',
 })
 export class EditFormShortAnswer
-  extends EditFormQuestionComponent<ShortAnswerRes<AnyShortAnswerValidationConfig>, OnlyShortAnswerAddUpdateReq<AnyShortAnswerValidationConfig>>
+  extends EditFormQuestionComponent<ShortAnswerRes<AnyShortAnswerValidationConfig>, OnlyParagraphUpdateReq>
   implements OnInit, OnChanges {
 
   private constant = new ShortAnswerConstant()
@@ -70,7 +72,14 @@ export class EditFormShortAnswer
       this.validationValueFg.reset()
       this.validationValueFg.markAsUntouched()
       this.emitCanSaveAndHasError()
-      this.updateQuestion.emit(this.getOnlyQuestionAddUpdateReq())
+
+      this.updateQuestion.emit(
+        {
+          validationConfig: this.getValidationConfig(),
+          updateFields: ['validationConfig' satisfies keyof ShortAnswerUpdateReq]
+        }
+      )
+
     })
     this.validationSelectorFg.controls.inputType.valueChanges.subscribe(val => {
       if (!val) return
@@ -81,11 +90,19 @@ export class EditFormShortAnswer
 
     this.validationValueFg.valueChanges.subscribe(() => {
       this.emitCanSaveAndHasError()
-      this.updateQuestion.emit(this.getOnlyQuestionAddUpdateReq())
+
+      this.updateQuestion.emit(
+        {
+          validationConfig: this.getValidationConfig(),
+          updateFields: ['validationConfig' satisfies keyof ShortAnswerUpdateReq]
+        }
+      )
     })
   }
 
-  ngOnChanges(changes: SimpleChanges) {
+  override ngOnChanges(changes: SimpleChanges) {
+    super.ngOnChanges(changes)
+
     const moreMenuItemIdsChange = changes['moreMenuItemIds']
     if (moreMenuItemIdsChange) {
 
@@ -102,12 +119,6 @@ export class EditFormShortAnswer
       }
 
       this.emitCanSaveAndHasError()
-    }
-  }
-
-  override getOnlyQuestionAddUpdateReq(): OnlyShortAnswerAddUpdateReq<AnyShortAnswerValidationConfig> {
-    return {
-      validationConfig: this.getValidationConfig()
     }
   }
 
@@ -143,7 +154,7 @@ export class EditFormShortAnswer
         validationType: validationIdMeta.validation.value
       })
 
-      this.validationValueFg.patchValue({...vCon})
+      this.validationValueFg.patchValue({ ...vCon })
 
       this.activeValidationInputId.set(this.constant.getByValidationId(vId).activeValidationInputId)
 
@@ -153,22 +164,22 @@ export class EditFormShortAnswer
 
   private getValidationConfig(): AnyShortAnswerValidationConfig {
     if (!this.showResponseValidation()) {
-      return {validationId: 'SHORT_ANSWER_NONE', errorText: null};
+      return { validationId: 'SHORT_ANSWER_NONE', errorText: null };
     }
 
     const validationId = this.getValidationId()
     const activeValidationInput = this.constant.getByValidationId(validationId).activeValidationInputId
 
-    const {number, fromNumber, toNumber, text, errorText} = this.validationValueFg.value
-    const common = {validationId: validationId, errorText: errorText ?? null}
+    const { number, fromNumber, toNumber, text, errorText } = this.validationValueFg.value
+    const common = { validationId: validationId, errorText: errorText ?? null }
 
     switch (activeValidationInput) {
       case 'NUMBER':
-        return {...common, number: number!}
+        return { ...common, number: number! }
       case 'FROM_TO_NUMBER':
-        return {...common, fromNumber: fromNumber!, toNumber: toNumber!}
+        return { ...common, fromNumber: fromNumber!, toNumber: toNumber! }
       case 'PATTERN':
-        return {...common, text: text!}
+        return { ...common, text: text! }
       case null:
         return common
     }

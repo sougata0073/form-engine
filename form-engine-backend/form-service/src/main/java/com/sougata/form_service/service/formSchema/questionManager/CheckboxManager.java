@@ -1,19 +1,19 @@
 package com.sougata.form_service.service.formSchema.questionManager;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.sougata.form_engine.constant.ComplexQuestionUpdateAction;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.CheckboxDetailsDto;
 import com.sougata.form_engine.dto.question.schemaaddrequest.CheckboxAddReqDto;
 import com.sougata.form_engine.dto.question.schemaupdatereq.CheckboxUpdateReqDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.DropdownUpdateReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.CheckboxTemplateDetails;
 import com.sougata.form_engine.dto.validation.config.ValidationConfig;
 import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_service.exception.JsonParsingException;
 import com.sougata.form_service.exception.QuestionNotFoundException;
-import com.sougata.form_service.model.formSchema.Checkbox;
-import com.sougata.form_service.model.formSchema.CheckboxOption;
-import com.sougata.form_service.model.formSchema.Form;
-import com.sougata.form_service.model.formSchema.Question;
+import com.sougata.form_service.model.formSchema.*;
+import com.sougata.form_service.repository.formSchema.CheckboxOptionRepository;
 import com.sougata.form_service.repository.formSchema.CheckboxRepository;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.service.formSchema.FormService;
@@ -29,11 +29,13 @@ import java.util.stream.Collectors;
 public class CheckboxManager extends QuestionManager<Checkbox, CheckboxAddReqDto, CheckboxUpdateReqDto, CheckboxDetailsDto, CheckboxTemplateDetails> {
 
     private final CheckboxRepository checkboxRepository;
+    private final CheckboxOptionRepository checkboxOptionRepository;
 
     @Autowired
-    public CheckboxManager(CheckboxRepository checkboxRepository, FormService formService, QuestionRepository questionRepository) {
+    public CheckboxManager(CheckboxRepository checkboxRepository, FormService formService, QuestionRepository questionRepository, CheckboxOptionRepository checkboxOptionRepository) {
         super(questionRepository, formService);
         this.checkboxRepository = checkboxRepository;
+        this.checkboxOptionRepository = checkboxOptionRepository;
     }
 
     @Override
@@ -74,41 +76,43 @@ public class CheckboxManager extends QuestionManager<Checkbox, CheckboxAddReqDto
 
     @Override
     @Transactional
-    public CheckboxDetailsDto update(UUID formId, Long questionId, CheckboxUpdateReqDto questionAddUpdateReq) {
+    public CheckboxDetailsDto update(UUID formId, Long questionId, CheckboxUpdateReqDto questionUpdateReq) {
         Checkbox cb = checkboxRepository.findByQuestionId(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(QuestionType.CHECKBOX, questionId));
 
-        var question = updateQuestion(questionId, questionAddUpdateReq);
-        cb.setValidationConfig(JsonUtil.objectToOldJsonNode(questionAddUpdateReq.getValidationConfig()));
+        var question = updateQuestion(questionId, questionUpdateReq);
 
-        Map<Long, CheckboxOption> existingOptions = cb.getOptions().stream()
-                .collect(Collectors.toMap(CheckboxOption::getId, option -> option));
-        Set<Long> requestOptionIds = questionAddUpdateReq.getOptions().stream()
-                .map(CheckboxUpdateReqDto.Option::getId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+        questionUpdateReq.getUpdateFields().forEach(field -> {
+            if (CheckboxUpdateReqDto.Fields.validationConfig.equals(field)) {
+                cb.setValidationConfig(JsonUtil.objectToOldJsonNode(questionUpdateReq.getValidationConfig()));
+            } else if (CheckboxUpdateReqDto.Fields.option.equals(field)) {
+                var option = questionUpdateReq.getOption();
+                var action = option.getAction();
 
-        cb.getOptions().removeIf(option -> !requestOptionIds.contains(option.getId()));
+                if (action == ComplexQuestionUpdateAction.ADD) {
 
-        for (int i = 0; i < questionAddUpdateReq.getOptions().size(); i++) {
-            var dto = questionAddUpdateReq.getOptions().get(i);
+                    var cOption = new CheckboxOption();
 
-            if (dto.getId() == null) {
-                CheckboxOption option = new CheckboxOption();
-                option.setOption(dto.getOption());
-                option.setOrderIndex(i);
-                option.setCheckbox(cb);
+                    cOption.setCheckbox(cb);
+                    cOption.setOption(option.getOption());
+                    cOption.setOrderIndex(checkboxRepository.getOptionCount(questionId).intValue());
 
-                cb.getOptions().add(option);
-            } else {
-                CheckboxOption option = existingOptions.get(dto.getId());
-                if (option == null) {
-                    throw new IllegalArgumentException("Invalid option id: " + dto.getId());
+                    checkboxOptionRepository.save(cOption);
+
+                } else if (action == ComplexQuestionUpdateAction.UPDATE) {
+
+                    var cOption = checkboxOptionRepository.findById(option.getId())
+                            .orElseThrow(() -> new IllegalArgumentException("Checkbox option not found for Id: " + option.getId()));
+
+                    cOption.setOption(option.getOption());
+
+                    checkboxOptionRepository.save(cOption);
+
+                } else if (action == ComplexQuestionUpdateAction.DELETE) {
+                    checkboxOptionRepository.deleteById(option.getId());
                 }
-                option.setOption(dto.getOption());
-                option.setOrderIndex(i);
             }
-        }
+        });
 
         checkboxRepository.save(cb);
 

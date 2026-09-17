@@ -4,7 +4,9 @@ import com.sougata.form_engine.constant.cache.FormCacheNames;
 import com.sougata.form_engine.constant.cache.QuestionCacheNames;
 import com.sougata.form_engine.dto.form.*;
 import com.sougata.form_engine.dto.others.SuccessMessageDto;
+import com.sougata.form_engine.dto.question.details.MultipleQuestionDetailsDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.MultipleQuestionUpdateReqDto;
 import com.sougata.form_engine.dto.question.schemaupdatereq.QuestionOrderUpdateReqDto;
 import com.sougata.form_engine.dto.question.schemaaddrequest.QuestionAddReqDto;
 import com.sougata.form_engine.dto.question.summary.QuestionSummariesDto;
@@ -147,13 +149,12 @@ public class FormController {
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
-    @PutMapping(path = "{formId}/questions/{questionId}")
-    public QuestionDetailsDto updateQuestion(
+    @PatchMapping(path = "{formId}/questions")
+    public MultipleQuestionDetailsDto updateQuestion(
             @PathVariable("formId") UUID formId,
-            @PathVariable("questionId") Long questionId,
-            @Valid @RequestBody QuestionAddReqDto body
+            @Valid @RequestBody MultipleQuestionUpdateReqDto body
     ) {
-        return questionService.updateQuestion(formId, questionId, body);
+        return questionService.updateQuestions(formId, body);
     }
 
     @DeleteMapping(path = "{formId}/questions/{questionId}")

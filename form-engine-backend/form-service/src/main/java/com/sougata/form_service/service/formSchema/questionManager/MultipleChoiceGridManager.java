@@ -1,12 +1,17 @@
 package com.sougata.form_service.service.formSchema.questionManager;
 
+import com.sougata.form_engine.constant.ComplexQuestionUpdateAction;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.MultipleChoiceGridDetailsDto;
 import com.sougata.form_engine.dto.question.schemaaddrequest.MultipleChoiceGridAddReqDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.DropdownUpdateReqDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.MultipleChoiceGridUpdateReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.MultipleChoiceGridTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.*;
+import com.sougata.form_service.repository.formSchema.MultipleChoiceGridColumnRepository;
 import com.sougata.form_service.repository.formSchema.MultipleChoiceGridRepository;
+import com.sougata.form_service.repository.formSchema.MultipleChoiceGridRowRepository;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.service.formSchema.FormService;
 import com.sougata.form_service.service.formSchema.QuestionManager;
@@ -17,13 +22,17 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service("MULTIPLE_CHOICE_GRID_QUESTION_MANAGER")
-public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGrid, MultipleChoiceGridAddReqDto, MultipleChoiceGridDetailsDto, MultipleChoiceGridTemplateDetails> {
+public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGrid, MultipleChoiceGridAddReqDto, MultipleChoiceGridUpdateReqDto, MultipleChoiceGridDetailsDto, MultipleChoiceGridTemplateDetails> {
 
     private final MultipleChoiceGridRepository multipleChoiceGridRepository;
+    private final MultipleChoiceGridRowRepository multipleChoiceGridRowRepository;
+    private final MultipleChoiceGridColumnRepository multipleChoiceGridColumnRepository;
 
-    public MultipleChoiceGridManager(MultipleChoiceGridRepository multipleChoiceGridRepository, FormService formService, QuestionRepository questionRepository) {
+    public MultipleChoiceGridManager(MultipleChoiceGridRepository multipleChoiceGridRepository, FormService formService, QuestionRepository questionRepository, MultipleChoiceGridRowRepository multipleChoiceGridRowRepository, MultipleChoiceGridColumnRepository multipleChoiceGridColumnRepository) {
         super(questionRepository, formService);
         this.multipleChoiceGridRepository = multipleChoiceGridRepository;
+        this.multipleChoiceGridRowRepository = multipleChoiceGridRowRepository;
+        this.multipleChoiceGridColumnRepository = multipleChoiceGridColumnRepository;
     }
 
     @Override
@@ -61,74 +70,71 @@ public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGri
 
     @Override
     @Transactional
-    public MultipleChoiceGridDetailsDto update(UUID formId, Long questionId, MultipleChoiceGridAddReqDto questionAddUpdateReq) {
+    public MultipleChoiceGridDetailsDto update(UUID formId, Long questionId, MultipleChoiceGridUpdateReqDto questionUpdateReq) {
         MultipleChoiceGrid mcg = multipleChoiceGridRepository.findByQuestionId(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(QuestionType.MULTIPLE_CHOICE_GRID, questionId));
 
-        var question = updateQuestion(questionId, questionAddUpdateReq);
-        mcg.setEachRowRequired(questionAddUpdateReq.getEachRowRequired());
+        var question = updateQuestion(questionId, questionUpdateReq);
 
-        Map<Long, MultipleChoiceGridRow> existingRows = mcg.getRows().stream()
-                .collect(Collectors.toMap(MultipleChoiceGridRow::getId, row -> row));
-        Set<Long> requestRowIds = questionAddUpdateReq.getRows().stream()
-                .map(MultipleChoiceGridAddReqDto.Row::getId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-
-        mcg.getRows().removeIf(row -> !requestRowIds.contains(row.getId()));
-
-        for (int i = 0; i < questionAddUpdateReq.getRows().size(); i++) {
-            var dto = questionAddUpdateReq.getRows().get(i);
-
-            if (dto.getId() == null) {
-                MultipleChoiceGridRow row = new MultipleChoiceGridRow();
-                row.setRowName(dto.getRow());
-                row.setOrderIndex(i);
-                row.setMultipleChoiceGrid(mcg);
-
-                mcg.getRows().add(row);
-            } else {
-                MultipleChoiceGridRow row = existingRows.get(dto.getId());
-
-                if (row == null) {
-                    throw new IllegalArgumentException("Invalid row id: " + dto.getId());
-                }
-
-                row.setRowName(dto.getRow());
-                row.setOrderIndex(i);
+        questionUpdateReq.getUpdateFields().forEach(field -> {
+            if (MultipleChoiceGridUpdateReqDto.Fields.eachRowRequired.equals(field)) {
+                mcg.setEachRowRequired(questionUpdateReq.getEachRowRequired());
             }
-        }
+            if (MultipleChoiceGridUpdateReqDto.Fields.row.equals(field)) {
+                var row = questionUpdateReq.getRow();
+                var action = row.getAction();
 
-        Map<Long, MultipleChoiceGridColumn> existingColumns = mcg.getColumns().stream()
-                .collect(Collectors.toMap(MultipleChoiceGridColumn::getId, column -> column));
-        Set<Long> requestColumnIds = questionAddUpdateReq.getColumns().stream()
-                .map(MultipleChoiceGridAddReqDto.Column::getId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+                if (action == ComplexQuestionUpdateAction.ADD) {
 
-        mcg.getColumns().removeIf(column -> !requestColumnIds.contains(column.getId()));
+                    var mcgRow = new MultipleChoiceGridRow();
 
-        for (int i = 0; i < questionAddUpdateReq.getColumns().size(); i++) {
-            var dto = questionAddUpdateReq.getColumns().get(i);
+                    mcgRow.setMultipleChoiceGrid(mcg);
+                    mcgRow.setRowName(row.getRow());
+                    mcgRow.setOrderIndex(multipleChoiceGridRepository.getRowCount(questionId).intValue());
 
-            if (dto.getId() == null) {
-                MultipleChoiceGridColumn column = new MultipleChoiceGridColumn();
-                column.setColumnName(dto.getColumn());
-                column.setOrderIndex(i);
-                column.setMultipleChoiceGrid(mcg);
+                    multipleChoiceGridRowRepository.save(mcgRow);
 
-                mcg.getColumns().add(column);
-            } else {
-                MultipleChoiceGridColumn column = existingColumns.get(dto.getId());
+                } else if (action == ComplexQuestionUpdateAction.UPDATE) {
 
-                if (column == null) {
-                    throw new IllegalArgumentException("Invalid column id: " + dto.getId());
+                    var mcgRow = multipleChoiceGridRowRepository.findById(row.getId())
+                            .orElseThrow(() -> new IllegalArgumentException("Multiple choice grid row not found for Id: " + row.getId()));
+
+                    mcgRow.setRowName(row.getRow());
+
+                    multipleChoiceGridRowRepository.save(mcgRow);
+
+                } else if (action == ComplexQuestionUpdateAction.DELETE) {
+                    multipleChoiceGridRowRepository.deleteById(row.getId());
                 }
-
-                column.setColumnName(dto.getColumn());
-                column.setOrderIndex(i);
             }
-        }
+            if (MultipleChoiceGridUpdateReqDto.Fields.column.equals(field)) {
+                var column = questionUpdateReq.getColumn();
+                var action = column.getAction();
+
+                if (action == ComplexQuestionUpdateAction.ADD) {
+
+                    var mcgColumn = new MultipleChoiceGridColumn();
+
+                    mcgColumn.setMultipleChoiceGrid(mcg);
+                    mcgColumn.setColumnName(column.getColumn());
+                    mcgColumn.setOrderIndex(multipleChoiceGridRepository.getColumnCount(questionId).intValue());
+
+                    multipleChoiceGridColumnRepository.save(mcgColumn);
+
+                } else if (action == ComplexQuestionUpdateAction.UPDATE) {
+
+                    var mcgColumn = multipleChoiceGridColumnRepository.findById(column.getId())
+                            .orElseThrow(() -> new IllegalArgumentException("Multiple choice grid column not found for Id: " + column.getId()));
+
+                    mcgColumn.setColumnName(column.getColumn());
+
+                    multipleChoiceGridColumnRepository.save(mcgColumn);
+
+                } else if (action == ComplexQuestionUpdateAction.DELETE) {
+                    multipleChoiceGridColumnRepository.deleteById(column.getId());
+                }
+            }
+        });
 
         multipleChoiceGridRepository.save(mcg);
 

@@ -6,37 +6,41 @@ import {
   ElementRef,
   inject,
   input,
+  OnChanges,
   OnDestroy,
   OnInit,
   signal,
+  SimpleChanges,
   viewChild,
   ViewContainerRef
 } from '@angular/core';
-import {QuestionType} from '../../../type/question-type';
-import {QuestionCard} from '../../../shared/question-card/question-card';
-import {EditFormStateService} from '../../../service/edit-form-state-service';
-import {AnyQuestionRes} from '../../../type/any-question-res';
-import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {MatDivider} from '@angular/material/list';
-import {MatFormField, MatInput, MatLabel} from '@angular/material/input';
-import {MatIcon} from '@angular/material/icon';
-import {MatIconButton} from '@angular/material/button';
-import {MatMenu, MatMenuItem, MatMenuTrigger} from '@angular/material/menu';
-import {MatOption} from '@angular/material/core';
-import {MatSelect} from '@angular/material/select';
-import {MatSlideToggle} from '@angular/material/slide-toggle';
-import {MatTooltip} from '@angular/material/tooltip';
-import {QUESTION_TYPE_GROUPS} from '../../../constant/question-type-groups';
-import {EditQuestionConstant} from '../../../constant/edit-question-constant';
-import {EditQuestionMoreMenuItem} from '../../../type/edit-question-more-menu-item';
-import {EditFormQuestionComponent} from '../../../type/edit-form-question-component';
-import {EditFormService} from '../../../service/edit-form-service';
-import {EditFormQuestionComponentFactory} from '../../../service/edit-form-question-component-factory';
-import {AnyQuestionAddUpdateReq} from '../../../type/any-question-add-update-req';
-import {QuestionAddUpdateReq} from '../../../model/edit-form/question/request/question-add-update-req';
-import {AnyOnlyQuestionAddUpdateReq} from '../../../type/any-only-question-add-update-req';
-import {DefaultQuestionAddUpdateReq} from '../../../constant/default-question-add-update-req';
-import {CdkDragHandle} from '@angular/cdk/drag-drop';
+import { QuestionType } from '../../../type/question-type';
+import { QuestionCard } from '../../../shared/question-card/question-card';
+import { EditFormStateService } from '../../../service/edit-form-state-service';
+import { AnyQuestionRes } from '../../../type/any-question-res';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatDivider } from '@angular/material/list';
+import { MatFormField, MatInput, MatLabel } from '@angular/material/input';
+import { MatIcon } from '@angular/material/icon';
+import { MatIconButton } from '@angular/material/button';
+import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
+import { MatOption } from '@angular/material/core';
+import { MatSelect } from '@angular/material/select';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
+import { MatTooltip } from '@angular/material/tooltip';
+import { QUESTION_TYPE_GROUPS } from '../../../constant/question-type-groups';
+import { EditQuestionConstant } from '../../../constant/edit-question-constant';
+import { EditQuestionMoreMenuItem } from '../../../type/edit-question-more-menu-item';
+import { EditFormQuestionComponent } from '../../../type/edit-form-question-component';
+import { EditFormService } from '../../../service/edit-form-service';
+import { EditFormQuestionComponentFactory } from '../../../service/edit-form-question-component-factory';
+import { AnyQuestionAddReq } from '../../../type/any-question-add-req';
+import { QuestionAddReq } from '../../../model/edit-form/question/addreq/question-add-req';
+import { AnyOnlyQuestionAddUpdateReq } from '../../../type/any-only-question-add-update-req';
+import { DefaultQuestionAddReq } from '../../../constant/default-question-add-req';
+import { CdkDragHandle } from '@angular/cdk/drag-drop';
+import { AnyQuestionUpdateReq } from '../../../type/any-question-update-req';
+import { QuestionUpdateReq } from '../../../model/edit-form/question/updatereq/question-update-req';
 
 @Component({
   selector: 'app-edit-form-question-wrapper',
@@ -62,7 +66,7 @@ import {CdkDragHandle} from '@angular/cdk/drag-drop';
   templateUrl: './edit-form-question-wrapper.html',
   styleUrl: './edit-form-question-wrapper.scss',
 })
-export class EditFormQuestionWrapper implements OnInit, AfterViewInit, OnDestroy {
+export class EditFormQuestionWrapper implements OnInit, OnChanges, AfterViewInit, OnDestroy {
 
   componentId = signal<string>(crypto.randomUUID())
 
@@ -71,7 +75,7 @@ export class EditFormQuestionWrapper implements OnInit, AfterViewInit, OnDestroy
 
   questionInput = viewChild<ElementRef<HTMLInputElement>>('questionInput')
 
-  private questionHost = viewChild('questionHost', {read: ViewContainerRef})
+  private questionHost = viewChild('questionHost', { read: ViewContainerRef })
   protected createdComponentRef?: ComponentRef<unknown>
 
   protected moreMenuItems = signal<ReadonlyArray<EditQuestionMoreMenuItem>>([])
@@ -118,29 +122,56 @@ export class EditFormQuestionWrapper implements OnInit, AfterViewInit, OnDestroy
       if (instance instanceof EditFormQuestionComponent) {
 
         const questionTypeChanged = val.questionType !== this.question().questionType
-        let onlyQuestionAddUpdateReq: AnyOnlyQuestionAddUpdateReq
+
+        let questionUpdateReq: AnyQuestionUpdateReq
 
         if (questionTypeChanged) {
-          onlyQuestionAddUpdateReq = DefaultQuestionAddUpdateReq.get(val.questionType!)
+          const onlyQuestionAddUpdateReq = DefaultQuestionAddReq.get(val.questionType!)
+
+          questionUpdateReq = {
+            questionId: this.question().id,
+            questionType: val.questionType!,
+
+            addReqForQuestionTypeUpdate: {
+              ...onlyQuestionAddUpdateReq,
+              question: val.question ?? null,
+              description: val.description ?? null,
+              questionType: val.questionType!,
+              required: val.required ?? false
+            },
+
+            updateFields: ['questionType' satisfies keyof QuestionUpdateReq]
+          }
         } else {
-          onlyQuestionAddUpdateReq = instance.getOnlyQuestionAddUpdateReq()
+          const updateFields = [
+            this.question().question === val.question ? undefined : 'question' satisfies keyof QuestionUpdateReq,
+            this.question().description === val.description ? undefined : 'description' satisfies keyof QuestionUpdateReq,
+            this.question().required === val.required ? undefined : 'required' satisfies keyof QuestionUpdateReq
+          ].filter(field => field !== undefined)
+
+          questionUpdateReq = {
+            questionId: this.question().id,
+            question: this.question().question === val.question ? undefined : val.question ?? null,
+            description: this.question().description === val.description ? undefined : val.description ?? null,
+            questionType: val.questionType!,
+            required: this.question().required === val.required ? undefined : val.required ?? false,
+            updateFields: updateFields
+          }
         }
 
-        const questionAddUpdateReq: AnyQuestionAddUpdateReq = {
-          ...onlyQuestionAddUpdateReq,
-          question: val.question ?? null,
-          description: val.description ?? null,
-          questionType: val.questionType!,
-          required: val.required ?? false
-        }
-
-        this.updateQuestion(questionAddUpdateReq, questionTypeChanged)
+        this.updateQuestion(questionUpdateReq, questionTypeChanged)
       }
     })
 
     this.createComponent(this.question().questionType, this.question())
 
     this.editFormStateService.changeFocus(this.componentId())
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['question']) {
+      this.createdComponentRef?.setInput('question', this.question())
+    }
   }
 
   ngAfterViewInit() {
@@ -158,7 +189,7 @@ export class EditFormQuestionWrapper implements OnInit, AfterViewInit, OnDestroy
 
     this.editFormStateService.isFormGettingModified.set(true)
 
-    const questionAddUpdateReq: QuestionAddUpdateReq = {
+    const questionAddUpdateReq: QuestionAddReq = {
       question: this.question().question,
       description: this.question().description,
       required: this.question().required,
@@ -169,12 +200,12 @@ export class EditFormQuestionWrapper implements OnInit, AfterViewInit, OnDestroy
 
     const instance = this.createdComponentRef?.instance
     if (instance instanceof EditFormQuestionComponent) {
-      onlyQuestionAddUpdateReq = instance.getOnlyQuestionAddUpdateReq()
+      // onlyQuestionAddUpdateReq = instance.getOnlyQuestionAddUpdateReq()
     }
 
-    const question: AnyQuestionAddUpdateReq = {
+    const question: AnyQuestionAddReq = {
       ...questionAddUpdateReq,
-      ...onlyQuestionAddUpdateReq
+      // ...onlyQuestionAddUpdateReq
     }
 
     this.editFormService.addQuestion(question, () => {
@@ -249,16 +280,16 @@ export class EditFormQuestionWrapper implements OnInit, AfterViewInit, OnDestroy
         instance.moreMenuItemId.subscribe(val => this.toggleSelectedMoreMenuItemIds(val))
         instance.canSaveQuestion.subscribe(val => this.canSaveQuestion.set(val))
         instance.hasError.subscribe(val => this.hasError.set(val))
+
         instance.updateQuestion.subscribe(val => {
-          const questionAddUpdateReq: AnyQuestionAddUpdateReq = {
+          const questionUpdateReq: AnyQuestionUpdateReq = {
             ...val,
-            question: this.formGroup.value.question!,
-            description: this.formGroup.value.description!,
-            questionType: this.formGroup.value.questionType!,
-            required: this.formGroup.value.required!,
+            questionId: this.question().id,
+            questionType: this.formGroup.value.questionType!
           }
-          this.updateQuestion(questionAddUpdateReq, false)
+          this.updateQuestion(questionUpdateReq, false)
         })
+
       }
 
       this.selectedMoreMenuItemIds.set(new Set())
@@ -270,18 +301,18 @@ export class EditFormQuestionWrapper implements OnInit, AfterViewInit, OnDestroy
     })
   }
 
-  private updateQuestion(questionAddUpdateReq: AnyQuestionAddUpdateReq, recreateComponent: boolean) {
+  private updateQuestion(questionUpdateReq: AnyQuestionUpdateReq, recreateComponent: boolean) {
 
     if (!this.canSaveQuestion()) return
 
-    const showLoader = this.question().questionType !== questionAddUpdateReq.questionType
+    const showLoader = this.question().questionType !== questionUpdateReq.questionType
 
     if (showLoader) {
       this.editFormStateService.isFormGettingModified.set(true)
     }
 
-    this.editFormService.updateQuestion(
-      this.question().id, questionAddUpdateReq, questionRes => {
+    this.editFormService.updateQuestion2(
+      questionUpdateReq, questionRes => {
 
         if (showLoader) {
           this.editFormStateService.isFormGettingModified.set(false)

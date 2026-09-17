@@ -1,21 +1,22 @@
-import {Component, inject, OnChanges, OnInit, signal, SimpleChanges} from '@angular/core';
-import {CheckboxRes} from '../../../../model/edit-form/question/response/checkbox-res';
-import {EditFormQuestionComponent} from '../../../../type/edit-form-question-component';
-import {AnyCheckboxValidationConfig} from '../../../../type/any-checkbox-validation-config';
-import {EditFormCheckboxOption} from './edit-form-checkbox-option/edit-form-checkbox-option';
-import {MatButton} from '@angular/material/button';
-import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {CheckboxActiveValidationInputId, CheckboxConstant} from '../../../../constant/checkbox-constant';
-import {EditFormStateService} from '../../../../service/edit-form-state-service';
-import {ValidationId} from '../../../../type/validation-id';
-import {QuestionType} from '../../../../type/question-type';
-import {MatFormField, MatInput, MatLabel} from '@angular/material/input';
-import {MatOption} from '@angular/material/core';
-import {MatSelect} from '@angular/material/select';
-import {MatDialog} from '@angular/material/dialog';
-import {SimpleDialog} from '../../../../shared/simple-dialog/simple-dialog';
-import {CheckboxOption} from '../../../../type/checkbox-option';
-import {OnlyCheckboxAddUpdateReq} from '../../../../model/edit-form/question/request/checkbox-add-update-req';
+import { Component, inject, OnChanges, OnInit, signal, SimpleChanges } from '@angular/core';
+import { CheckboxRes } from '../../../../model/edit-form/question/response/checkbox-res';
+import { EditFormQuestionComponent } from '../../../../type/edit-form-question-component';
+import { AnyCheckboxValidationConfig } from '../../../../type/any-checkbox-validation-config';
+import { EditFormCheckboxOption } from './edit-form-checkbox-option/edit-form-checkbox-option';
+import { MatButton } from '@angular/material/button';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CheckboxActiveValidationInputId, CheckboxConstant } from '../../../../constant/checkbox-constant';
+import { EditFormStateService } from '../../../../service/edit-form-state-service';
+import { ValidationId } from '../../../../type/validation-id';
+import { QuestionType } from '../../../../type/question-type';
+import { MatFormField, MatInput, MatLabel } from '@angular/material/input';
+import { MatOption } from '@angular/material/core';
+import { MatSelect } from '@angular/material/select';
+import { MatDialog } from '@angular/material/dialog';
+import { SimpleDialog } from '../../../../shared/simple-dialog/simple-dialog';
+import { CheckboxOption } from '../../../../type/checkbox-option';
+import { OnlyCheckboxAddUpdateReq } from '../../../../model/edit-form/question/addreq/checkbox-add-req';
+import { CheckboxUpdateReq, OnlyCheckboxUpdateReq } from '../../../../model/edit-form/question/updatereq/checkbox-update-req';
 
 @Component({
   selector: 'app-edit-form-checkbox',
@@ -34,7 +35,7 @@ import {OnlyCheckboxAddUpdateReq} from '../../../../model/edit-form/question/req
   styleUrl: './edit-form-checkbox.scss',
 })
 export class EditFormCheckbox
-  extends EditFormQuestionComponent<CheckboxRes<AnyCheckboxValidationConfig>, OnlyCheckboxAddUpdateReq<AnyCheckboxValidationConfig>>
+  extends EditFormQuestionComponent<CheckboxRes<AnyCheckboxValidationConfig>, OnlyCheckboxUpdateReq>
   implements OnInit, OnChanges {
 
   private constant = new CheckboxConstant()
@@ -60,7 +61,7 @@ export class EditFormCheckbox
   ngOnInit() {
     this.options.set(
       this.question().options
-        .map((op) => ({...op, valid: !!op.option}))
+        .map((op) => ({ ...op, valid: !!op.option }))
     )
 
     this.setupResponseValidationForm()
@@ -73,16 +74,28 @@ export class EditFormCheckbox
       this.validationValueFg.reset()
       this.validationValueFg.markAsUntouched()
       this.emitCanSaveAndHasError()
-      this.updateQuestion.emit(this.getOnlyQuestionAddUpdateReq())
+      this.updateQuestion.emit(
+        {
+          validationConfig: this.getValidationConfig(),
+          updateFields: ['validationConfig' satisfies keyof CheckboxUpdateReq]
+        }
+      )
     })
 
     this.validationValueFg.valueChanges.subscribe(() => {
       this.emitCanSaveAndHasError()
-      this.updateQuestion.emit(this.getOnlyQuestionAddUpdateReq())
+      this.updateQuestion.emit(
+        {
+          validationConfig: this.getValidationConfig(),
+          updateFields: ['validationConfig' satisfies keyof CheckboxUpdateReq]
+        }
+      )
     })
   }
 
-  ngOnChanges(changes: SimpleChanges) {
+  override ngOnChanges(changes: SimpleChanges) {
+    super.ngOnChanges(changes)
+    
     const moreMenuItemIdsChange = changes['moreMenuItemIds']
     if (moreMenuItemIdsChange) {
 
@@ -101,18 +114,6 @@ export class EditFormCheckbox
     }
   }
 
-  override getOnlyQuestionAddUpdateReq(): OnlyCheckboxAddUpdateReq<AnyCheckboxValidationConfig> {
-    return {
-      options: this.options().map(val => {
-        return {
-          id: val.id.startsWith('NEW_') ? null : val.id,
-          option: val.option
-        }
-      }),
-      validationConfig: this.getValidationConfig()
-    }
-  }
-
   protected showResponseValidation(): boolean {
     return this.moreMenuItemIds().has('responseValidation') && this.formStateService.isFocused(this.parentComponentId())
   }
@@ -121,31 +122,42 @@ export class EditFormCheckbox
     if (this.options().length >= 20) {
       this.dialog.open(
         SimpleDialog, {
-          data: SimpleDialog.configure('Error', 'Can not add more than 20 options', 'Close')
-        }
+        data: SimpleDialog.configure('Error', 'Can not add more than 20 options', 'Close')
+      }
       )
       return
     }
-    this.options.update(val => {
-      const option = {
-        id: 'NEW_' + crypto.randomUUID(),
-        option: `Option ${val.length + 1}`,
-        orderIndex: val.length,
-        valid: true
-      }
 
+    const option = {
+      id: 'NEW_' + crypto.randomUUID(),
+      option: `Option ${this.options().length + 1}`,
+      orderIndex: this.options().length,
+      valid: true
+    }
+
+    this.options.update(val => {
       return [...val, option]
     })
+
     this.emitCanSaveAndHasError()
-    this.updateQuestion.emit(this.getOnlyQuestionAddUpdateReq())
+
+    this.updateQuestion.emit(
+      {
+        option: {
+          option: option.option,
+          action: 'ADD'
+        },
+        updateFields: ['option' satisfies keyof CheckboxUpdateReq]
+      }
+    )
   }
 
   protected removeOption(optionId: string) {
     if (this.options().length <= 1) {
       this.dialog.open(
         SimpleDialog, {
-          data: SimpleDialog.configure('Error', 'At least 1 option is required', 'Close')
-        }
+        data: SimpleDialog.configure('Error', 'At least 1 option is required', 'Close')
+      }
       )
       return
     }
@@ -153,16 +165,36 @@ export class EditFormCheckbox
     this.options.update(val =>
       [...val.filter(v => v.id !== optionId)]
     )
+
     this.emitCanSaveAndHasError()
-    this.updateQuestion.emit(this.getOnlyQuestionAddUpdateReq())
+
+    this.updateQuestion.emit(
+      {
+        option: {
+          id: optionId,
+          action: 'DELETE'
+        },
+        updateFields: ['option' satisfies keyof CheckboxUpdateReq]
+      }
+    )
   }
 
   protected onOptionTextChange(option: CheckboxOption) {
     this.options.update(val =>
-      val.map(v => v.id === option.id ? {...v, option: option.option} : v)
+      val.map(v => v.id === option.id ? { ...v, option: option.option } : v)
     )
     this.emitCanSaveAndHasError()
-    this.updateQuestion.emit(this.getOnlyQuestionAddUpdateReq())
+    
+    this.updateQuestion.emit(
+      {
+        option: {
+          id: option.id,
+          option: option.option,
+          action: 'UPDATE'
+        },
+        updateFields: ['option' satisfies keyof CheckboxUpdateReq]
+      }
+    )
   }
 
   protected emitCanSaveAndHasError() {
@@ -197,7 +229,7 @@ export class EditFormCheckbox
   protected onOptionCanSaveChange(optionId: string, canSave: boolean) {
     this.options.update(ops => {
       return ops.map(op => {
-        return op.id === optionId ? {...op, valid: canSave} : {...op}
+        return op.id === optionId ? { ...op, valid: canSave } : { ...op }
       })
     })
     this.emitCanSaveAndHasError()
@@ -217,7 +249,7 @@ export class EditFormCheckbox
         validationType: validationIdMeta.validation.value
       })
 
-      this.validationValueFg.patchValue({...vCon})
+      this.validationValueFg.patchValue({ ...vCon })
 
       this.activeValidationInputId.set(this.constant.getByValidationId(vId).activeValidationInputId)
 
@@ -227,18 +259,18 @@ export class EditFormCheckbox
 
   private getValidationConfig(): AnyCheckboxValidationConfig {
     if (!this.showResponseValidation()) {
-      return {validationId: 'CHECKBOX_NONE', errorText: null};
+      return { validationId: 'CHECKBOX_NONE', errorText: null };
     }
 
     const validationId = this.getValidationId()
     const activeValidationInput = this.constant.getByValidationId(validationId).activeValidationInputId
 
-    const {number, errorText} = this.validationValueFg.value
-    const common = {validationId: validationId, errorText: errorText ?? null}
+    const { number, errorText } = this.validationValueFg.value
+    const common = { validationId: validationId, errorText: errorText ?? null }
 
     switch (activeValidationInput) {
       case 'NUMBER':
-        return {...common, number: number!}
+        return { ...common, number: number! }
       case null:
         return common
     }

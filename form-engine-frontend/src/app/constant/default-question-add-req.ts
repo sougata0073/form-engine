@@ -4,7 +4,7 @@ import {QuestionRes} from '../model/edit-form/question/response/question-res';
 import {capitalize, random, startCase} from 'lodash';
 import {AnyOnlyQuestionAddUpdateReq} from '../type/any-only-question-add-update-req';
 
-export class DefaultQuestionAddUpdateReq {
+export class DefaultQuestionAddReq {
 
   private static map = new Map<QuestionType, AnyOnlyQuestionAddUpdateReq>([
     ['CHECKBOX', {

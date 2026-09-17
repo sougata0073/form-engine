@@ -1,4 +1,4 @@
-import {QuestionAddUpdateReq} from './question-add-update-req';
+import {QuestionAddReq} from './question-add-req';
 import {ValidationConfig} from '../../../validation-config/validation-config';
 
 export interface OnlyCheckboxAddUpdateReq<VC extends ValidationConfig> {
@@ -6,5 +6,5 @@ export interface OnlyCheckboxAddUpdateReq<VC extends ValidationConfig> {
   validationConfig: VC
 }
 
-export interface CheckboxAddUpdateReq<VC extends ValidationConfig> extends QuestionAddUpdateReq, OnlyCheckboxAddUpdateReq<VC> {
+export interface CheckboxAddUpdateReq<VC extends ValidationConfig> extends QuestionAddReq, OnlyCheckboxAddUpdateReq<VC> {
 }

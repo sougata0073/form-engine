@@ -1,9 +1,11 @@
 import {QuestionRes} from '../model/edit-form/question/response/question-res';
-import {Directive, input, output} from '@angular/core';
+import {Directive, input, OnChanges, output, SimpleChange, SimpleChanges} from '@angular/core';
 import {AnyOnlyQuestionAddUpdateReq} from './any-only-question-add-update-req';
+import { AnyOnlyQuestionUpdateReq } from './any-onlyquestion-update-req';
+import { OnlyQuestionUpdateReq } from '../model/edit-form/question/updatereq/only-question-update-req';
 
 @Directive()
-export abstract class EditFormQuestionComponent<Q extends QuestionRes, OnlyQuestionAddUpdateReq> {
+export abstract class EditFormQuestionComponent<Q extends QuestionRes, OQUR extends OnlyQuestionUpdateReq> implements OnChanges {
 
   question = input.required<Q>();
   parentComponentId = input.required<string>()
@@ -12,7 +14,17 @@ export abstract class EditFormQuestionComponent<Q extends QuestionRes, OnlyQuest
   moreMenuItemId = output<string>()
   canSaveQuestion = output<boolean>()
   hasError = output<boolean>()
-  updateQuestion = output<AnyOnlyQuestionAddUpdateReq>()
+  updateQuestion = output<OQUR>()
 
-  abstract getOnlyQuestionAddUpdateReq(): OnlyQuestionAddUpdateReq
+  ngOnChanges(changes: SimpleChanges): void {
+    const questionChange = changes['question']
+
+    if(questionChange) {
+      this.onQuestionInputChange(questionChange)
+    }
+  }
+
+  onQuestionInputChange(change: SimpleChange<Q>): void {
+
+  }
 }

@@ -3,6 +3,7 @@ package com.sougata.form_service.service.formSchema.questionManager;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.LinearScaleDetailsDto;
 import com.sougata.form_engine.dto.question.schemaaddrequest.LinearScaleAddReqDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.LinearScaleUpdateReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.LinearScaleTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.Form;
@@ -18,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service("LINEAR_SCALE_QUESTION_MANAGER")
-public class LinearScaleManager extends QuestionManager<LinearScale, LinearScaleAddReqDto, LinearScaleDetailsDto, LinearScaleTemplateDetails> {
+public class LinearScaleManager extends QuestionManager<LinearScale, LinearScaleAddReqDto, LinearScaleUpdateReqDto, LinearScaleDetailsDto, LinearScaleTemplateDetails> {
 
     private final LinearScaleRepository linearScaleRepository;
 
@@ -62,14 +63,19 @@ public class LinearScaleManager extends QuestionManager<LinearScale, LinearScale
 
     @Override
     @Transactional
-    public LinearScaleDetailsDto update(UUID formId, Long questionId, LinearScaleAddReqDto questionAddUpdateReq) {
+    public LinearScaleDetailsDto update(UUID formId, Long questionId, LinearScaleUpdateReqDto questionUpdateReq) {
         LinearScale ls = linearScaleRepository.findByQuestionId(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(QuestionType.LINEAR_SCALE, questionId));
 
-        var question = updateQuestion(questionId, questionAddUpdateReq);
+        var question = updateQuestion(questionId, questionUpdateReq);
 
-        ls.setFromNumber(questionAddUpdateReq.getFromNumber());
-        ls.setToNumber(questionAddUpdateReq.getToNumber());
+        questionUpdateReq.getUpdateFields().forEach(field -> {
+            if (LinearScaleUpdateReqDto.Fields.fromNumber.equals(field)) {
+                ls.setFromNumber(questionUpdateReq.getFromNumber());
+            } else if (LinearScaleUpdateReqDto.Fields.toNumber.equals(field)) {
+                ls.setToNumber(questionUpdateReq.getToNumber());
+            }
+        });
 
         linearScaleRepository.save(ls);
 

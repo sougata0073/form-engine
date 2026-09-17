@@ -7,10 +7,11 @@ import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.dto.form.FormDetailsDto;
 import com.sougata.form_engine.dto.messaging.QuestionDeleteMessage;
 import com.sougata.form_engine.dto.others.SuccessMessageDto;
+import com.sougata.form_engine.dto.question.details.MultipleQuestionDetailsDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.MultipleQuestionUpdateReqDto;
 import com.sougata.form_engine.dto.question.schemaupdatereq.QuestionOrderUpdateReqDto;
 import com.sougata.form_engine.dto.question.schemaaddrequest.QuestionAddReqDto;
-import com.sougata.form_engine.dto.question.schemaupdatereq.QuestionUpdateReqDto;
 import com.sougata.form_engine.dto.question.summary.QuestionSummariesDto;
 import com.sougata.form_engine.dto.question.summary.QuestionSummaryDto;
 import com.sougata.form_service.configuration.AppConfiguration;
@@ -60,33 +61,42 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     @Transactional
-    public QuestionDetailsDto updateQuestion(UUID formId, Long questionId, QuestionUpdateReqDto dto) {
+    public MultipleQuestionDetailsDto updateQuestions(UUID formId, MultipleQuestionUpdateReqDto dto) {
 
-        var prevQType = questionRepository.findQuestionTypeById(questionId)
-                .orElseThrow(() -> new QuestionNotFoundException(questionId))
-                .getQuestionType();
+        var questionDetailsList = new ArrayList<QuestionDetailsDto>();
 
-        QuestionDetailsDto question;
+        dto.getQuestions().forEach(question -> {
 
-        if (prevQType == dto.getQuestionType()) {
-            var manager = questionManagerFactory.get(prevQType);
+            var questionId = Long.valueOf(question.getQuestionId());
 
-            question = manager.update(formId, questionId, dto);
-        } else {
-            var prevManager = questionManagerFactory.get(prevQType);
-            var newManager = questionManagerFactory.get(dto.getQuestionType());
+            var prevQType = questionRepository.findQuestionTypeById(questionId)
+                    .orElseThrow(() -> new QuestionNotFoundException(questionId))
+                    .getQuestionType();
 
-            prevManager.delete(questionId);
+            QuestionDetailsDto updatedQuestionDetails;
 
-            question = newManager.create(formId, questionId, dto);
-        }
+            if (prevQType == question.getQuestionType()) {
+                var manager = questionManagerFactory.get(prevQType);
 
-        updateQuestionInFormDetails(formId, question);
-        updateQuestionInQuestionSummaries(formId, question);
-        putQuestionDetails(question);
-        putQuestionSummary(new QuestionSummaryDto(question.getId(), question.getQuestion(), question.getQuestionType(), question.getOrderIndex()));
+                updatedQuestionDetails = manager.update(formId, questionId, question);
+            } else {
+                var prevManager = questionManagerFactory.get(prevQType);
+                var newManager = questionManagerFactory.get(question.getQuestionType());
 
-        return question;
+                prevManager.delete(questionId);
+
+                updatedQuestionDetails = newManager.create(formId, questionId, question.getAddReqForQuestionTypeUpdate());
+            }
+
+            updateQuestionInFormDetails(formId, updatedQuestionDetails);
+            updateQuestionInQuestionSummaries(formId, updatedQuestionDetails);
+            putQuestionDetails(updatedQuestionDetails);
+            putQuestionSummary(new QuestionSummaryDto(updatedQuestionDetails.getId(), updatedQuestionDetails.getQuestion(), updatedQuestionDetails.getQuestionType(), updatedQuestionDetails.getOrderIndex()));
+
+            questionDetailsList.add(updatedQuestionDetails);
+        });
+
+        return new MultipleQuestionDetailsDto(questionDetailsList);
     }
 
     @Override

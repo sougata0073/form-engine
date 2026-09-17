@@ -1,17 +1,18 @@
-import {Component, inject, OnChanges, OnInit, signal, SimpleChanges} from '@angular/core';
-import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {MatFormField, MatInput, MatLabel} from '@angular/material/input';
-import {EditFormQuestionComponent} from '../../../../type/edit-form-question-component';
-import {ParagraphRes} from '../../../../model/edit-form/question/response/paragraph-res';
-import {AnyParagraphValidationConfig} from '../../../../type/any-paragraph-validation-config';
-import {MatOption} from '@angular/material/core';
-import {MatSelect} from '@angular/material/select';
-import {EditFormStateService} from '../../../../service/edit-form-state-service';
-import {ParagraphActiveValidationInputId, ParagraphConstant} from '../../../../constant/paragraph-constant';
-import {RegexValidator} from '../../../../formValidator/regex-validator';
-import {ValidationId} from '../../../../type/validation-id';
-import {QuestionType} from '../../../../type/question-type';
-import {OnlyParagraphAddUpdateReq} from '../../../../model/edit-form/question/request/paragraph-add-update-req';
+import { Component, inject, OnChanges, OnInit, signal, SimpleChanges } from '@angular/core';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatFormField, MatInput, MatLabel } from '@angular/material/input';
+import { EditFormQuestionComponent } from '../../../../type/edit-form-question-component';
+import { ParagraphRes } from '../../../../model/edit-form/question/response/paragraph-res';
+import { AnyParagraphValidationConfig } from '../../../../type/any-paragraph-validation-config';
+import { MatOption } from '@angular/material/core';
+import { MatSelect } from '@angular/material/select';
+import { EditFormStateService } from '../../../../service/edit-form-state-service';
+import { ParagraphActiveValidationInputId, ParagraphConstant } from '../../../../constant/paragraph-constant';
+import { RegexValidator } from '../../../../formValidator/regex-validator';
+import { ValidationId } from '../../../../type/validation-id';
+import { QuestionType } from '../../../../type/question-type';
+import { OnlyParagraphAddUpdateReq } from '../../../../model/edit-form/question/addreq/paragraph-add-req';
+import { OnlyParagraphUpdateReq, ParagraphUpdateReq } from '../../../../model/edit-form/question/updatereq/paragraph-update-req';
 
 @Component({
   selector: 'app-edit-form-paragraph',
@@ -28,7 +29,7 @@ import {OnlyParagraphAddUpdateReq} from '../../../../model/edit-form/question/re
   styleUrl: './edit-form-paragraph.scss',
 })
 export class EditFormParagraph
-  extends EditFormQuestionComponent<ParagraphRes<AnyParagraphValidationConfig>, OnlyParagraphAddUpdateReq<AnyParagraphValidationConfig>>
+  extends EditFormQuestionComponent<ParagraphRes<AnyParagraphValidationConfig>, OnlyParagraphUpdateReq>
   implements OnInit, OnChanges {
 
   private constant = new ParagraphConstant()
@@ -62,7 +63,14 @@ export class EditFormParagraph
       this.validationValueFg.reset()
       this.validationValueFg.markAsUntouched()
       this.emitCanSaveAndHasError()
-      this.updateQuestion.emit(this.getOnlyQuestionAddUpdateReq())
+
+      this.updateQuestion.emit(
+        {
+          validationConfig: this.getValidationConfig(),
+          updateFields: ['validationConfig' satisfies keyof ParagraphUpdateReq]
+        }
+      )
+
     })
     this.validationSelectorFg.controls.inputType.valueChanges.subscribe(val => {
       if (!val) return
@@ -73,11 +81,19 @@ export class EditFormParagraph
 
     this.validationValueFg.valueChanges.subscribe(() => {
       this.emitCanSaveAndHasError()
-      this.updateQuestion.emit(this.getOnlyQuestionAddUpdateReq())
+
+      this.updateQuestion.emit(
+        {
+          validationConfig: this.getValidationConfig(),
+          updateFields: ['validationConfig' satisfies keyof ParagraphUpdateReq]
+        }
+      )
     })
   }
 
-  ngOnChanges(changes: SimpleChanges) {
+  override ngOnChanges(changes: SimpleChanges) {
+    super.ngOnChanges(changes)
+    
     const moreMenuItemIdsChange = changes['moreMenuItemIds']
     if (moreMenuItemIdsChange) {
       if (
@@ -93,12 +109,6 @@ export class EditFormParagraph
       }
 
       this.emitCanSaveAndHasError()
-    }
-  }
-
-  override getOnlyQuestionAddUpdateReq(): OnlyParagraphAddUpdateReq<AnyParagraphValidationConfig> {
-    return {
-      validationConfig: this.getValidationConfig()
     }
   }
 
@@ -121,7 +131,7 @@ export class EditFormParagraph
         validationType: validationIdMeta.validation.value
       })
 
-      this.validationValueFg.patchValue({...vCon})
+      this.validationValueFg.patchValue({ ...vCon })
 
       this.activeValidationInputId.set(this.constant.getByValidationId(vId).activeValidationInputId)
 
@@ -131,20 +141,20 @@ export class EditFormParagraph
 
   private getValidationConfig(): AnyParagraphValidationConfig {
     if (!this.showResponseValidation()) {
-      return {validationId: 'PARAGRAPH_NONE', errorText: null};
+      return { validationId: 'PARAGRAPH_NONE', errorText: null };
     }
 
     const validationId = this.getValidationId()
     const activeValidationInput = this.constant.getByValidationId(validationId).activeValidationInputId
 
-    const {number, text, errorText} = this.validationValueFg.value
-    const common = {validationId: validationId, errorText: errorText ?? null}
+    const { number, text, errorText } = this.validationValueFg.value
+    const common = { validationId: validationId, errorText: errorText ?? null }
 
     switch (activeValidationInput) {
       case 'NUMBER':
-        return {...common, number: number!}
+        return { ...common, number: number! }
       case 'PATTERN':
-        return {...common, text: text!}
+        return { ...common, text: text! }
       case null:
         return common
     }

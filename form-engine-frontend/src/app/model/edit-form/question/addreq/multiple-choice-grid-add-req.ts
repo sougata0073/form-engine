@@ -1,4 +1,4 @@
-import {QuestionAddUpdateReq} from './question-add-update-req';
+import {QuestionAddReq} from './question-add-req';
 
 export interface OnlyMultipleChoiceGridAddUpdateReq {
   eachRowRequired: boolean,
@@ -6,6 +6,6 @@ export interface OnlyMultipleChoiceGridAddUpdateReq {
   columns: { id: string | null, column: string }[]
 }
 
-export interface MultipleChoiceGridAddUpdateReq extends QuestionAddUpdateReq, OnlyMultipleChoiceGridAddUpdateReq {
+export interface MultipleChoiceGridAddUpdateReq extends QuestionAddReq, OnlyMultipleChoiceGridAddUpdateReq {
 }
 

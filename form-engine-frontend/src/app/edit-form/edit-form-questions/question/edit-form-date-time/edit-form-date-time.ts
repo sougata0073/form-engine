@@ -17,7 +17,8 @@ import {
 import {provideNativeDateAdapter} from '@angular/material/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
-import {OnlyDateTimeAddUpdateReq} from '../../../../model/edit-form/question/request/date-time-add-update-req';
+import {OnlyDateTimeAddUpdateReq} from '../../../../model/edit-form/question/addreq/date-time-add-req';
+import { OnlyDateTimeUpdateReq } from '../../../../model/edit-form/question/updatereq/date-time-update-req';
 
 @Component({
   selector: 'app-edit-form-date-time',
@@ -43,15 +44,11 @@ import {OnlyDateTimeAddUpdateReq} from '../../../../model/edit-form/question/req
   templateUrl: './edit-form-date-time.html',
   styleUrl: './edit-form-date-time.scss',
 })
-export class EditFormDateTime extends EditFormQuestionComponent<DateTimeRes, OnlyDateTimeAddUpdateReq> implements OnInit {
+export class EditFormDateTime extends EditFormQuestionComponent<DateTimeRes, OnlyDateTimeUpdateReq> implements OnInit {
 
   ngOnInit() {
     this.canSaveQuestion.emit(true)
     this.hasError.emit(false)
-  }
-
-  override getOnlyQuestionAddUpdateReq(): OnlyDateTimeAddUpdateReq {
-    return {}
   }
 
 }

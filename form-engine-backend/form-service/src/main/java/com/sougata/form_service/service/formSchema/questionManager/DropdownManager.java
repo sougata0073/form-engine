@@ -1,5 +1,6 @@
 package com.sougata.form_service.service.formSchema.questionManager;
 
+import com.sougata.form_engine.constant.ComplexQuestionUpdateAction;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.DropdownDetailsDto;
 import com.sougata.form_engine.dto.question.schemaaddrequest.DropdownAddReqDto;
@@ -10,10 +11,12 @@ import com.sougata.form_service.model.formSchema.Dropdown;
 import com.sougata.form_service.model.formSchema.DropdownOption;
 import com.sougata.form_service.model.formSchema.Form;
 import com.sougata.form_service.model.formSchema.Question;
+import com.sougata.form_service.repository.formSchema.DropdownOptionRepository;
 import com.sougata.form_service.repository.formSchema.DropdownRepository;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.service.formSchema.FormService;
 import com.sougata.form_service.service.formSchema.QuestionManager;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,10 +28,12 @@ import java.util.UUID;
 public class DropdownManager extends QuestionManager<Dropdown, DropdownAddReqDto, DropdownUpdateReqDto, DropdownDetailsDto, DropdownTemplateDetails> {
 
     private final DropdownRepository dropdownRepository;
+    private final DropdownOptionRepository dropdownOptionRepository;
 
-    public DropdownManager(DropdownRepository dropdownRepository, FormService formService, QuestionRepository questionRepository) {
+    public DropdownManager(DropdownRepository dropdownRepository, FormService formService, QuestionRepository questionRepository, DropdownOptionRepository dropdownOptionRepository) {
         super(questionRepository, formService);
         this.dropdownRepository = dropdownRepository;
+        this.dropdownOptionRepository = dropdownOptionRepository;
     }
 
     @Override
@@ -72,36 +77,33 @@ public class DropdownManager extends QuestionManager<Dropdown, DropdownAddReqDto
 
         var question = updateQuestion(questionId, questionUpdateReq);
 
-//        Map<Long, DropdownOption> existingOptions = dd.getOptions().stream()
-//                .collect(Collectors.toMap(DropdownOption::getId, option -> option));
-//        Set<Long> requestOptionIds = questionUpdateReq.getOptions().stream()
-//                .map(DropdownAddReqDto.Option::getId)
-//                .filter(Objects::nonNull)
-//                .collect(Collectors.toSet());
-//
-//        dd.getOptions().removeIf(option -> !requestOptionIds.contains(option.getId()));
-//
-//        for (int i = 0; i < questionUpdateReq.getOptions().size(); i++) {
-//            var dto = questionUpdateReq.getOptions().get(i);
-//
-//            if (dto.getId() == null) {
-//                DropdownOption option = new DropdownOption();
-//                option.setOption(dto.getOption());
-//                option.setOrderIndex(i);
-//                option.setDropdown(dd);
-//
-//                dd.getOptions().add(option);
-//            } else {
-//                DropdownOption option = existingOptions.get(dto.getId());
-//                if (option == null) {
-//                    throw new IllegalArgumentException("Invalid dropdown option id: " + dto.getId());
-//                }
-//                option.setOption(dto.getOption());
-//                option.setOrderIndex(i);
-//            }
-//        }
+        if(questionUpdateReq.getUpdateFields().contains(DropdownUpdateReqDto.Fields.option)) {
+            var option = questionUpdateReq.getOption();
+            var action = option.getAction();
 
-        questionUpdateReq.getUpdateFields().contains()
+            if (action == ComplexQuestionUpdateAction.ADD) {
+
+                var dOption = new DropdownOption();
+
+                dOption.setDropdown(dd);
+                dOption.setOption(option.getOption());
+                dOption.setOrderIndex(dropdownRepository.getOptionCount(questionId).intValue());
+
+                dropdownOptionRepository.save(dOption);
+
+            } else if (action == ComplexQuestionUpdateAction.UPDATE) {
+
+                var dOption = dropdownOptionRepository.findById(option.getId())
+                        .orElseThrow(() -> new IllegalArgumentException("Dropdown option not found for Id: " + option.getId()));
+
+                dOption.setOption(option.getOption());
+
+                dropdownOptionRepository.save(dOption);
+
+            } else if (action == ComplexQuestionUpdateAction.DELETE) {
+                dropdownOptionRepository.deleteById(option.getId());
+            }
+        }
 
         dropdownRepository.save(dd);
 

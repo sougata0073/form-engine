@@ -3,6 +3,7 @@ package com.sougata.form_service.service.formSchema.questionManager;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.RatingDetailsDto;
 import com.sougata.form_engine.dto.question.schemaaddrequest.RatingAddReqDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.RatingUpdateReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.RatingTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.Form;
@@ -18,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service("RATING_QUESTION_MANAGER")
-public class RatingManager extends QuestionManager<Rating, RatingAddReqDto, RatingDetailsDto, RatingTemplateDetails> {
+public class RatingManager extends QuestionManager<Rating, RatingAddReqDto, RatingUpdateReqDto, RatingDetailsDto, RatingTemplateDetails> {
 
     private final RatingRepository ratingRepository;
 
@@ -62,14 +63,19 @@ public class RatingManager extends QuestionManager<Rating, RatingAddReqDto, Rati
 
     @Override
     @Transactional
-    public RatingDetailsDto update(UUID formId, Long questionId, RatingAddReqDto questionAddUpdateReq) {
+    public RatingDetailsDto update(UUID formId, Long questionId, RatingUpdateReqDto questionUpdateReq) {
         Rating r = ratingRepository.findByQuestionId(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(getQuestionType(), questionId));
 
-        var question = updateQuestion(questionId, questionAddUpdateReq);
+        var question = updateQuestion(questionId, questionUpdateReq);
 
-        r.setMaxRatingNumber(questionAddUpdateReq.getMaxRatingNumber());
-        r.setRatingIcon(questionAddUpdateReq.getRatingIcon());
+        questionUpdateReq.getUpdateFields().forEach(fields -> {
+            if (RatingUpdateReqDto.Fields.maxRatingNumber.equals(fields)) {
+                r.setMaxRatingNumber(questionUpdateReq.getMaxRatingNumber());
+            } else if (RatingUpdateReqDto.Fields.ratingIcon.equals(fields)) {
+                r.setRatingIcon(questionUpdateReq.getRatingIcon());
+            }
+        });
 
         ratingRepository.save(r);
 

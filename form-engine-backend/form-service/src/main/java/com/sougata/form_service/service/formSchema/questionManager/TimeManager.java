@@ -3,6 +3,7 @@ package com.sougata.form_service.service.formSchema.questionManager;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.TimeDetailsDto;
 import com.sougata.form_engine.dto.question.schemaaddrequest.TimeAddReqDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.TimeUpdateReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.TimeTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.Form;
@@ -18,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service("TIME_QUESTION_MANAGER")
-public class TimeManager extends QuestionManager<Time, TimeAddReqDto, TimeDetailsDto, TimeTemplateDetails> {
+public class TimeManager extends QuestionManager<Time, TimeAddReqDto, TimeUpdateReqDto, TimeDetailsDto, TimeTemplateDetails> {
 
     private final TimeRepository timeRepository;
 
@@ -62,11 +63,11 @@ public class TimeManager extends QuestionManager<Time, TimeAddReqDto, TimeDetail
 
     @Override
     @Transactional
-    public TimeDetailsDto update(UUID formId, Long questionId, TimeAddReqDto questionAddUpdateReq) {
+    public TimeDetailsDto update(UUID formId, Long questionId, TimeUpdateReqDto questionUpdateReq) {
         Time t = timeRepository.findByQuestionId(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(QuestionType.TIME, questionId));
 
-        var question = updateQuestion(questionId, questionAddUpdateReq);
+        var question = updateQuestion(questionId, questionUpdateReq);
 
         timeRepository.save(t);
 

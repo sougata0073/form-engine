@@ -1,9 +1,12 @@
 package com.sougata.form_engine.dto.question.schemaupdatereq;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.question.schemaaddrequest.QuestionAddReqDto;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,18 +43,30 @@ import java.util.Set;
 @FieldNameConstants
 public class QuestionUpdateReqDto {
 
+    @NotNull
+    private String questionId;
+
     private String question;
 
     private String description;
 
     private Boolean required;
 
+    @NotNull
     private QuestionType questionType;
 
     @NotNull
     private Set<@NotNull String> updateFields;
 
+    private QuestionAddReqDto addReqForQuestionTypeUpdate;
+
     @JsonProperty(value = "@class")
     private String cls = getClass().getName();
+
+    @AssertTrue
+    @JsonIgnore
+    public boolean isAddReqFormQuestionTypeUpdateValid() {
+        return updateFields.contains(Fields.questionType) && addReqForQuestionTypeUpdate != null;
+    }
 
 }

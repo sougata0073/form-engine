@@ -1,4 +1,4 @@
-import {QuestionAddUpdateReq} from '../request/question-add-update-req';
+import {QuestionAddReq} from '../addreq/question-add-req';
 import {QuestionType} from '../../../../type/question-type';
 
 export interface QuestionRes {

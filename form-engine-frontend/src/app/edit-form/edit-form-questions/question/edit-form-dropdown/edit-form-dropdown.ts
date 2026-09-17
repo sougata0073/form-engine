@@ -7,7 +7,8 @@ import { EditFormStateService } from '../../../../service/edit-form-state-servic
 import { MatDialog } from '@angular/material/dialog';
 import { DropdownOption } from '../../../../type/dropdown-option';
 import { SimpleDialog } from '../../../../shared/simple-dialog/simple-dialog';
-import { OnlyDropdownAddUpdateReq } from '../../../../model/edit-form/question/request/dropdown-add-update-req';
+import { OnlyDropdownAddUpdateReq } from '../../../../model/edit-form/question/addreq/dropdown-add-req';
+import { DropdownUpdateReq, OnlyDropdownUpdateReq } from '../../../../model/edit-form/question/updatereq/dropdown-update-req';
 
 @Component({
   selector: 'app-edit-form-dropdown',
@@ -16,9 +17,8 @@ import { OnlyDropdownAddUpdateReq } from '../../../../model/edit-form/question/r
   styleUrl: './edit-form-dropdown.scss',
 })
 export class EditFormDropdown
-  extends EditFormQuestionComponent<DropdownRes, OnlyDropdownAddUpdateReq>
-  implements OnInit
-{
+  extends EditFormQuestionComponent<DropdownRes, OnlyDropdownUpdateReq>
+  implements OnInit {
   protected options = signal<DropdownOption[]>([]);
 
   protected formStateService = inject(EditFormStateService);
@@ -30,17 +30,6 @@ export class EditFormDropdown
     });
   }
 
-  override getOnlyQuestionAddUpdateReq(): OnlyDropdownAddUpdateReq {
-    return {
-      options: this.options().map((val) => {
-        return {
-          id: val.id.startsWith('NEW_') ? null : val.id,
-          option: val.option,
-        };
-      }),
-    };
-  }
-
   protected onAddOptionClick() {
     if (this.options().length >= 20) {
       this.dialog.open(SimpleDialog, {
@@ -48,17 +37,27 @@ export class EditFormDropdown
       });
       return;
     }
-    this.options.update((val) => [
-      ...val,
-      {
-        id: 'NEW_' + crypto.randomUUID(),
-        orderIndex: val.length,
-        option: `Option ${val.length + 1}`,
-        valid: true,
-      },
-    ]);
+
+    const option = {
+      id: 'NEW_' + crypto.randomUUID(),
+      orderIndex: this.options().length,
+      option: `Option ${this.options().length + 1}`,
+      valid: true,
+    }
+
+    this.options.update((val) => [...val, option]);
+
     this.emitCanSaveHasError();
-    this.updateQuestion.emit(this.getOnlyQuestionAddUpdateReq());
+
+    this.updateQuestion.emit(
+      {
+        option: {
+          option: option.option,
+          action: 'ADD'
+        },
+        updateFields: ['option' satisfies keyof DropdownUpdateReq]
+      }
+    )
   }
 
   protected removeOption(optionId: string) {
@@ -79,7 +78,16 @@ export class EditFormDropdown
       return [...newArray];
     });
     this.emitCanSaveHasError();
-    this.updateQuestion.emit(this.getOnlyQuestionAddUpdateReq());
+
+    this.updateQuestion.emit(
+      {
+        option: {
+          id: optionId,
+          action: 'DELETE'
+        },
+        updateFields: ['option' satisfies keyof DropdownUpdateReq]
+      }
+    )
   }
 
   protected onOptionTextChange(option: DropdownOption) {
@@ -87,7 +95,17 @@ export class EditFormDropdown
       val.map((v) => (v.id === option.id ? { ...v, option: option.option } : v)),
     );
     this.emitCanSaveHasError();
-    this.updateQuestion.emit(this.getOnlyQuestionAddUpdateReq());
+
+    this.updateQuestion.emit(
+      {
+        option: {
+          id: option.id,
+          option: option.option,
+          action: 'UPDATE'
+        },
+        updateFields: ['option' satisfies keyof DropdownUpdateReq]
+      }
+    )
   }
 
   protected onOptionCanSaveChange(optionId: string, canSave: boolean) {

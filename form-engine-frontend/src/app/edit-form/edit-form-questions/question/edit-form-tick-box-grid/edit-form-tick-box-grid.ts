@@ -1,17 +1,18 @@
-import {Component, inject, OnInit, signal} from '@angular/core';
-import {EditFormQuestionComponent} from '../../../../type/edit-form-question-component';
-import {TickBoxGridRes} from '../../../../model/edit-form/question/response/tick-box-grid-res';
-import {DropdownOption} from '../../../../type/dropdown-option';
-import {EditFormStateService} from '../../../../service/edit-form-state-service';
-import {MatDialog} from '@angular/material/dialog';
-import {SimpleDialog} from '../../../../shared/simple-dialog/simple-dialog';
-import {CheckboxOption} from '../../../../type/checkbox-option';
-import {EditFormDropdownOption} from '../edit-form-dropdown/edit-form-dropdown-option/edit-form-dropdown-option';
-import {EditFormCheckboxOption} from '../edit-form-checkbox/edit-form-checkbox-option/edit-form-checkbox-option';
-import {MatButton} from '@angular/material/button';
-import {MatCheckbox} from '@angular/material/checkbox';
-import {ReactiveFormsModule} from '@angular/forms';
-import {OnlyTickBoxGridAddUpdateReq} from '../../../../model/edit-form/question/request/tick-box-grid-add-update-req';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { EditFormQuestionComponent } from '../../../../type/edit-form-question-component';
+import { TickBoxGridRes } from '../../../../model/edit-form/question/response/tick-box-grid-res';
+import { DropdownOption } from '../../../../type/dropdown-option';
+import { EditFormStateService } from '../../../../service/edit-form-state-service';
+import { MatDialog } from '@angular/material/dialog';
+import { SimpleDialog } from '../../../../shared/simple-dialog/simple-dialog';
+import { CheckboxOption } from '../../../../type/checkbox-option';
+import { EditFormDropdownOption } from '../edit-form-dropdown/edit-form-dropdown-option/edit-form-dropdown-option';
+import { EditFormCheckboxOption } from '../edit-form-checkbox/edit-form-checkbox-option/edit-form-checkbox-option';
+import { MatButton } from '@angular/material/button';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { ReactiveFormsModule } from '@angular/forms';
+import { OnlyTickBoxGridAddUpdateReq } from '../../../../model/edit-form/question/addreq/tick-box-grid-add-req';
+import { OnlyTickBoxGridUpdateReq, TickBoxGridUpdateReq } from '../../../../model/edit-form/question/updatereq/tick-box-grid-update-req';
 
 @Component({
   selector: 'app-edit-form-tick-box-grid',
@@ -25,7 +26,7 @@ import {OnlyTickBoxGridAddUpdateReq} from '../../../../model/edit-form/question/
   templateUrl: './edit-form-tick-box-grid.html',
   styleUrl: './edit-form-tick-box-grid.scss',
 })
-export class EditFormTickBoxGrid extends EditFormQuestionComponent<TickBoxGridRes, OnlyTickBoxGridAddUpdateReq> implements OnInit {
+export class EditFormTickBoxGrid extends EditFormQuestionComponent<TickBoxGridRes, OnlyTickBoxGridUpdateReq> implements OnInit {
 
   protected rows = signal<DropdownOption[]>([])
   protected columns = signal<CheckboxOption[]>([])
@@ -36,86 +37,100 @@ export class EditFormTickBoxGrid extends EditFormQuestionComponent<TickBoxGridRe
   ngOnInit() {
 
     this.rows.set(this.question().rows
-      .map(r => ({id: r.id, option: r.row, orderIndex: r.orderIndex, valid: !!r.row}))
+      .map(r => ({ id: r.id, option: r.row, orderIndex: r.orderIndex, valid: !!r.row }))
     )
 
     this.columns.set(this.question().columns
-      .map(r => ({id: r.id, option: r.column, orderIndex: r.orderIndex, valid: !!r.column}))
+      .map(r => ({ id: r.id, option: r.column, orderIndex: r.orderIndex, valid: !!r.column }))
     )
-  }
-
-  override getOnlyQuestionAddUpdateReq(): OnlyTickBoxGridAddUpdateReq {
-    return {
-      eachRowRequired: false,
-      rows: this.rows().map(r => {
-        return {
-          id: r.id.startsWith('NEW_') ? null : r.id,
-          row: r.option
-        }
-      }),
-      columns: this.columns().map(c => {
-        return {
-          id: c.id.startsWith('NEW_') ? null : c.id,
-          column: c.option
-        }
-      })
-    }
   }
 
   protected addRow() {
     if (this.rows().length >= 20) {
       this.dialog.open(
         SimpleDialog, {
-          data: SimpleDialog.configure('Error', 'Can not add more than 20 row', 'Close')
-        }
+        data: SimpleDialog.configure('Error', 'Can not add more than 20 row', 'Close')
+      }
       )
       return
     }
-    this.rows.update(val => [...val, {
+
+    const row = {
       id: 'NEW_' + crypto.randomUUID(),
-      orderIndex: val.length,
-      option: `Row ${val.length + 1}`,
+      orderIndex: this.rows().length,
+      option: `Row ${this.rows().length + 1}`,
       valid: true
-    }])
+    }
+
+    this.rows.update(val => [...val, row])
+
     this.emiCanSaveHasError()
-    this.updateQuestion.emit(this.getOnlyQuestionAddUpdateReq())
+
+    this.updateQuestion.emit(
+      {
+        row: {
+          row: row.option,
+          action: 'ADD'
+        },
+        updateFields: ['row' satisfies keyof TickBoxGridUpdateReq]
+      }
+    )
   }
 
   protected removeRow(rowId: string) {
     if (this.rows().length <= 1) {
       this.dialog.open(
         SimpleDialog, {
-          data: SimpleDialog.configure('Error', 'At least 1 row is required', 'Close')
-        }
+        data: SimpleDialog.configure('Error', 'At least 1 row is required', 'Close')
+      }
       )
       return
     }
     this.rows.update(val => {
-        const newArray = val
-          .filter(v => v.id !== rowId)
-          .map((v, index) => {
-            return {...v, orderNumber: index + 1}
-          })
+      const newArray = val
+        .filter(v => v.id !== rowId)
+        .map((v, index) => {
+          return { ...v, orderNumber: index + 1 }
+        })
 
-        return [...newArray]
-      }
+      return [...newArray]
+    }
     )
 
     this.emiCanSaveHasError()
-    this.updateQuestion.emit(this.getOnlyQuestionAddUpdateReq())
+
+    this.updateQuestion.emit(
+      {
+        row: {
+          id: rowId,
+          action: 'DELETE'
+        },
+        updateFields: ['row' satisfies keyof TickBoxGridUpdateReq]
+      }
+    )
   }
 
   protected onRowTextChange(row: DropdownOption) {
     this.rows.update(val =>
-      val.map(v => v.id === row.id ? {...v, option: row.option} : v))
+      val.map(v => v.id === row.id ? { ...v, option: row.option } : v))
     this.emiCanSaveHasError()
-    this.updateQuestion.emit(this.getOnlyQuestionAddUpdateReq())
+
+    this.updateQuestion.emit(
+      {
+        row: {
+          id: row.id,
+          row: row.option,
+          action: 'UPDATE'
+        },
+        updateFields: ['row' satisfies keyof TickBoxGridUpdateReq]
+      }
+    )
   }
 
   protected onRowCanSaveChange(rowId: string, canSave: boolean) {
     this.rows.update(ops => {
       return ops.map(op => {
-        return op.id === rowId ? {...op, valid: canSave} : {...op}
+        return op.id === rowId ? { ...op, valid: canSave } : { ...op }
       })
     })
     this.emiCanSaveHasError()
@@ -125,39 +140,49 @@ export class EditFormTickBoxGrid extends EditFormQuestionComponent<TickBoxGridRe
     if (this.columns().length >= 20) {
       this.dialog.open(
         SimpleDialog, {
-          data: SimpleDialog.configure(
-            'Error',
-            'Can not add more than 20 columns',
-            'Close'
-          )
-        }
+        data: SimpleDialog.configure(
+          'Error',
+          'Can not add more than 20 columns',
+          'Close'
+        )
+      }
       )
       return
     }
-    this.columns.update(val => {
-      const option = {
-        id: 'NEW_' + crypto.randomUUID(),
-        orderIndex: val.length,
-        option: `Column ${val.length + 1}`,
-        valid: true
-      }
 
-      return [...val, option]
+    const column = {
+      id: 'NEW_' + crypto.randomUUID(),
+      orderIndex: this.columns().length,
+      option: `Column ${this.columns().length + 1}`,
+      valid: true
+    }
+
+    this.columns.update(val => {
+      return [...val, column]
     })
     this.emiCanSaveHasError()
-    this.updateQuestion.emit(this.getOnlyQuestionAddUpdateReq())
+
+    this.updateQuestion.emit(
+      {
+        column: {
+          column: column.option,
+          action: 'ADD'
+        },
+        updateFields: ['column' satisfies keyof TickBoxGridUpdateReq]
+      }
+    )
   }
 
   protected removeColumn(columnId: string) {
     if (this.columns().length <= 1) {
       this.dialog.open(
         SimpleDialog, {
-          data: SimpleDialog.configure(
-            'Error',
-            'At least 1 column is required',
-            'Close'
-          )
-        }
+        data: SimpleDialog.configure(
+          'Error',
+          'At least 1 column is required',
+          'Close'
+        )
+      }
       )
       return
     }
@@ -165,21 +190,40 @@ export class EditFormTickBoxGrid extends EditFormQuestionComponent<TickBoxGridRe
       return [...val.filter(v => v.id !== columnId)]
     })
     this.emiCanSaveHasError()
-    this.updateQuestion.emit(this.getOnlyQuestionAddUpdateReq())
+
+    this.updateQuestion.emit(
+      {
+        column: {
+          id: columnId,
+          action: 'DELETE'
+        },
+        updateFields: ['column' satisfies keyof TickBoxGridUpdateReq]
+      }
+    )
   }
 
   protected onColumnTextChange(column: CheckboxOption) {
     this.columns.update(val => {
-      return val.map(v => v.id === column.id ? {...v, option: column.option} : v)
+      return val.map(v => v.id === column.id ? { ...v, option: column.option } : v)
     })
     this.emiCanSaveHasError()
-    this.updateQuestion.emit(this.getOnlyQuestionAddUpdateReq())
+
+    this.updateQuestion.emit(
+      {
+        column: {
+          id: column.id,
+          column: column.option,
+          action: 'UPDATE'
+        },
+        updateFields: ['column' satisfies keyof TickBoxGridUpdateReq]
+      }
+    )
   }
 
   protected onColumnCanSaveChange(columnId: string, canSave: boolean) {
     this.columns.update(ops => {
       return ops.map(op => {
-        return op.id === columnId ? {...op, valid: canSave} : {...op}
+        return op.id === columnId ? { ...op, valid: canSave } : { ...op }
       })
     })
     this.emiCanSaveHasError()

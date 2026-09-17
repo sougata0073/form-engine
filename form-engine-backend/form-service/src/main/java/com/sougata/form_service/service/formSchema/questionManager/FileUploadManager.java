@@ -4,6 +4,7 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.others.FileTypeDetails;
 import com.sougata.form_engine.dto.question.details.FileUploadDetailsDto;
 import com.sougata.form_engine.dto.question.schemaaddrequest.FileUploadAddReqDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.FileUploadUpdateReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.FileUploadTemplateDetails;
 import com.sougata.form_service.exception.FileTypeNotFoundException;
 import com.sougata.form_service.exception.QuestionNotFoundException;
@@ -25,7 +26,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service("FILE_UPLOAD_QUESTION_MANAGER")
-public class FileUploadManager extends QuestionManager<FileUpload, FileUploadAddReqDto, FileUploadDetailsDto, FileUploadTemplateDetails> {
+public class FileUploadManager extends QuestionManager<FileUpload, FileUploadAddReqDto, FileUploadUpdateReqDto, FileUploadDetailsDto, FileUploadTemplateDetails> {
 
     private final FileUploadRepository fileUploadRepository;
     private final FileTypeRepository fileTypeRepository;
@@ -71,23 +72,29 @@ public class FileUploadManager extends QuestionManager<FileUpload, FileUploadAdd
 
     @Override
     @Transactional
-    public FileUploadDetailsDto update(UUID formId, Long questionId, FileUploadAddReqDto questionAddUpdateReq) {
+    public FileUploadDetailsDto update(UUID formId, Long questionId, FileUploadUpdateReqDto questionUpdateReq) {
         FileUpload fu = fileUploadRepository.findByQuestionId(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(QuestionType.FILE_UPLOAD, questionId));
 
-        var question = updateQuestion(questionId, questionAddUpdateReq);
+        var question = updateQuestion(questionId, questionUpdateReq);
 
-        List<String> categories = questionAddUpdateReq.getAllowedFileCategories();
-        List<FileType> fileTypes = categories.stream()
-                .map(category ->
-                        fileTypeRepository.findByCategory(category)
-                                .orElseThrow(() -> new FileTypeNotFoundException(category))
-                ).collect(Collectors.toList());
+        questionUpdateReq.getUpdateFields().forEach(field -> {
+            if (FileUploadUpdateReqDto.Fields.maxFileSize.equals(field)) {
+                fu.setMaxFileSize(questionUpdateReq.getMaxFileSize());
+            } else if (FileUploadUpdateReqDto.Fields.allowedFileCategories.equals(field)) {
 
-        fu.getAllowedFileTypes().clear();
+                var categories = questionUpdateReq.getAllowedFileCategories();
+                var fileTypes = categories.stream()
+                        .map(category ->
+                                fileTypeRepository.findByCategory(category)
+                                        .orElseThrow(() -> new FileTypeNotFoundException(category))
+                        ).collect(Collectors.toList());
 
-        fu.setMaxFileSize(questionAddUpdateReq.getMaxFileSize());
-        fu.setAllowedFileTypes(fileTypes);
+                fu.getAllowedFileTypes().clear();
+
+                fu.setAllowedFileTypes(fileTypes);
+            }
+        });
 
         fileUploadRepository.save(fu);
 

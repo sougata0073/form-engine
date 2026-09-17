@@ -1,6 +1,6 @@
 import {QuestionType} from '../../../../type/question-type';
 
-export interface QuestionAddUpdateReq {
+export interface QuestionAddReq {
   question: string | null,
   description: string | null,
   required: boolean,

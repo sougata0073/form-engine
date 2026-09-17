@@ -1,4 +1,4 @@
-import {QuestionAddUpdateReq} from './question-add-update-req';
+import {QuestionAddReq} from './question-add-req';
 
 export interface OnlyTickBoxGridAddUpdateReq {
   eachRowRequired: boolean,
@@ -6,6 +6,6 @@ export interface OnlyTickBoxGridAddUpdateReq {
   columns: { id: string | null, column: string }[]
 }
 
-export interface TickBoxGridAddUpdateReq extends QuestionAddUpdateReq, OnlyTickBoxGridAddUpdateReq {
+export interface TickBoxGridAddUpdateReq extends QuestionAddReq, OnlyTickBoxGridAddUpdateReq {
 }
 

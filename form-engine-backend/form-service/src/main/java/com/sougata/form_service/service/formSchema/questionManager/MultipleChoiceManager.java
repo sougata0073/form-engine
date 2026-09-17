@@ -1,14 +1,16 @@
 package com.sougata.form_service.service.formSchema.questionManager;
 
+import com.sougata.form_engine.constant.ComplexQuestionUpdateAction;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.MultipleChoiceDetailsDto;
 import com.sougata.form_engine.dto.question.schemaaddrequest.MultipleChoiceAddReqDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.CheckboxUpdateReqDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.MultipleChoiceUpdateReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.MultipleChoiceTemplateDetails;
+import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_service.exception.QuestionNotFoundException;
-import com.sougata.form_service.model.formSchema.Form;
-import com.sougata.form_service.model.formSchema.MultipleChoice;
-import com.sougata.form_service.model.formSchema.MultipleChoiceOption;
-import com.sougata.form_service.model.formSchema.Question;
+import com.sougata.form_service.model.formSchema.*;
+import com.sougata.form_service.repository.formSchema.MultipleChoiceOptionRepository;
 import com.sougata.form_service.repository.formSchema.MultipleChoiceRepository;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.service.formSchema.FormService;
@@ -20,13 +22,15 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service("MULTIPLE_CHOICE_QUESTION_MANAGER")
-public class MultipleChoiceManager extends QuestionManager<MultipleChoice, MultipleChoiceAddReqDto, MultipleChoiceDetailsDto, MultipleChoiceTemplateDetails> {
+public class MultipleChoiceManager extends QuestionManager<MultipleChoice, MultipleChoiceAddReqDto, MultipleChoiceUpdateReqDto, MultipleChoiceDetailsDto, MultipleChoiceTemplateDetails> {
 
     private final MultipleChoiceRepository multipleChoiceRepository;
+    private final MultipleChoiceOptionRepository multipleChoiceOptionRepository;
 
-    public MultipleChoiceManager(MultipleChoiceRepository multipleChoiceRepository, FormService formService, QuestionRepository questionRepository) {
+    public MultipleChoiceManager(MultipleChoiceRepository multipleChoiceRepository, FormService formService, QuestionRepository questionRepository, MultipleChoiceOptionRepository multipleChoiceOptionRepository) {
         super(questionRepository, formService);
         this.multipleChoiceRepository = multipleChoiceRepository;
+        this.multipleChoiceOptionRepository = multipleChoiceOptionRepository;
     }
 
     @Override
@@ -64,41 +68,38 @@ public class MultipleChoiceManager extends QuestionManager<MultipleChoice, Multi
 
     @Override
     @Transactional
-    public MultipleChoiceDetailsDto update(UUID formId, Long questionId, MultipleChoiceAddReqDto questionAddUpdateReq) {
+    public MultipleChoiceDetailsDto update(UUID formId, Long questionId, MultipleChoiceUpdateReqDto questionUpdateReq) {
         MultipleChoice mc = multipleChoiceRepository.findByQuestionId(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(QuestionType.MULTIPLE_CHOICE, questionId));
 
-        var question = updateQuestion(questionId, questionAddUpdateReq);
+        var question = updateQuestion(questionId, questionUpdateReq);
 
-        Map<Long, MultipleChoiceOption> existingOptions = mc.getOptions().stream()
-                .collect(Collectors.toMap(MultipleChoiceOption::getId, option -> option));
+        if (questionUpdateReq.getUpdateFields().contains(MultipleChoiceUpdateReqDto.Fields.option)) {
 
-        Set<Long> requestOptionIds = questionAddUpdateReq.getOptions().stream()
-                .map(MultipleChoiceAddReqDto.Option::getId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+            var option = questionUpdateReq.getOption();
+            var action = option.getAction();
 
-        mc.getOptions().removeIf(option -> !requestOptionIds.contains(option.getId()));
+            if (action == ComplexQuestionUpdateAction.ADD) {
 
-        for (int i = 0; i < questionAddUpdateReq.getOptions().size(); i++) {
-            var dto = questionAddUpdateReq.getOptions().get(i);
+                var mcOption = new MultipleChoiceOption();
 
-            if (dto.getId() == null) {
-                MultipleChoiceOption option = new MultipleChoiceOption();
-                option.setOption(dto.getOption());
-                option.setOrderIndex(i);
-                option.setMultipleChoice(mc);
+                mcOption.setMultipleChoice(mc);
+                mcOption.setOption(option.getOption());
+                mcOption.setOrderIndex(multipleChoiceRepository.getOptionCount(questionId).intValue());
 
-                mc.getOptions().add(option);
-            } else {
-                MultipleChoiceOption option = existingOptions.get(dto.getId());
+                multipleChoiceOptionRepository.save(mcOption);
 
-                if (option == null) {
-                    throw new IllegalArgumentException("Invalid multiple choice option id: " + dto.getId());
-                }
+            } else if (action == ComplexQuestionUpdateAction.UPDATE) {
 
-                option.setOption(dto.getOption());
-                option.setOrderIndex(i);
+                var mcOption = multipleChoiceOptionRepository.findById(option.getId())
+                        .orElseThrow(() -> new IllegalArgumentException("Multiple choice option not found for Id: " + option.getId()));
+
+                mcOption.setOption(option.getOption());
+
+                multipleChoiceOptionRepository.save(mcOption);
+
+            } else if (action == ComplexQuestionUpdateAction.DELETE) {
+                multipleChoiceOptionRepository.deleteById(option.getId());
             }
         }
 

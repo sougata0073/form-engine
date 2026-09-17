@@ -6,7 +6,8 @@ import {MatFormField, MatInput, MatLabel} from '@angular/material/input';
 import {MatDatepicker, MatDatepickerInput, MatDatepickerToggle} from '@angular/material/datepicker';
 import {provideNativeDateAdapter} from '@angular/material/core';
 import {MatFormFieldModule} from '@angular/material/form-field';
-import {OnlyDateAddUpdateReq} from '../../../../model/edit-form/question/request/date-add-update-req';
+import {OnlyDateAddUpdateReq} from '../../../../model/edit-form/question/addreq/date-add-req';
+import { OnlyDateUpdateReq } from '../../../../model/edit-form/question/updatereq/date-update-req';
 
 @Component({
   selector: 'app-edit-form-date',
@@ -25,15 +26,11 @@ import {OnlyDateAddUpdateReq} from '../../../../model/edit-form/question/request
   templateUrl: './edit-form-date.html',
   styleUrl: './edit-form-date.scss',
 })
-export class EditFormDate extends EditFormQuestionComponent<DateRes, OnlyDateAddUpdateReq> implements OnInit {
+export class EditFormDate extends EditFormQuestionComponent<DateRes, OnlyDateUpdateReq> implements OnInit {
 
   ngOnInit() {
     this.canSaveQuestion.emit(true)
     this.hasError.emit(false)
-  }
-
-  override getOnlyQuestionAddUpdateReq(): OnlyDateAddUpdateReq {
-    return {}
   }
 
 }

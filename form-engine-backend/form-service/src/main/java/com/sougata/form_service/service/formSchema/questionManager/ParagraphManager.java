@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.ParagraphDetailsDto;
 import com.sougata.form_engine.dto.question.schemaaddrequest.ParagraphAddReqDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.ParagraphUpdateReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.ParagraphTemplateDetails;
 import com.sougata.form_engine.dto.validation.config.ValidationConfig;
 import com.sougata.form_engine.util.JsonUtil;
@@ -22,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service("PARAGRAPH_QUESTION_MANAGER")
-public class ParagraphManager extends QuestionManager<Paragraph, ParagraphAddReqDto, ParagraphDetailsDto, ParagraphTemplateDetails> {
+public class ParagraphManager extends QuestionManager<Paragraph, ParagraphAddReqDto, ParagraphUpdateReqDto, ParagraphDetailsDto, ParagraphTemplateDetails> {
 
     private final ParagraphRepository paragraphRepository;
 
@@ -66,12 +67,15 @@ public class ParagraphManager extends QuestionManager<Paragraph, ParagraphAddReq
 
     @Override
     @Transactional
-    public ParagraphDetailsDto update(UUID formId, Long questionId, ParagraphAddReqDto questionAddUpdateReq) {
+    public ParagraphDetailsDto update(UUID formId, Long questionId, ParagraphUpdateReqDto questionUpdateReq) {
         Paragraph p = paragraphRepository.findByQuestionId(questionId)
-                .orElseThrow(() -> new QuestionNotFoundException(QuestionType.PARAGRAPH, questionId));
+                .orElseThrow(() -> new QuestionNotFoundException(getQuestionType(), questionId));
 
-        var question = updateQuestion(questionId, questionAddUpdateReq);
-        p.setValidationConfig(JsonUtil.objectToOldJsonNode(questionAddUpdateReq.getValidationConfig()));
+        var question = updateQuestion(questionId, questionUpdateReq);
+
+        if (questionUpdateReq.getUpdateFields().contains(ParagraphUpdateReqDto.Fields.validationConfig)) {
+            p.setValidationConfig(JsonUtil.objectToOldJsonNode(questionUpdateReq.getValidationConfig()));
+        }
 
         paragraphRepository.save(p);
 

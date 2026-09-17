@@ -1,4 +1,4 @@
-import {QuestionAddUpdateReq} from './question-add-update-req';
+import {QuestionAddReq} from './question-add-req';
 import {RatingIcon} from '../../../../type/rating-icon';
 
 export interface OnlyRatingAddUpdateReq {
@@ -6,6 +6,6 @@ export interface OnlyRatingAddUpdateReq {
   ratingIcon: RatingIcon
 }
 
-export interface RatingAddUpdateReq extends QuestionAddUpdateReq, OnlyRatingAddUpdateReq {
+export interface RatingAddUpdateReq extends QuestionAddReq, OnlyRatingAddUpdateReq {
 }
 

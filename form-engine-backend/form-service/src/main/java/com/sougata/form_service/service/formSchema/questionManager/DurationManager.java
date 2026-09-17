@@ -3,6 +3,7 @@ package com.sougata.form_service.service.formSchema.questionManager;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.DurationDetailsDto;
 import com.sougata.form_engine.dto.question.schemaaddrequest.DurationAddReqDto;
+import com.sougata.form_engine.dto.question.schemaupdatereq.DurationUpdateReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.DurationTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.Duration;
@@ -18,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service("DURATION_QUESTION_MANAGER")
-public class DurationManager extends QuestionManager<Duration, DurationAddReqDto, DurationDetailsDto, DurationTemplateDetails> {
+public class DurationManager extends QuestionManager<Duration, DurationAddReqDto, DurationUpdateReqDto, DurationDetailsDto, DurationTemplateDetails> {
 
     private final DurationRepository durationRepository;
 
@@ -62,11 +63,11 @@ public class DurationManager extends QuestionManager<Duration, DurationAddReqDto
 
     @Override
     @Transactional
-    public DurationDetailsDto update(UUID formId, Long questionId, DurationAddReqDto questionAddUpdateReq) {
+    public DurationDetailsDto update(UUID formId, Long questionId, DurationUpdateReqDto questionUpdateReq) {
         Duration dur = durationRepository.findByQuestionId(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(QuestionType.DURATION, questionId));
 
-        var question = updateQuestion(questionId, questionAddUpdateReq);
+        var question = updateQuestion(questionId, questionUpdateReq);
 
         durationRepository.save(dur);
 
