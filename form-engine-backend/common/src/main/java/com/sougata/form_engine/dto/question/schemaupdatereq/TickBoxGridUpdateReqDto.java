@@ -12,6 +12,8 @@ import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.validator.constraints.Length;
 
+import java.util.List;
+
 @NoArgsConstructor
 @Getter
 @Setter
@@ -21,10 +23,10 @@ public class TickBoxGridUpdateReqDto extends QuestionUpdateReqDto {
     private Boolean eachRowRequired;
 
     @Valid
-    private Row row;
+    private List<Row> rows;
 
     @Valid
-    private Column column;
+    private List<Column> columns;
 
     @Getter
     @Setter

@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class FileUploadResponseIndividualDto extends ResponseIndividualDto {
+public class FileUploadResponseIndividualDto extends QuestionResponseIndividualDto {
     private String fileName;
     private String fileUrl;
     private String fileMimeType;

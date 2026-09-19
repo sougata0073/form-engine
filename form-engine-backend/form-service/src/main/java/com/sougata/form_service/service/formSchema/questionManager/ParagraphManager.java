@@ -77,9 +77,7 @@ public class ParagraphManager extends QuestionManager<Paragraph, ParagraphAddReq
             p.setValidationConfig(JsonUtil.objectToOldJsonNode(questionUpdateReq.getValidationConfig()));
         }
 
-        paragraphRepository.save(p);
-
-        return toQuestionResDto(p, question);
+        return toQuestionResDto(paragraphRepository.save(p), question);
     }
 
     @Override

@@ -7,7 +7,7 @@ export interface MultipleChoiceUpdateReq extends OnlyMultipleChoiceUpdateReq, Qu
 }
 
 export interface OnlyMultipleChoiceUpdateReq extends OnlyQuestionUpdateReq {
-    option?: MultipleChoiceOptionUpdateReq
+    options?: MultipleChoiceOptionUpdateReq[]
 }
 
 export interface MultipleChoiceOptionUpdateReq {

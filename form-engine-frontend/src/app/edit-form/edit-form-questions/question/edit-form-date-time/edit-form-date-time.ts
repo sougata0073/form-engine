@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, SimpleChange} from '@angular/core';
 import {EditFormQuestionComponent} from '../../../../type/edit-form-question-component';
 import {DateTimeRes} from '../../../../model/edit-form/question/response/date-time-res';
 import {MatFormField, MatInput, MatInputModule, MatLabel, MatSuffix} from '@angular/material/input';
@@ -49,6 +49,10 @@ export class EditFormDateTime extends EditFormQuestionComponent<DateTimeRes, Onl
   ngOnInit() {
     this.canSaveQuestion.emit(true)
     this.hasError.emit(false)
+  }
+
+  override onQuestionInputChange(change: SimpleChange<DateTimeRes>): void {
+    
   }
 
 }

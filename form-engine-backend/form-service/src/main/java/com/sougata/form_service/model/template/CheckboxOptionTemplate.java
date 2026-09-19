@@ -1,6 +1,6 @@
 package com.sougata.form_service.model.template;
 
-import com.github.f4b6a3.tsid.TsidCreator;
+import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.springframework.data.domain.Persistable;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
@@ -18,10 +17,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @NoArgsConstructor
 @Getter
 @Setter
-public class CheckboxOptionTemplate implements Persistable<Long> {
+public class CheckboxOptionTemplate {
 
     @Id
-    private Long id = TsidCreator.getTsid().toLong();
+    @Tsid
+    private Long id;
 
     @Column(nullable = false)
     private String option;
@@ -34,17 +34,4 @@ public class CheckboxOptionTemplate implements Persistable<Long> {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private CheckboxTemplate checkboxTemplate;
 
-    @Transient
-    private boolean isNew = true;
-
-    @Override
-    public boolean isNew() {
-        return isNew;
-    }
-
-    @PostPersist
-    @PostLoad
-    void markNotNew() {
-        isNew = false;
-    }
 }

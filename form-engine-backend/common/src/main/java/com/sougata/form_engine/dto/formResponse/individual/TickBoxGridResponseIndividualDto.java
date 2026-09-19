@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class TickBoxGridResponseIndividualDto extends ResponseIndividualDto {
+public class TickBoxGridResponseIndividualDto extends QuestionResponseIndividualDto {
 
     private List<Row> rows;
 

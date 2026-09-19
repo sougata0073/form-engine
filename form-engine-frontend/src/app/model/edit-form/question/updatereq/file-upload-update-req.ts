@@ -6,6 +6,6 @@ export interface FileUploadUpdateReq extends OnlyFileUploadUpdateReq, QuestionUp
 }
 
 export interface OnlyFileUploadUpdateReq extends OnlyQuestionUpdateReq {
-    allowedFileCategories?: Set<string>,
+    allowedFileCategories?: string[],
     maxFileSize?: number
 }

@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DurationResponseIndividualDto extends ResponseIndividualDto {
+public class DurationResponseIndividualDto extends QuestionResponseIndividualDto {
     private Integer hours;
     private Integer minutes;
     private Integer seconds;

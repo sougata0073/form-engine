@@ -1,7 +1,13 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, SimpleChange } from '@angular/core';
 import { EditFormQuestionComponent } from '../../../../type/edit-form-question-component';
 import { FileUploadRes } from '../../../../model/edit-form/question/response/file-upload-res';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { FileUploadConstant } from '../../../../constant/file-upload-constant';
@@ -13,7 +19,10 @@ import { OnlyFileUploadAddUpdateReq } from '../../../../model/edit-form/question
 import { EditFormStateService } from '../../../../service/edit-form-state-service';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
-import { FileUploadUpdateReq, OnlyFileUploadUpdateReq } from '../../../../model/edit-form/question/updatereq/file-upload-update-req';
+import {
+  FileUploadUpdateReq,
+  OnlyFileUploadUpdateReq,
+} from '../../../../model/edit-form/question/updatereq/file-upload-update-req';
 
 @Component({
   selector: 'app-edit-form-file-upload',
@@ -31,89 +40,96 @@ import { FileUploadUpdateReq, OnlyFileUploadUpdateReq } from '../../../../model/
   templateUrl: './edit-form-file-upload.html',
   styleUrl: './edit-form-file-upload.scss',
 })
-export class EditFormFileUpload extends EditFormQuestionComponent<FileUploadRes, OnlyFileUploadUpdateReq> implements OnInit {
+export class EditFormFileUpload
+  extends EditFormQuestionComponent<FileUploadRes, OnlyFileUploadUpdateReq>
+  implements OnInit
+{
+  protected fileTypes = signal(FileUploadConstant.FILE_TYPES);
+  protected allowedFileUploadSizes = signal(FileUploadConstant.ALLOWED_FILE_UPLOAD_SIZES);
 
-  protected fileTypes = signal(FileUploadConstant.FILE_TYPES)
-  protected allowedFileUploadSizes = signal(FileUploadConstant.ALLOWED_FILE_UPLOAD_SIZES)
+  protected showFileCategories = signal<boolean>(false);
 
-  protected showFileCategories = signal<boolean>(false)
+  protected selectedFileTypes = signal<FileType[]>([]);
 
-  protected selectedFileTypes = signal<FileType[]>([])
-
-  protected formStateService = inject(EditFormStateService)
+  protected formStateService = inject(EditFormStateService);
 
   protected formGroup = new FormGroup({
-    fileUploadSize: new FormControl(this.allowedFileUploadSizes()[2], [Validators.required])
-  })
+    fileUploadSize: new FormControl(this.allowedFileUploadSizes()[2], [Validators.required]),
+  });
 
   ngOnInit() {
-    this.selectedFileTypes.set(this.question().allowedFileTypes)
-    this.showFileCategories.set(!!this.question().allowedFileTypes.length)
+    this.selectedFileTypes.set(this.question().allowedFileTypes);
+    this.showFileCategories.set(!!this.question().allowedFileTypes.length);
 
     this.formGroup.patchValue({
-      fileUploadSize: this.question().maxFileSize / 1024 / 1024
-    })
+      fileUploadSize: this.question().maxFileSize / 1024 / 1024,
+    });
 
-    this.emitCanSaveHasError()
+    this.emitCanSaveHasError();
 
-    this.formGroup.valueChanges.subscribe(val => {
+    this.formGroup.valueChanges.subscribe((val) => {
+      this.emitCanSaveHasError();
 
-      this.emitCanSaveHasError()
+      this.updateQuestion.emit({
+        maxFileSize: val.fileUploadSize! * 1024 * 1024,
+        updateFields: ['maxFileSize' satisfies keyof FileUploadUpdateReq],
+      });
+    });
 
-      this.updateQuestion.emit(
-        {
-          maxFileSize: val.fileUploadSize! * 1024 * 1024,
-          updateFields: ['maxFileSize' satisfies keyof FileUploadUpdateReq]
-        }
-      )
-    })
-
-    this.formGroup.statusChanges.subscribe(() => this.emitCanSaveHasError())
+    this.formGroup.statusChanges.subscribe(() => this.emitCanSaveHasError());
   }
+
+  override onQuestionInputChange(change: SimpleChange<FileUploadRes>): void {}
 
   protected onShowFileCategoriesCheckChange(checked: boolean) {
     if (!checked) {
       if (this.selectedFileTypes().length !== 0) {
+        this.emitCanSaveHasError();
 
-        this.emitCanSaveHasError()
-
-        this.updateQuestion.emit(
-          {
-            allowedFileCategories: new Set(this.selectedFileTypes().map(ft => ft.category).flat()),
-            updateFields: ['allowedFileCategories' satisfies keyof FileUploadUpdateReq]
-          }
-        )
+        this.updateQuestion.emit({
+          allowedFileCategories: [
+            ...new Set(
+              this.selectedFileTypes()
+                .map((ft) => ft.category)
+                .flat(),
+            ),
+          ],
+          updateFields: ['allowedFileCategories' satisfies keyof FileUploadUpdateReq],
+        });
       }
-      this.selectedFileTypes.set([])
+      this.selectedFileTypes.set([]);
     }
-    this.showFileCategories.set(checked)
+    this.showFileCategories.set(checked);
   }
 
   protected onFileTypeCheckChange(checked: boolean, fileType: FileType) {
-    this.selectedFileTypes.update(prev => {
+    this.selectedFileTypes.update((prev) => {
       if (checked) {
-        return [...prev, { ...fileType }]
+        return [...prev, { ...fileType }];
       } else {
-        return [...prev.filter(ft => ft.category !== fileType.category)]
+        return [...prev.filter((ft) => ft.category !== fileType.category)];
       }
-    })
-    this.emitCanSaveHasError()
+    });
+    this.emitCanSaveHasError();
 
-    this.updateQuestion.emit(
-      {
-        allowedFileCategories: new Set(this.selectedFileTypes().map(ft => ft.category).flat()),
-        updateFields: ['allowedFileCategories' satisfies keyof FileUploadUpdateReq]
-      }
-    )
+    this.updateQuestion.emit({
+      allowedFileCategories: [
+        ...new Set(
+          this.selectedFileTypes()
+            .map((ft) => ft.category)
+            .flat(),
+        ),
+      ],
+      updateFields: ['allowedFileCategories' satisfies keyof FileUploadUpdateReq],
+    });
   }
 
   protected toCheckFileTypeCheckbox(fileType: FileType) {
-    return !!this.selectedFileTypes().find(ft => ft.category === fileType.category)
+    return !!this.selectedFileTypes().find((ft) => ft.category === fileType.category);
   }
 
   private emitCanSaveHasError() {
-    this.canSaveQuestion.emit(this.formGroup.valid)
-    this.hasError.emit(this.formGroup.invalid)
+    this.canSaveQuestion.emit(this.formGroup.valid);
+    this.hasError.emit(this.formGroup.invalid);
   }
-
 }

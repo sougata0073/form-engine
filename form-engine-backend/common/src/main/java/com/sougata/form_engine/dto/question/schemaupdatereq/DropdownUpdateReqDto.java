@@ -12,6 +12,8 @@ import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.validator.constraints.Length;
 
+import java.util.List;
+
 @NoArgsConstructor
 @Getter
 @Setter
@@ -19,7 +21,7 @@ import org.hibernate.validator.constraints.Length;
 public class DropdownUpdateReqDto extends QuestionUpdateReqDto {
 
     @Valid
-    private Option option;
+    private List<Option> options;
 
     @Getter
     @Setter

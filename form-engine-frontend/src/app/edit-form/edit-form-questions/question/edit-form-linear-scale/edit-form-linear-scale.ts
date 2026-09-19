@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, SimpleChange } from '@angular/core';
 import { EditFormQuestionComponent } from '../../../../type/edit-form-question-component';
 import { LinearScaleRes } from '../../../../model/edit-form/question/response/linear-scale-res';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -66,6 +66,10 @@ export class EditFormLinearScale extends EditFormQuestionComponent<LinearScaleRe
       )
     })
     this.formGroup.statusChanges.subscribe(() => this.emitCanSaveHasError())
+  }
+
+  override onQuestionInputChange(change: SimpleChange<LinearScaleRes>): void {
+    
   }
 
   protected isNotFormValid(): string | null {

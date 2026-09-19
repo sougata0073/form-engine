@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, SimpleChange } from '@angular/core';
 import { EditFormQuestionComponent } from '../../../../type/edit-form-question-component';
 import { RatingRes } from '../../../../model/edit-form/question/response/rating-res';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
@@ -69,6 +69,10 @@ export class EditFormRating extends EditFormQuestionComponent<RatingRes, OnlyRat
       )
     })
     this.formGroup.statusChanges.subscribe(() => this.emitCanSaveHasError())
+  }
+
+  override onQuestionInputChange(change: SimpleChange<RatingRes>): void {
+    
   }
 
   protected ratingIconToPath(ratingIcon: RatingIcon, suffix: 'activated' | 'deactivated' | 'disabled') {

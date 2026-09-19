@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, SimpleChange } from '@angular/core';
 import { EditFormQuestionComponent } from '../../../../type/edit-form-question-component';
 import { DropdownRes } from '../../../../model/edit-form/question/response/dropdown-res';
 import { EditFormDropdownOption } from './edit-form-dropdown-option/edit-form-dropdown-option';
@@ -8,7 +8,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { DropdownOption } from '../../../../type/dropdown-option';
 import { SimpleDialog } from '../../../../shared/simple-dialog/simple-dialog';
 import { OnlyDropdownAddUpdateReq } from '../../../../model/edit-form/question/addreq/dropdown-add-req';
-import { DropdownUpdateReq, OnlyDropdownUpdateReq } from '../../../../model/edit-form/question/updatereq/dropdown-update-req';
+import {
+  DropdownUpdateReq,
+  OnlyDropdownUpdateReq,
+} from '../../../../model/edit-form/question/updatereq/dropdown-update-req';
 
 @Component({
   selector: 'app-edit-form-dropdown',
@@ -18,16 +21,19 @@ import { DropdownUpdateReq, OnlyDropdownUpdateReq } from '../../../../model/edit
 })
 export class EditFormDropdown
   extends EditFormQuestionComponent<DropdownRes, OnlyDropdownUpdateReq>
-  implements OnInit {
+  implements OnInit
+{
   protected options = signal<DropdownOption[]>([]);
 
   protected formStateService = inject(EditFormStateService);
   private dialog = inject(MatDialog);
 
   ngOnInit() {
-    this.options.update(() => {
-      return this.question().options.map((op, index) => ({ ...op, valid: !!op.option }));
-    });
+    this.options.set(this.question().options.map((op, index) => ({ ...op, valid: !!op.option })));
+  }
+
+  override onQuestionInputChange(change: SimpleChange<DropdownRes>): void {
+    this.options.set(this.question().options.map((op, index) => ({ ...op, valid: !!op.option })));
   }
 
   protected onAddOptionClick() {
@@ -43,21 +49,24 @@ export class EditFormDropdown
       orderIndex: this.options().length,
       option: `Option ${this.options().length + 1}`,
       valid: true,
-    }
+    };
 
     this.options.update((val) => [...val, option]);
 
     this.emitCanSaveHasError();
 
-    this.updateQuestion.emit(
-      {
-        option: {
-          option: option.option,
-          action: 'ADD'
-        },
-        updateFields: ['option' satisfies keyof DropdownUpdateReq]
-      }
-    )
+    this.updateQuestion.emit({
+      req: {
+        options: [
+          {
+            option: option.option,
+            action: 'ADD',
+          },
+        ],
+        updateFields: ['options' satisfies keyof DropdownUpdateReq],
+      },
+      updateType: 'CRITICAL',
+    });
   }
 
   protected removeOption(optionId: string) {
@@ -79,15 +88,18 @@ export class EditFormDropdown
     });
     this.emitCanSaveHasError();
 
-    this.updateQuestion.emit(
-      {
-        option: {
-          id: optionId,
-          action: 'DELETE'
-        },
-        updateFields: ['option' satisfies keyof DropdownUpdateReq]
-      }
-    )
+    this.updateQuestion.emit({
+      req: {
+        options: [
+          {
+            id: optionId,
+            action: 'DELETE',
+          },
+        ],
+        updateFields: ['options' satisfies keyof DropdownUpdateReq],
+      },
+      updateType: 'CRITICAL',
+    });
   }
 
   protected onOptionTextChange(option: DropdownOption) {
@@ -96,16 +108,16 @@ export class EditFormDropdown
     );
     this.emitCanSaveHasError();
 
-    this.updateQuestion.emit(
-      {
-        option: {
+    this.updateQuestion.emit({
+      options: [
+        {
           id: option.id,
           option: option.option,
-          action: 'UPDATE'
+          action: 'UPDATE',
         },
-        updateFields: ['option' satisfies keyof DropdownUpdateReq]
-      }
-    )
+      ],
+      updateFields: ['options' satisfies keyof DropdownUpdateReq],
+    });
   }
 
   protected onOptionCanSaveChange(optionId: string, canSave: boolean) {

@@ -69,7 +69,7 @@ export class EditFormQuestions implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.editFormService.close()
+    
   }
 
   protected onAddQuestionClick() {

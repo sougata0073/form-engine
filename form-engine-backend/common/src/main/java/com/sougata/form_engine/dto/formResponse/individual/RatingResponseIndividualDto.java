@@ -9,6 +9,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RatingResponseIndividualDto extends ResponseIndividualDto {
+public class RatingResponseIndividualDto extends QuestionResponseIndividualDto {
     private Integer rating;
 }

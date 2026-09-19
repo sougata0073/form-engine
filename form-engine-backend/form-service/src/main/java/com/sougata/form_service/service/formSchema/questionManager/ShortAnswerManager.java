@@ -71,15 +71,13 @@ public class ShortAnswerManager extends QuestionManager<ShortAnswer, ShortAnswer
         ShortAnswer sa = shortAnswerRepository.findByQuestionId(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(QuestionType.SHORT_ANSWER, questionId));
 
-        updateQuestion(questionId, questionUpdateReq);
+        var question = updateQuestion(questionId, questionUpdateReq);
 
         if (questionUpdateReq.getUpdateFields().contains(ShortAnswerUpdateReqDto.Fields.validationConfig)) {
             sa.setValidationConfig(JsonUtil.objectToOldJsonNode(questionUpdateReq.getValidationConfig()));
         }
 
-        shortAnswerRepository.save(sa);
-
-        return toQuestionResDto(sa);
+        return toQuestionResDto(shortAnswerRepository.save(sa), question);
     }
 
     @Override

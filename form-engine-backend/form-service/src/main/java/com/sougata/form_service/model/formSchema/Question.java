@@ -1,8 +1,8 @@
 package com.sougata.form_service.model.formSchema;
 
-import com.github.f4b6a3.tsid.TsidCreator;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_service.model.Auditable;
+import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,7 +12,6 @@ import lombok.experimental.FieldNameConstants;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.springframework.data.domain.Persistable;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
@@ -24,10 +23,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Setter
 @FieldNameConstants
 @DynamicUpdate
-public class Question extends Auditable implements Persistable<Long> {
+public class Question extends Auditable {
 
     @Id
-    private Long id = TsidCreator.getTsid().toLong();
+    @Tsid
+    private Long id;
 
     @Column(columnDefinition = "text")
     private String question;
@@ -50,17 +50,4 @@ public class Question extends Auditable implements Persistable<Long> {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Form form;
 
-    @Transient
-    private boolean isNew = true;
-
-    @Override
-    public boolean isNew() {
-        return isNew;
-    }
-
-    @PostPersist
-    @PostLoad
-    void markNotNew() {
-        isNew = false;
-    }
 }

@@ -7,133 +7,129 @@ import { EditFormStateService } from '../../../../service/edit-form-state-servic
 import { MatDialog } from '@angular/material/dialog';
 import { SimpleDialog } from '../../../../shared/simple-dialog/simple-dialog';
 import { MultipleChoiceOption } from '../../../../type/multiple-choice-option';
+import { OnlyMultipleChoiceAddUpdateReq } from '../../../../model/edit-form/question/addreq/multiple-choice-add-req';
 import {
-  OnlyMultipleChoiceAddUpdateReq
-} from '../../../../model/edit-form/question/addreq/multiple-choice-add-req';
-import { MultipleChoiceUpdateReq, OnlyMultipleChoiceUpdateReq } from '../../../../model/edit-form/question/updatereq/multiple-choice-update-req';
+  MultipleChoiceUpdateReq,
+  OnlyMultipleChoiceUpdateReq,
+} from '../../../../model/edit-form/question/updatereq/multiple-choice-update-req';
 
 @Component({
   selector: 'app-edit-form-multiple-choice',
-  imports: [
-    MatButton,
-    EditFormMultipleChoiceOption
-  ],
+  imports: [MatButton, EditFormMultipleChoiceOption],
   templateUrl: './edit-form-multiple-choice.html',
   styleUrl: './edit-form-multiple-choice.scss',
 })
-export class EditFormMultipleChoice extends EditFormQuestionComponent<MultipleChoiceRes, OnlyMultipleChoiceUpdateReq> implements OnInit {
+export class EditFormMultipleChoice
+  extends EditFormQuestionComponent<MultipleChoiceRes, OnlyMultipleChoiceUpdateReq>
+  implements OnInit
+{
+  protected options = signal<MultipleChoiceOption[]>([]);
 
-  protected options = signal<MultipleChoiceOption[]>([])
-
-  protected formStateService = inject(EditFormStateService)
-  private dialog = inject(MatDialog)
+  protected formStateService = inject(EditFormStateService);
+  private dialog = inject(MatDialog);
 
   ngOnInit() {
-    this.options.set(this.question().options
-      .map((op) => ({ ...op, valid: !!op.option }))
-    )
+    this.options.set(this.question().options.map((op) => ({ ...op, valid: !!op.option })));
   }
 
   override onQuestionInputChange(change: SimpleChange<MultipleChoiceRes>): void {
-    this.options.set(this.question().options
-      .map((op) => ({ ...op, valid: !!op.option }))
-    )
-
-    console.log('Change', this.options())
+    this.options.set(this.question().options.map((op) => ({ ...op, valid: !!op.option })));
   }
 
   protected onAddOptionClick() {
     if (this.options().length >= 20) {
-      this.dialog.open(
-        SimpleDialog, {
-        data: SimpleDialog.configure('Error', 'Can not add more than 20 options', 'Close')
-      }
-      )
-      return
+      this.dialog.open(SimpleDialog, {
+        data: SimpleDialog.configure('Error', 'Can not add more than 20 options', 'Close'),
+      });
+      return;
     }
 
     const option = {
       id: 'NEW_' + crypto.randomUUID(),
       option: `Option ${this.options().length + 1}`,
       valid: true,
-      orderIndex: this.options().length
-    }
+      orderIndex: this.options().length,
+    };
 
-    this.options.update(val => {
-      return [...val, option]
-    })
+    this.options.update((val) => {
+      return [...val, option];
+    });
 
-    this.emitCanSaveHasError()
+    this.emitCanSaveHasError();
 
-    this.updateQuestion.emit(
-      {
-        option: {
-          option: option.option,
-          action: 'ADD'
-        },
-        updateFields: ['option' satisfies keyof MultipleChoiceUpdateReq]
-      }
-    )
+    this.updateQuestion.emit({
+      req: {
+        options: [
+          {
+            option: option.option,
+            action: 'ADD',
+          },
+        ],
+        updateFields: ['options' satisfies keyof MultipleChoiceUpdateReq],
+      },
+      updateType: 'CRITICAL',
+    });
   }
 
   protected removeOption(optionId: string) {
     if (this.options().length <= 1) {
-      this.dialog.open(
-        SimpleDialog, {
-        data: SimpleDialog.configure('Error', 'At least 1 option is required', 'Close')
-      }
-      )
-      return
+      this.dialog.open(SimpleDialog, {
+        data: SimpleDialog.configure('Error', 'At least 1 option is required', 'Close'),
+      });
+      return;
     }
 
-    this.options.update(val => {
-      return [...val.filter(v => v.id !== optionId)]
-    })
+    this.options.update((val) => {
+      return [...val.filter((v) => v.id !== optionId)];
+    });
 
-    this.emitCanSaveHasError()
+    this.emitCanSaveHasError();
 
-    this.updateQuestion.emit(
-      {
-        option: {
-          id: optionId,
-          action: 'DELETE'
-        },
-        updateFields: ['option' satisfies keyof MultipleChoiceUpdateReq]
-      }
-    )
+    this.updateQuestion.emit({
+      req: {
+        options: [
+          {
+            id: optionId,
+            action: 'DELETE',
+          },
+        ],
+        updateFields: ['options' satisfies keyof MultipleChoiceUpdateReq],
+      },
+      updateType: 'CRITICAL',
+    });
   }
 
   protected onOptionTextChange(option: MultipleChoiceOption) {
-    this.options.update(val =>
-      val.map(v => v.id === option.id ? { ...v, option: option.option } : v))
+    this.options.update((val) =>
+      val.map((v) => (v.id === option.id ? { ...v, option: option.option } : v)),
+    );
 
-    this.emitCanSaveHasError()
+    this.emitCanSaveHasError();
 
-    this.updateQuestion.emit(
-      {
-        option: {
+    this.updateQuestion.emit({
+      options: [
+        {
           id: option.id,
           option: option.option,
-          action: 'UPDATE'
+          action: 'UPDATE',
         },
-        updateFields: ['option' satisfies keyof MultipleChoiceUpdateReq]
-      }
-    )
+      ],
+      updateFields: ['options' satisfies keyof MultipleChoiceUpdateReq],
+    });
   }
 
   protected onOptionCanSaveChange(optionId: string, canSave: boolean) {
-    this.options.update(ops => {
-      return ops.map(op => {
-        return op.id === optionId ? { ...op, valid: canSave } : { ...op }
-      })
-    })
-    this.emitCanSaveHasError()
+    this.options.update((ops) => {
+      return ops.map((op) => {
+        return op.id === optionId ? { ...op, valid: canSave } : { ...op };
+      });
+    });
+    this.emitCanSaveHasError();
   }
 
   protected emitCanSaveHasError() {
-    const allValid = this.options().every(op => op.valid)
-    this.canSaveQuestion.emit(allValid && !!this.options().length)
-    this.hasError.emit(!allValid)
+    const allValid = this.options().every((op) => op.valid);
+    this.canSaveQuestion.emit(allValid && !!this.options().length);
+    this.hasError.emit(!allValid);
   }
-
 }

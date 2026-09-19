@@ -14,15 +14,14 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResponseIndividualResDto {
+public class FormResponseIndividualDto {
 
-    @JsonSerialize(using = ToStringSerializer.class)
-    private Long formResponseId;
+    private UUID formResponseId;
 
     @JsonSerialize(using = ToStringSerializer.class)
     private Long page;
 
     private UUID userId;
 
-    private List<ResponseIndividualDto> responses;
+    private List<QuestionResponseIndividualDto> responses;
 }

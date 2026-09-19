@@ -8,8 +8,8 @@ export interface TickBoxGridUpdateReq extends OnlyTickBoxGridUpdateReq, Question
 
 export interface OnlyTickBoxGridUpdateReq extends OnlyQuestionUpdateReq {
     eachRowRequired?: boolean
-    row?: TickBoxGridRowUpdateReq,
-    column?: TickBoxGridColumnUpdateReq
+    rows?: TickBoxGridRowUpdateReq[],
+    columns?: TickBoxGridColumnUpdateReq[]
 }
 
 export interface TickBoxGridRowUpdateReq {

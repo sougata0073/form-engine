@@ -77,9 +77,7 @@ public class LinearScaleManager extends QuestionManager<LinearScale, LinearScale
             }
         });
 
-        linearScaleRepository.save(ls);
-
-        return toQuestionResDto(ls, question);
+        return toQuestionResDto(linearScaleRepository.save(ls), question);
     }
 
     @Override

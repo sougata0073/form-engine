@@ -4,7 +4,6 @@ import com.sougata.form_engine.constant.ComplexQuestionUpdateAction;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.MultipleChoiceGridDetailsDto;
 import com.sougata.form_engine.dto.question.schemaaddrequest.MultipleChoiceGridAddReqDto;
-import com.sougata.form_engine.dto.question.schemaupdatereq.DropdownUpdateReqDto;
 import com.sougata.form_engine.dto.question.schemaupdatereq.MultipleChoiceGridUpdateReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.MultipleChoiceGridTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
@@ -18,8 +17,9 @@ import com.sougata.form_service.service.formSchema.QuestionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.UUID;
 
 @Service("MULTIPLE_CHOICE_GRID_QUESTION_MANAGER")
 public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGrid, MultipleChoiceGridAddReqDto, MultipleChoiceGridUpdateReqDto, MultipleChoiceGridDetailsDto, MultipleChoiceGridTemplateDetails> {
@@ -80,65 +80,112 @@ public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGri
             if (MultipleChoiceGridUpdateReqDto.Fields.eachRowRequired.equals(field)) {
                 mcg.setEachRowRequired(questionUpdateReq.getEachRowRequired());
             }
-            if (MultipleChoiceGridUpdateReqDto.Fields.row.equals(field)) {
-                var row = questionUpdateReq.getRow();
-                var action = row.getAction();
+            if (MultipleChoiceGridUpdateReqDto.Fields.rows.equals(field)) {
 
-                if (action == ComplexQuestionUpdateAction.ADD) {
+                var prevRows = mcg.getRows();
 
-                    var mcgRow = new MultipleChoiceGridRow();
+                questionUpdateReq.getRows().forEach(row -> {
 
-                    mcgRow.setMultipleChoiceGrid(mcg);
-                    mcgRow.setRowName(row.getRow());
-                    mcgRow.setOrderIndex(multipleChoiceGridRepository.getRowCount(questionId).intValue());
+                    var action = row.getAction();
 
-                    multipleChoiceGridRowRepository.save(mcgRow);
+                    if (action == ComplexQuestionUpdateAction.ADD) {
 
-                } else if (action == ComplexQuestionUpdateAction.UPDATE) {
+                        var mcgRow = new MultipleChoiceGridRow();
 
-                    var mcgRow = multipleChoiceGridRowRepository.findById(row.getId())
-                            .orElseThrow(() -> new IllegalArgumentException("Multiple choice grid row not found for Id: " + row.getId()));
+                        mcgRow.setMultipleChoiceGrid(mcg);
+                        mcgRow.setRowName(row.getRow());
+                        mcgRow.setOrderIndex(prevRows.size());
 
-                    mcgRow.setRowName(row.getRow());
+                        prevRows.add(mcgRow);
 
-                    multipleChoiceGridRowRepository.save(mcgRow);
+                    } else if (action == ComplexQuestionUpdateAction.UPDATE) {
 
-                } else if (action == ComplexQuestionUpdateAction.DELETE) {
-                    multipleChoiceGridRowRepository.deleteById(row.getId());
-                }
+                        var mcgRow = prevRows
+                                .stream()
+                                .filter(op -> op.getId().equals(row.getId()))
+                                .findFirst()
+                                .orElseThrow(() -> new IllegalArgumentException("Multiple choice grid row not found for Id: " + row.getId()));
+
+                        mcgRow.setRowName(row.getRow());
+
+                    } else if (action == ComplexQuestionUpdateAction.DELETE) {
+
+                        var rowToDelete = prevRows
+                                .stream()
+                                .filter(op -> op.getId().equals(row.getId()))
+                                .findFirst()
+                                .orElseThrow(() -> new IllegalArgumentException("Multiple choice grid row not found for Id: " + row.getId()));
+
+                        prevRows.remove(rowToDelete);
+
+                        prevRows
+                                .stream()
+                                .sorted(Comparator.comparingInt(MultipleChoiceGridRow::getOrderIndex))
+                                .forEach(op -> {
+
+                                    if (op.getOrderIndex() > rowToDelete.getOrderIndex()) {
+                                        op.setOrderIndex(op.getOrderIndex() - 1);
+                                    }
+
+                                });
+                    }
+                });
+
             }
-            if (MultipleChoiceGridUpdateReqDto.Fields.column.equals(field)) {
-                var column = questionUpdateReq.getColumn();
-                var action = column.getAction();
+            if (MultipleChoiceGridUpdateReqDto.Fields.columns.equals(field)) {
 
-                if (action == ComplexQuestionUpdateAction.ADD) {
+                var prevColumns = mcg.getColumns();
 
-                    var mcgColumn = new MultipleChoiceGridColumn();
+                questionUpdateReq.getColumns().forEach(column -> {
 
-                    mcgColumn.setMultipleChoiceGrid(mcg);
-                    mcgColumn.setColumnName(column.getColumn());
-                    mcgColumn.setOrderIndex(multipleChoiceGridRepository.getColumnCount(questionId).intValue());
+                    var action = column.getAction();
 
-                    multipleChoiceGridColumnRepository.save(mcgColumn);
+                    if (action == ComplexQuestionUpdateAction.ADD) {
 
-                } else if (action == ComplexQuestionUpdateAction.UPDATE) {
+                        var mcgColumn = new MultipleChoiceGridColumn();
 
-                    var mcgColumn = multipleChoiceGridColumnRepository.findById(column.getId())
-                            .orElseThrow(() -> new IllegalArgumentException("Multiple choice grid column not found for Id: " + column.getId()));
+                        mcgColumn.setMultipleChoiceGrid(mcg);
+                        mcgColumn.setColumnName(column.getColumn());
+                        mcgColumn.setOrderIndex(prevColumns.size());
 
-                    mcgColumn.setColumnName(column.getColumn());
+                        prevColumns.add(mcgColumn);
 
-                    multipleChoiceGridColumnRepository.save(mcgColumn);
+                    } else if (action == ComplexQuestionUpdateAction.UPDATE) {
 
-                } else if (action == ComplexQuestionUpdateAction.DELETE) {
-                    multipleChoiceGridColumnRepository.deleteById(column.getId());
-                }
+                        var mcgColumn = prevColumns
+                                .stream()
+                                .filter(op -> op.getId().equals(column.getId()))
+                                .findFirst()
+                                .orElseThrow(() -> new IllegalArgumentException("Multiple choice grid column not found for Id: " + column.getId()));
+
+                        mcgColumn.setColumnName(column.getColumn());
+
+                    } else if (action == ComplexQuestionUpdateAction.DELETE) {
+
+                        var columnToDelete = prevColumns
+                                .stream()
+                                .filter(op -> op.getId().equals(column.getId()))
+                                .findFirst()
+                                .orElseThrow(() -> new IllegalArgumentException("Multiple choice grid column not found for Id: " + column.getId()));
+
+                        prevColumns.remove(columnToDelete);
+
+                        prevColumns
+                                .stream()
+                                .sorted(Comparator.comparingInt(MultipleChoiceGridColumn::getOrderIndex))
+                                .forEach(op -> {
+
+                                    if (op.getOrderIndex() > columnToDelete.getOrderIndex()) {
+                                        op.setOrderIndex(op.getOrderIndex() - 1);
+                                    }
+
+                                });
+                    }
+                });
             }
         });
 
-        multipleChoiceGridRepository.save(mcg);
-
-        return toQuestionResDto(mcg, question);
+        return toQuestionResDto(multipleChoiceGridRepository.save(mcg), question);
     }
 
     @Override

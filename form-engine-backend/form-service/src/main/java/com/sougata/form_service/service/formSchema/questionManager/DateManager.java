@@ -70,9 +70,7 @@ public class DateManager extends QuestionManager<Date, DateAddReqDto, DateUpdate
 
         var question = updateQuestion(questionId, questionUpdateReq);
 
-        dateRepository.save(date);
-
-        return toQuestionResDto(date, question);
+        return toQuestionResDto(dateRepository.save(date), question);
     }
 
     @Override

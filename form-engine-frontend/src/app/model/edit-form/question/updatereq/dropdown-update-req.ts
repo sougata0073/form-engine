@@ -7,7 +7,7 @@ export interface DropdownUpdateReq extends OnlyDropdownUpdateReq, QuestionUpdate
 }
 
 export interface OnlyDropdownUpdateReq extends OnlyQuestionUpdateReq {
-    option: DropdownOptionUpdateReq
+    options?: DropdownOptionUpdateReq[]
 }
 
 export interface DropdownOptionUpdateReq {

@@ -8,7 +8,7 @@ export interface CheckboxUpdateReq extends OnlyCheckboxUpdateReq, QuestionUpdate
 }
 
 export interface OnlyCheckboxUpdateReq extends OnlyQuestionUpdateReq {
-    option?: CheckboxOptionUpdateReq,
+    options?: CheckboxOptionUpdateReq[],
     validationConfig?: AnyCheckboxValidationConfig
 }
 

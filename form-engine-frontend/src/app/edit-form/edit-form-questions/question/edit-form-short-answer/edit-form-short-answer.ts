@@ -1,4 +1,4 @@
-import { Component, inject, OnChanges, OnInit, signal, SimpleChanges } from '@angular/core';
+import { Component, inject, OnChanges, OnInit, signal, SimpleChange, SimpleChanges } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatError, MatFormField, MatInput, MatInputModule, MatLabel } from '@angular/material/input';
 import { EditFormQuestionComponent } from '../../../../type/edit-form-question-component';
@@ -98,6 +98,10 @@ export class EditFormShortAnswer
         }
       )
     })
+  }
+
+  override onQuestionInputChange(change: SimpleChange<ShortAnswerRes<AnyShortAnswerValidationConfig>>): void {
+    
   }
 
   override ngOnChanges(changes: SimpleChanges) {

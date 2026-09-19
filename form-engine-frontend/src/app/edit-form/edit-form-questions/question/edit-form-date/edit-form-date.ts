@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, SimpleChange} from '@angular/core';
 import {EditFormQuestionComponent} from '../../../../type/edit-form-question-component';
 import {DateRes} from '../../../../model/edit-form/question/response/date-res';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -31,6 +31,10 @@ export class EditFormDate extends EditFormQuestionComponent<DateRes, OnlyDateUpd
   ngOnInit() {
     this.canSaveQuestion.emit(true)
     this.hasError.emit(false)
+  }
+
+  override onQuestionInputChange(change: SimpleChange<DateRes>): void {
+    
   }
 
 }

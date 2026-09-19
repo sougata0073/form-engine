@@ -6,7 +6,6 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.CheckboxDetailsDto;
 import com.sougata.form_engine.dto.question.schemaaddrequest.CheckboxAddReqDto;
 import com.sougata.form_engine.dto.question.schemaupdatereq.CheckboxUpdateReqDto;
-import com.sougata.form_engine.dto.question.schemaupdatereq.DropdownUpdateReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.CheckboxTemplateDetails;
 import com.sougata.form_engine.dto.validation.config.ValidationConfig;
 import com.sougata.form_engine.util.JsonUtil;
@@ -22,8 +21,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.UUID;
 
 @Service("CHECKBOX_QUESTION_MANAGER")
 public class CheckboxManager extends QuestionManager<Checkbox, CheckboxAddReqDto, CheckboxUpdateReqDto, CheckboxDetailsDto, CheckboxTemplateDetails> {
@@ -84,39 +84,63 @@ public class CheckboxManager extends QuestionManager<Checkbox, CheckboxAddReqDto
 
         questionUpdateReq.getUpdateFields().forEach(field -> {
             if (CheckboxUpdateReqDto.Fields.validationConfig.equals(field)) {
+
                 cb.setValidationConfig(JsonUtil.objectToOldJsonNode(questionUpdateReq.getValidationConfig()));
-            } else if (CheckboxUpdateReqDto.Fields.option.equals(field)) {
-                var option = questionUpdateReq.getOption();
-                var action = option.getAction();
 
-                if (action == ComplexQuestionUpdateAction.ADD) {
+            } else if (CheckboxUpdateReqDto.Fields.options.equals(field)) {
 
-                    var cOption = new CheckboxOption();
+                var prevOptions = cb.getOptions();
 
-                    cOption.setCheckbox(cb);
-                    cOption.setOption(option.getOption());
-                    cOption.setOrderIndex(checkboxRepository.getOptionCount(questionId).intValue());
+                questionUpdateReq.getOptions().forEach(option -> {
 
-                    checkboxOptionRepository.save(cOption);
+                    var action = option.getAction();
 
-                } else if (action == ComplexQuestionUpdateAction.UPDATE) {
+                    if (action == ComplexQuestionUpdateAction.ADD) {
 
-                    var cOption = checkboxOptionRepository.findById(option.getId())
-                            .orElseThrow(() -> new IllegalArgumentException("Checkbox option not found for Id: " + option.getId()));
+                        var cOption = new CheckboxOption();
 
-                    cOption.setOption(option.getOption());
+                        cOption.setCheckbox(cb);
+                        cOption.setOption(option.getOption());
+                        cOption.setOrderIndex(prevOptions.size());
 
-                    checkboxOptionRepository.save(cOption);
+                        prevOptions.add(cOption);
 
-                } else if (action == ComplexQuestionUpdateAction.DELETE) {
-                    checkboxOptionRepository.deleteById(option.getId());
-                }
+                    } else if (action == ComplexQuestionUpdateAction.UPDATE) {
+
+                        var cOption = prevOptions
+                                .stream()
+                                .filter(op -> op.getId().equals(option.getId()))
+                                .findFirst()
+                                .orElseThrow(() -> new IllegalArgumentException("Checkbox option not found for Id: " + option.getId()));
+
+                        cOption.setOption(option.getOption());
+
+                    } else if (action == ComplexQuestionUpdateAction.DELETE) {
+
+                        var optionToDelete = prevOptions
+                                .stream()
+                                .filter(op -> op.getId().equals(option.getId()))
+                                .findFirst()
+                                .orElseThrow(() -> new IllegalArgumentException("Checkbox option not found for Id: " + option.getId()));
+
+                        prevOptions.remove(optionToDelete);
+
+                        prevOptions
+                                .stream()
+                                .sorted(Comparator.comparingInt(CheckboxOption::getOrderIndex))
+                                .forEach(op -> {
+
+                                    if (op.getOrderIndex() > optionToDelete.getOrderIndex()) {
+                                        op.setOrderIndex(op.getOrderIndex() - 1);
+                                    }
+
+                                });
+                    }
+                });
             }
         });
 
-        checkboxRepository.save(cb);
-
-        return toQuestionResDto(cb, question);
+        return toQuestionResDto(checkboxRepository.save(cb), question);
     }
 
     @Override

@@ -4,8 +4,8 @@ import com.sougata.form_engine.constant.cache.FormResponseCacheNames;
 import com.sougata.form_engine.dto.form.FormResponseCountDto;
 import com.sougata.form_engine.dto.form.FormResponseSummariesDto;
 import com.sougata.form_engine.dto.form.FormResponseSummaryDto;
-import com.sougata.form_engine.dto.formResponse.individual.ResponseIndividualDto;
-import com.sougata.form_engine.dto.formResponse.individual.ResponseIndividualResDto;
+import com.sougata.form_engine.dto.formResponse.individual.QuestionResponseIndividualDto;
+import com.sougata.form_engine.dto.formResponse.individual.FormResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.question.ResponseByQuestionResponse;
 import com.sougata.form_engine.dto.formResponse.question.ResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.ResponseSummaryDto;
@@ -113,20 +113,20 @@ public class FormResponseServiceImpl implements FormResponseService {
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseIndividualResDto getIndividualFormResponse(UUID formId, Long formResponseId) {
+    public FormResponseIndividualDto getIndividualFormResponse(UUID formId, Long formResponseId) {
         return getIndividualFormResponseHelper(formId, formResponseId, null);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseIndividualResDto getIndividualFormResponseByPage(UUID formId, Long page) {
+    public FormResponseIndividualDto getIndividualFormResponseByPage(UUID formId, Long page) {
 
         var formResponseId = formResponseRepository.getFormResponseIdFromPage(formId, page)
                 .orElseThrow(() -> new IllegalArgumentException("Form response not found for page: " + page));
 
         var indiFormResponseCacheKey = CacheUtil.buildKey(FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE, "formId=" + formId, "formResponseId=" + formResponseId);
 
-        var indiFormResponseCached = (ResponseIndividualResDto) redisTemplate.opsForValue().get(indiFormResponseCacheKey);
+        var indiFormResponseCached = (FormResponseIndividualDto) redisTemplate.opsForValue().get(indiFormResponseCacheKey);
 
         if (indiFormResponseCached != null) {
             return indiFormResponseCached;
@@ -152,14 +152,14 @@ public class FormResponseServiceImpl implements FormResponseService {
         return new FormResponseCountDto(formResponseRepository.getFormResponseCount(formId));
     }
 
-    private ResponseIndividualResDto getIndividualFormResponseHelper(UUID formId, Long formResponseId, Long formResponsePage) {
+    private FormResponseIndividualDto getIndividualFormResponseHelper(UUID formId, Long formResponseId, Long formResponsePage) {
 
         var formResponse = formResponseRepository.findById(formResponseId)
                 .orElseThrow(() -> new IllegalArgumentException("Form response not found with ID: " + formResponseId));
 
         var formResponseQuestionTypes = questionResponseRepository.findDistinctQuestionTypesByFormResponseId(formResponseId);
 
-        var result = new ArrayList<ResponseIndividualDto>();
+        var result = new ArrayList<QuestionResponseIndividualDto>();
 
         formResponseQuestionTypes.forEach(qType -> {
             var manager = responseManagerFactory.get(qType);
@@ -172,6 +172,6 @@ public class FormResponseServiceImpl implements FormResponseService {
         var finalFormResponsePage = formResponsePage == null ? formResponseRepository.getPageNumberOfFormResponse(formId, formResponseId)
                 .orElseThrow(() -> new IllegalArgumentException("Form response not found with ID: " + formResponseId)) : formResponsePage;
 
-        return new ResponseIndividualResDto(formResponseId, finalFormResponsePage, formResponse.getUserId(), result);
+        return new FormResponseIndividualDto(formResponseId, finalFormResponsePage, formResponse.getUserId(), result);
     }
 }

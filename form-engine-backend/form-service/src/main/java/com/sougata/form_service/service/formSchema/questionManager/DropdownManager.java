@@ -7,16 +7,12 @@ import com.sougata.form_engine.dto.question.schemaaddrequest.DropdownAddReqDto;
 import com.sougata.form_engine.dto.question.schemaupdatereq.DropdownUpdateReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.DropdownTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
-import com.sougata.form_service.model.formSchema.Dropdown;
-import com.sougata.form_service.model.formSchema.DropdownOption;
-import com.sougata.form_service.model.formSchema.Form;
-import com.sougata.form_service.model.formSchema.Question;
+import com.sougata.form_service.model.formSchema.*;
 import com.sougata.form_service.repository.formSchema.DropdownOptionRepository;
 import com.sougata.form_service.repository.formSchema.DropdownRepository;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.service.formSchema.FormService;
 import com.sougata.form_service.service.formSchema.QuestionManager;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,37 +73,59 @@ public class DropdownManager extends QuestionManager<Dropdown, DropdownAddReqDto
 
         var question = updateQuestion(questionId, questionUpdateReq);
 
-        if(questionUpdateReq.getUpdateFields().contains(DropdownUpdateReqDto.Fields.option)) {
-            var option = questionUpdateReq.getOption();
-            var action = option.getAction();
+        if (questionUpdateReq.getUpdateFields().contains(DropdownUpdateReqDto.Fields.options)) {
 
-            if (action == ComplexQuestionUpdateAction.ADD) {
+            var prevOptions = dd.getOptions();
 
-                var dOption = new DropdownOption();
+            questionUpdateReq.getOptions().forEach(option -> {
 
-                dOption.setDropdown(dd);
-                dOption.setOption(option.getOption());
-                dOption.setOrderIndex(dropdownRepository.getOptionCount(questionId).intValue());
+                var action = option.getAction();
 
-                dropdownOptionRepository.save(dOption);
+                if (action == ComplexQuestionUpdateAction.ADD) {
 
-            } else if (action == ComplexQuestionUpdateAction.UPDATE) {
+                    var ddOption = new DropdownOption();
 
-                var dOption = dropdownOptionRepository.findById(option.getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Dropdown option not found for Id: " + option.getId()));
+                    ddOption.setDropdown(dd);
+                    ddOption.setOption(option.getOption());
+                    ddOption.setOrderIndex(prevOptions.size());
 
-                dOption.setOption(option.getOption());
+                    prevOptions.add(ddOption);
 
-                dropdownOptionRepository.save(dOption);
+                } else if (action == ComplexQuestionUpdateAction.UPDATE) {
 
-            } else if (action == ComplexQuestionUpdateAction.DELETE) {
-                dropdownOptionRepository.deleteById(option.getId());
-            }
+                    var ddOption = prevOptions
+                            .stream()
+                            .filter(op -> op.getId().equals(option.getId()))
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalArgumentException("Dropdown option not found for Id: " + option.getId()));
+
+                    ddOption.setOption(option.getOption());
+
+                } else if (action == ComplexQuestionUpdateAction.DELETE) {
+
+                    var optionToDelete = prevOptions
+                            .stream()
+                            .filter(op -> op.getId().equals(option.getId()))
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalArgumentException("Dropdown option not found for Id: " + option.getId()));
+
+                    prevOptions.remove(optionToDelete);
+
+                    prevOptions
+                            .stream()
+                            .sorted(Comparator.comparingInt(DropdownOption::getOrderIndex))
+                            .forEach(op -> {
+
+                                if (op.getOrderIndex() > optionToDelete.getOrderIndex()) {
+                                    op.setOrderIndex(op.getOrderIndex() - 1);
+                                }
+
+                            });
+                }
+            });
         }
 
-        dropdownRepository.save(dd);
-
-        return toQuestionResDto(dd, question);
+        return toQuestionResDto(dropdownRepository.save(dd), question);
     }
 
     @Override

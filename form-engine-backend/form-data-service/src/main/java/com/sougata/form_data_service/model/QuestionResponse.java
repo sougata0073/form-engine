@@ -9,6 +9,8 @@ import lombok.Setter;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.*;
 
+import java.util.UUID;
+
 @Table("question_responses")
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,7 +36,7 @@ public class QuestionResponse {
         private Long questionId;
 
         @PrimaryKeyColumn(name = "form_response_id", ordinal = 1, type = PrimaryKeyType.CLUSTERED)
-        private Long formResponseId;
+        private UUID formResponseId;
 
         @PrimaryKeyColumn(name = "question_response_id", ordinal = 2, type = PrimaryKeyType.CLUSTERED)
         private Long questionResponseId = TsidCreator.getTsid().toLong();

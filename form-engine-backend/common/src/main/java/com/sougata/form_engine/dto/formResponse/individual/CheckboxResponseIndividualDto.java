@@ -11,6 +11,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CheckboxResponseIndividualDto extends ResponseIndividualDto {
+public class CheckboxResponseIndividualDto extends QuestionResponseIndividualDto {
     private List<String> optionIds;
 }

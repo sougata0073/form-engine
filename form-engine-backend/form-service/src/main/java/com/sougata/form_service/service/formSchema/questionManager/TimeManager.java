@@ -69,9 +69,7 @@ public class TimeManager extends QuestionManager<Time, TimeAddReqDto, TimeUpdate
 
         var question = updateQuestion(questionId, questionUpdateReq);
 
-        timeRepository.save(t);
-
-        return toQuestionResDto(t, question);
+        return toQuestionResDto(timeRepository.save(t), question);
     }
 
     @Override

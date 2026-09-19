@@ -4,13 +4,13 @@ import com.sougata.form_engine.constant.ComplexQuestionUpdateAction;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.details.MultipleChoiceDetailsDto;
 import com.sougata.form_engine.dto.question.schemaaddrequest.MultipleChoiceAddReqDto;
-import com.sougata.form_engine.dto.question.schemaupdatereq.CheckboxUpdateReqDto;
 import com.sougata.form_engine.dto.question.schemaupdatereq.MultipleChoiceUpdateReqDto;
 import com.sougata.form_engine.dto.template.questionTemplate.MultipleChoiceTemplateDetails;
-import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_service.exception.QuestionNotFoundException;
-import com.sougata.form_service.model.formSchema.*;
-import com.sougata.form_service.repository.formSchema.MultipleChoiceOptionRepository;
+import com.sougata.form_service.model.formSchema.Form;
+import com.sougata.form_service.model.formSchema.MultipleChoice;
+import com.sougata.form_service.model.formSchema.MultipleChoiceOption;
+import com.sougata.form_service.model.formSchema.Question;
 import com.sougata.form_service.repository.formSchema.MultipleChoiceRepository;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.service.formSchema.FormService;
@@ -18,19 +18,18 @@ import com.sougata.form_service.service.formSchema.QuestionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.UUID;
 
 @Service("MULTIPLE_CHOICE_QUESTION_MANAGER")
 public class MultipleChoiceManager extends QuestionManager<MultipleChoice, MultipleChoiceAddReqDto, MultipleChoiceUpdateReqDto, MultipleChoiceDetailsDto, MultipleChoiceTemplateDetails> {
 
     private final MultipleChoiceRepository multipleChoiceRepository;
-    private final MultipleChoiceOptionRepository multipleChoiceOptionRepository;
 
-    public MultipleChoiceManager(MultipleChoiceRepository multipleChoiceRepository, FormService formService, QuestionRepository questionRepository, MultipleChoiceOptionRepository multipleChoiceOptionRepository) {
+    public MultipleChoiceManager(MultipleChoiceRepository multipleChoiceRepository, FormService formService, QuestionRepository questionRepository) {
         super(questionRepository, formService);
         this.multipleChoiceRepository = multipleChoiceRepository;
-        this.multipleChoiceOptionRepository = multipleChoiceOptionRepository;
     }
 
     @Override
@@ -74,38 +73,59 @@ public class MultipleChoiceManager extends QuestionManager<MultipleChoice, Multi
 
         var question = updateQuestion(questionId, questionUpdateReq);
 
-        if (questionUpdateReq.getUpdateFields().contains(MultipleChoiceUpdateReqDto.Fields.option)) {
+        if (questionUpdateReq.getUpdateFields().contains(MultipleChoiceUpdateReqDto.Fields.options)) {
 
-            var option = questionUpdateReq.getOption();
-            var action = option.getAction();
+            var prevOptions = mc.getOptions();
 
-            if (action == ComplexQuestionUpdateAction.ADD) {
+            questionUpdateReq.getOptions().forEach(option -> {
 
-                var mcOption = new MultipleChoiceOption();
+                var action = option.getAction();
 
-                mcOption.setMultipleChoice(mc);
-                mcOption.setOption(option.getOption());
-                mcOption.setOrderIndex(multipleChoiceRepository.getOptionCount(questionId).intValue());
+                if (action == ComplexQuestionUpdateAction.ADD) {
 
-                multipleChoiceOptionRepository.save(mcOption);
+                    var mcOption = new MultipleChoiceOption();
 
-            } else if (action == ComplexQuestionUpdateAction.UPDATE) {
+                    mcOption.setMultipleChoice(mc);
+                    mcOption.setOption(option.getOption());
+                    mcOption.setOrderIndex(prevOptions.size());
 
-                var mcOption = multipleChoiceOptionRepository.findById(option.getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Multiple choice option not found for Id: " + option.getId()));
+                    prevOptions.add(mcOption);
 
-                mcOption.setOption(option.getOption());
+                } else if (action == ComplexQuestionUpdateAction.UPDATE) {
 
-                multipleChoiceOptionRepository.save(mcOption);
+                    var mcOption = prevOptions
+                            .stream()
+                            .filter(op -> op.getId().equals(option.getId()))
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalArgumentException("Multiple choice option not found for Id: " + option.getId()));
 
-            } else if (action == ComplexQuestionUpdateAction.DELETE) {
-                multipleChoiceOptionRepository.deleteById(option.getId());
-            }
+                    mcOption.setOption(option.getOption());
+
+                } else if (action == ComplexQuestionUpdateAction.DELETE) {
+
+                    var optionToDelete = prevOptions
+                            .stream()
+                            .filter(op -> op.getId().equals(option.getId()))
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalArgumentException("Multiple choice option not found for Id: " + option.getId()));
+
+                    prevOptions.remove(optionToDelete);
+
+                    prevOptions
+                            .stream()
+                            .sorted(Comparator.comparingInt(MultipleChoiceOption::getOrderIndex))
+                            .forEach(op -> {
+
+                                if (op.getOrderIndex() > optionToDelete.getOrderIndex()) {
+                                    op.setOrderIndex(op.getOrderIndex() - 1);
+                                }
+
+                            });
+                }
+            });
         }
 
-        multipleChoiceRepository.save(mc);
-
-        return toQuestionResDto(mc, question);
+        return toQuestionResDto(multipleChoiceRepository.save(mc), question);
     }
 
     @Override

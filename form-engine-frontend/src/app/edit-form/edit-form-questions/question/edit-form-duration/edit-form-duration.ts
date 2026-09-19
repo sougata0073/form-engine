@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, SimpleChange} from '@angular/core';
 import {EditFormQuestionComponent} from '../../../../type/edit-form-question-component';
 import {DurationRes} from '../../../../model/edit-form/question/response/duration-res';
 import {MatFormField, MatInput, MatLabel} from '@angular/material/input';
@@ -22,6 +22,10 @@ export class EditFormDuration extends EditFormQuestionComponent<DurationRes, Onl
   ngOnInit() {
     this.canSaveQuestion.emit(true)
     this.hasError.emit(false)
+  }
+
+  override onQuestionInputChange(change: SimpleChange<DurationRes>): void {
+    
   }
 
 }

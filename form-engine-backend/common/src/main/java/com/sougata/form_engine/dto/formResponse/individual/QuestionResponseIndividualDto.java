@@ -35,7 +35,7 @@ import tools.jackson.databind.ser.std.ToStringSerializer;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ResponseIndividualDto {
+public class QuestionResponseIndividualDto {
 
     @JsonSerialize(using = ToStringSerializer.class)
     private Long questionId;

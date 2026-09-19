@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, SimpleChange} from '@angular/core';
 import {EditFormQuestionComponent} from '../../../../type/edit-form-question-component';
 import {TimeRes} from '../../../../model/edit-form/question/response/time-res';
 import {MatFormField, MatInput, MatLabel, MatSuffix} from '@angular/material/input';
@@ -29,4 +29,8 @@ export class EditFormTime extends EditFormQuestionComponent<TimeRes, OnlyTimeUpd
     this.hasError.emit(false)
   }
 
+  override onQuestionInputChange(change: SimpleChange<TimeRes>): void {
+    
+  }
+  
 }

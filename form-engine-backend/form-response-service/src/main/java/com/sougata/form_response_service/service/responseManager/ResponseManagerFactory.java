@@ -1,7 +1,7 @@
 package com.sougata.form_response_service.service.responseManager;
 
 import com.sougata.form_engine.constant.QuestionType;
-import com.sougata.form_engine.dto.formResponse.individual.ResponseIndividualDto;
+import com.sougata.form_engine.dto.formResponse.individual.QuestionResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.question.ResponseByQuestionResponse;
 import com.sougata.form_engine.dto.formResponse.question.ResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.ResponseSummaryDto;
@@ -29,7 +29,7 @@ public class ResponseManagerFactory {
             QRes extends QuestionDetailsDto,
             ResByQ extends ResponseQuestionDto<ResByQRes>,
             ResByQRes extends ResponseByQuestionResponse,
-            ResIndi extends ResponseIndividualDto
+            ResIndi extends QuestionResponseIndividualDto
             >
     ResponseManager<RS, QRes, ResByQ, ResByQRes, ResIndi> get(QuestionType questionType) {
         try {
@@ -48,7 +48,7 @@ public class ResponseManagerFactory {
             QRes extends QuestionDetailsDto,
             ResByQ extends ResponseQuestionDto<ResByQRes>,
             ResByQRes extends ResponseByQuestionResponse,
-            ResIndi extends ResponseIndividualDto
+            ResIndi extends QuestionResponseIndividualDto
             >
     List<ResponseManager<RS, QRes, ResByQ, ResByQRes, ResIndi>> getAll() {
         List<ResponseManager<RS, QRes, ResByQ, ResByQRes, ResIndi>> repos = new ArrayList<>();

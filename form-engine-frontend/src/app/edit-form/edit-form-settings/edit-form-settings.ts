@@ -1,7 +1,6 @@
 import {Component} from '@angular/core';
-import {MatCard, MatCardContent, MatCardModule} from "@angular/material/card";
-import {MatCheckbox, MatCheckboxModule} from '@angular/material/checkbox';
-import {MatButtonToggle} from '@angular/material/button-toggle';
+import {MatCard, MatCardModule} from "@angular/material/card";
+import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatSlideToggle, MatSlideToggleModule} from '@angular/material/slide-toggle';
 import {MatDivider} from '@angular/material/list';
 import {MatExpansionModule, MatExpansionPanel, MatExpansionPanelHeader} from '@angular/material/expansion';
@@ -24,7 +23,6 @@ type ResponseCopy = 'off' | 'when-requested' | 'always';
   selector: 'app-edit-form-settings',
   imports: [
     MatCard,
-    MatCheckbox,
     MatSlideToggle,
     MatDivider,
     MatExpansionPanel,
@@ -48,7 +46,7 @@ type ResponseCopy = 'off' | 'when-requested' | 'always';
     MatCheckboxModule,
     FormsModule,
     ReactiveFormsModule
-  ],
+],
   templateUrl: './edit-form-settings.html',
   styleUrl: './edit-form-settings.scss',
 })

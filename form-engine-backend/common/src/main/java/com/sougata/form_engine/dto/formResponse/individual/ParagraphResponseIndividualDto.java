@@ -9,6 +9,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ParagraphResponseIndividualDto extends ResponseIndividualDto {
+public class ParagraphResponseIndividualDto extends QuestionResponseIndividualDto {
     private String text;
 }

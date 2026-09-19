@@ -3,7 +3,7 @@ package com.sougata.form_response_service.controller;
 import com.sougata.form_engine.constant.cache.FormResponseCacheNames;
 import com.sougata.form_engine.dto.form.FormResponseCountDto;
 import com.sougata.form_engine.dto.form.FormResponseSummariesDto;
-import com.sougata.form_engine.dto.formResponse.individual.ResponseIndividualResDto;
+import com.sougata.form_engine.dto.formResponse.individual.FormResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.question.ResponseByQuestionResponse;
 import com.sougata.form_engine.dto.formResponse.question.ResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.ResponseSummaryDto;
@@ -86,7 +86,7 @@ public class FormResponseController {
             cacheNames = {FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE},
             key = "'formId=' + #formId + '::formResponseId=' + #formResponseId"
     )
-    public ResponseIndividualResDto getIndividualFormResponse(
+    public FormResponseIndividualDto getIndividualFormResponse(
             @PathVariable("formId") UUID formId,
             @PathVariable("formResponseId") Long formResponseId
     ) {
@@ -95,7 +95,7 @@ public class FormResponseController {
 
     // Page number starts from 0
     @GetMapping(path = "{formId}/responses", params = {"page"})
-    public ResponseIndividualResDto getIndividualFormResponseByPage(
+    public FormResponseIndividualDto getIndividualFormResponseByPage(
             @PathVariable("formId") UUID formId,
             @QueryParam("page") Long page
     ) {

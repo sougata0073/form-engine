@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MultipleChoiceGridResponseIndividualDto extends ResponseIndividualDto {
+public class MultipleChoiceGridResponseIndividualDto extends QuestionResponseIndividualDto {
 
     private List<Row> rows;
 

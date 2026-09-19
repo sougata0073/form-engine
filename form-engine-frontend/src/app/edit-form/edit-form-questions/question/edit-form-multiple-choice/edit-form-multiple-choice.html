@@ -1,7 +1,6 @@
 <div class="options-container">
   <ul [class]="{'options-list': formStateService.isFocused(parentComponentId()) || options().length}">
     @for (option of options(); track option.id) {
-      {{option.id}}
       <li>
         <app-edit-form-multiple-choice-option
           [parentComponentId]="parentComponentId()"

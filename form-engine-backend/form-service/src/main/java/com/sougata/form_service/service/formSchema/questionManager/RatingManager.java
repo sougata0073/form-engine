@@ -77,9 +77,7 @@ public class RatingManager extends QuestionManager<Rating, RatingAddReqDto, Rati
             }
         });
 
-        ratingRepository.save(r);
-
-        return toQuestionResDto(r, question);
+        return toQuestionResDto(ratingRepository.save(r), question);
     }
 
     @Override

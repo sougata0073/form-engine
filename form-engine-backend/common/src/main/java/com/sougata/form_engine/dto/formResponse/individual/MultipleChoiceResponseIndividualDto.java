@@ -11,7 +11,7 @@ import tools.jackson.databind.ser.std.ToStringSerializer;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MultipleChoiceResponseIndividualDto extends ResponseIndividualDto {
+public class MultipleChoiceResponseIndividualDto extends QuestionResponseIndividualDto {
     @JsonSerialize(using = ToStringSerializer.class)
     private Long optionId;
 }

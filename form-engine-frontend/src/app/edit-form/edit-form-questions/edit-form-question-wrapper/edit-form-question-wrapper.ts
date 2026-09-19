@@ -12,13 +12,19 @@ import {
   signal,
   SimpleChanges,
   viewChild,
-  ViewContainerRef
+  ViewContainerRef,
 } from '@angular/core';
 import { QuestionType } from '../../../type/question-type';
 import { QuestionCard } from '../../../shared/question-card/question-card';
 import { EditFormStateService } from '../../../service/edit-form-state-service';
 import { AnyQuestionRes } from '../../../type/any-question-res';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MatDivider } from '@angular/material/list';
 import { MatFormField, MatInput, MatLabel } from '@angular/material/input';
 import { MatIcon } from '@angular/material/icon';
@@ -41,6 +47,7 @@ import { DefaultQuestionAddReq } from '../../../constant/default-question-add-re
 import { CdkDragHandle } from '@angular/cdk/drag-drop';
 import { AnyQuestionUpdateReq } from '../../../type/any-question-update-req';
 import { QuestionUpdateReq } from '../../../model/edit-form/question/updatereq/question-update-req';
+import { TaskWeight } from '../../../type/task-weight';
 
 @Component({
   selector: 'app-edit-form-question-wrapper',
@@ -67,66 +74,66 @@ import { QuestionUpdateReq } from '../../../model/edit-form/question/updatereq/q
   styleUrl: './edit-form-question-wrapper.scss',
 })
 export class EditFormQuestionWrapper implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+  componentId = signal<string>(crypto.randomUUID());
 
-  componentId = signal<string>(crypto.randomUUID())
+  question = input.required<AnyQuestionRes>();
+  orderIndex = input.required<number>();
 
-  question = input.required<AnyQuestionRes>()
-  orderIndex = input.required<number>()
+  questionInput = viewChild<ElementRef<HTMLInputElement>>('questionInput');
 
-  questionInput = viewChild<ElementRef<HTMLInputElement>>('questionInput')
+  private questionHost = viewChild('questionHost', { read: ViewContainerRef });
+  protected createdComponentRef?: ComponentRef<unknown>;
 
-  private questionHost = viewChild('questionHost', { read: ViewContainerRef })
-  protected createdComponentRef?: ComponentRef<unknown>
-
-  protected moreMenuItems = signal<ReadonlyArray<EditQuestionMoreMenuItem>>([])
+  protected moreMenuItems = signal<ReadonlyArray<EditQuestionMoreMenuItem>>([]);
   protected questionTypeGroups = signal(QUESTION_TYPE_GROUPS);
-  protected selectedMoreMenuItemIds = signal<Set<string>>(new Set())
+  protected selectedMoreMenuItemIds = signal<Set<string>>(new Set());
 
-  protected canSaveQuestion = signal<boolean>(true)
-  protected hasError = signal<boolean>(false)
+  protected canSaveQuestion = signal<boolean>(true);
+  protected hasError = signal<boolean>(false);
 
-  protected editFormStateService = inject(EditFormStateService)
-  protected editFormService = inject(EditFormService)
-  private componentFactory = inject(EditFormQuestionComponentFactory)
+  protected editFormStateService = inject(EditFormStateService);
+  protected editFormService = inject(EditFormService);
+  private componentFactory = inject(EditFormQuestionComponentFactory);
 
-  protected formRes = this.editFormService.formRes
+  protected formRes = this.editFormService.formRes;
 
   protected formGroup = new FormGroup({
     question: new FormControl<string | null>(null),
     description: new FormControl<string | null>(null),
-    questionType: new FormControl<QuestionType>(EditQuestionConstant.DEFAULT_SELECTED_QUESTION_TYPE, [Validators.required]),
-    required: new FormControl<boolean>(false)
-  })
+    questionType: new FormControl<QuestionType>(
+      EditQuestionConstant.DEFAULT_SELECTED_QUESTION_TYPE,
+      [Validators.required],
+    ),
+    required: new FormControl<boolean>(false),
+  });
 
   private selectedMoreMenuItemIdsEffect = effect(() => {
-    const ids = this.selectedMoreMenuItemIds()
-    this.createdComponentRef?.setInput('moreMenuItemIds', ids)
-  })
+    const ids = this.selectedMoreMenuItemIds();
+    this.createdComponentRef?.setInput('moreMenuItemIds', ids);
+  });
 
   ngOnInit() {
-
-    this.componentId.set(this.question().id)
+    this.componentId.set(this.question().id);
 
     this.formGroup.patchValue({
       question: this.question().question,
       description: this.question().description,
       questionType: this.question().questionType,
-      required: this.question().required
-    })
+      required: this.question().required,
+    });
 
-    this.formGroup.valueChanges.subscribe(val => {
-      if (this.formGroup.invalid) return
+    this.formGroup.valueChanges.subscribe((val) => {
+      if (this.formGroup.invalid) return;
 
-      const instance = this.createdComponentRef?.instance
+      const instance = this.createdComponentRef?.instance;
 
       if (instance instanceof EditFormQuestionComponent) {
+        const questionTypeChanged = val.questionType !== this.question().questionType;
 
-        const questionTypeChanged = val.questionType !== this.question().questionType
-
-        let questionUpdateReq: AnyQuestionUpdateReq
+        let questionUpdateReq: AnyQuestionUpdateReq;
 
         if (questionTypeChanged) {
-          const onlyQuestionAddUpdateReq = DefaultQuestionAddReq.get(val.questionType!)
+          const onlyQuestionAddUpdateReq = DefaultQuestionAddReq.get(val.questionType!);
 
           questionUpdateReq = {
             questionId: this.question().id,
@@ -137,68 +144,84 @@ export class EditFormQuestionWrapper implements OnInit, OnChanges, AfterViewInit
               question: val.question ?? null,
               description: val.description ?? null,
               questionType: val.questionType!,
-              required: val.required ?? false
+              required: val.required ?? false,
             },
 
-            updateFields: ['questionType' satisfies keyof QuestionUpdateReq]
-          }
+            updateFields: ['questionType' satisfies keyof QuestionUpdateReq],
+          };
         } else {
           const updateFields = [
-            this.question().question === val.question ? undefined : 'question' satisfies keyof QuestionUpdateReq,
-            this.question().description === val.description ? undefined : 'description' satisfies keyof QuestionUpdateReq,
-            this.question().required === val.required ? undefined : 'required' satisfies keyof QuestionUpdateReq
-          ].filter(field => field !== undefined)
+            this.question().question === val.question
+              ? undefined
+              : ('question' satisfies keyof QuestionUpdateReq),
+            this.question().description === val.description
+              ? undefined
+              : ('description' satisfies keyof QuestionUpdateReq),
+            this.question().required === val.required
+              ? undefined
+              : ('required' satisfies keyof QuestionUpdateReq),
+          ].filter((field) => field !== undefined);
 
           questionUpdateReq = {
             questionId: this.question().id,
-            question: this.question().question === val.question ? undefined : val.question ?? null,
-            description: this.question().description === val.description ? undefined : val.description ?? null,
+            question:
+              this.question().question === val.question ? undefined : (val.question ?? null),
+            description:
+              this.question().description === val.description
+                ? undefined
+                : (val.description ?? null),
             questionType: val.questionType!,
-            required: this.question().required === val.required ? undefined : val.required ?? false,
-            updateFields: updateFields
-          }
+            required:
+              this.question().required === val.required ? undefined : (val.required ?? false),
+            updateFields: updateFields,
+          };
         }
 
-        this.updateQuestion(questionUpdateReq, questionTypeChanged)
+        this.updateQuestion(
+          {
+            questionUpdateReq: questionUpdateReq,
+            updateType: questionTypeChanged ? 'CRITICAL' : 'NORMAL',
+          },
+          questionTypeChanged,
+        );
       }
-    })
+    });
 
-    this.createComponent(this.question().questionType, this.question())
+    this.createComponent(this.question().questionType, this.question());
 
-    this.editFormStateService.changeFocus(this.componentId())
+    this.editFormStateService.changeFocus(this.componentId());
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['question']) {
-      this.createdComponentRef?.setInput('question', this.question())
+      this.createdComponentRef?.setInput('question', this.question());
     }
   }
 
   ngAfterViewInit() {
     queueMicrotask(() => {
-      this.questionInput()?.nativeElement.focus()
-    })
+      this.questionInput()?.nativeElement.focus();
+    });
   }
 
   ngOnDestroy() {
-    this.selectedMoreMenuItemIdsEffect.destroy()
-    this.createdComponentRef?.destroy()
+    this.selectedMoreMenuItemIdsEffect.destroy();
+    this.createdComponentRef?.destroy();
   }
 
   protected onCopyQuestionClick() {
-
-    this.editFormStateService.isFormGettingModified.set(true)
+    this.editFormStateService.isFormGettingModified.set(true);
 
     const questionAddUpdateReq: QuestionAddReq = {
       question: this.question().question,
       description: this.question().description,
       required: this.question().required,
-      questionType: this.question().questionType
-    }
+      questionType: this.question().questionType,
+    };
 
-    let onlyQuestionAddUpdateReq: AnyOnlyQuestionAddUpdateReq | null = null
+    let onlyQuestionAddUpdateReq: AnyOnlyQuestionAddUpdateReq | null = null;
 
-    const instance = this.createdComponentRef?.instance
+    const instance = this.createdComponentRef?.instance;
     if (instance instanceof EditFormQuestionComponent) {
       // onlyQuestionAddUpdateReq = instance.getOnlyQuestionAddUpdateReq()
     }
@@ -206,136 +229,158 @@ export class EditFormQuestionWrapper implements OnInit, OnChanges, AfterViewInit
     const question: AnyQuestionAddReq = {
       ...questionAddUpdateReq,
       // ...onlyQuestionAddUpdateReq
-    }
+    };
 
     this.editFormService.addQuestion(question, () => {
-      this.editFormStateService.isFormGettingModified.set(false)
-    })
+      this.editFormStateService.isFormGettingModified.set(false);
+    });
   }
 
   protected onDeleteQuestionClick() {
+    this.editFormStateService.isFormGettingModified.set(true);
 
-    this.editFormStateService.isFormGettingModified.set(true)
+    const deleteId = this.question().id;
+    const questions = this.formRes()?.questions ?? [];
 
-    const deleteId = this.question().id
-    const questions = this.formRes()?.questions ?? []
-
-    const deleteQuestionIndex = questions.findIndex(q => q.id === deleteId)
-    let nearestQuestionIndex = deleteQuestionIndex === questions.length - 1 ?
-      deleteQuestionIndex - 1 : deleteQuestionIndex + 1
+    const deleteQuestionIndex = questions.findIndex((q) => q.id === deleteId);
+    let nearestQuestionIndex =
+      deleteQuestionIndex === questions.length - 1
+        ? deleteQuestionIndex - 1
+        : deleteQuestionIndex + 1;
 
     this.editFormService.deleteQuestion(this.question(), () => {
-      this.editFormStateService.isFormGettingModified.set(false)
+      this.editFormStateService.isFormGettingModified.set(false);
 
       if (questions.length === 1) {
-        this.editFormStateService.changeFocus("form-info")
+        this.editFormStateService.changeFocus('form-info');
       } else {
-        const id = questions.at(nearestQuestionIndex)?.id
+        const id = questions.at(nearestQuestionIndex)?.id;
         if (id) {
-          this.editFormStateService.changeFocus(id)
+          this.editFormStateService.changeFocus(id);
         }
       }
-    })
+    });
   }
 
   protected toggleSelectedMoreMenuItemIds(itemId: string) {
-    this.selectedMoreMenuItemIds.update(value => {
-      const newValue = new Set(value)
-      newValue.has(itemId) ? newValue.delete(itemId) : newValue.add(itemId)
+    this.selectedMoreMenuItemIds.update((value) => {
+      const newValue = new Set(value);
+      newValue.has(itemId) ? newValue.delete(itemId) : newValue.add(itemId);
       return newValue;
-    })
+    });
 
     if (!this.selectedMoreMenuItemIds().has('description') && this.formGroup.value.description) {
-      this.formGroup.controls.description.patchValue(null)
+      this.formGroup.controls.description.patchValue(null);
     }
   }
 
   protected addSelectedMoreMenuItemIds(itemId: string) {
-    this.selectedMoreMenuItemIds.update(value => new Set([...value, itemId]))
+    this.selectedMoreMenuItemIds.update((value) => new Set([...value, itemId]));
   }
 
   protected showQuestionTypeSelector(): boolean {
-    return this.editFormStateService.isFocused(this.componentId())
+    return this.editFormStateService.isFocused(this.componentId());
   }
 
   protected showDescription(): boolean {
-    return this.selectedMoreMenuItemIds().has('description') && this.editFormStateService.isFocused(this.componentId())
+    return (
+      this.selectedMoreMenuItemIds().has('description') &&
+      this.editFormStateService.isFocused(this.componentId())
+    );
   }
 
   protected showQuestionActions(): boolean {
-    return this.editFormStateService.isFocused(this.componentId())
+    return this.editFormStateService.isFocused(this.componentId());
   }
 
   private createComponent(questionType: QuestionType, question: AnyQuestionRes) {
-    this.removeComponent()
+    this.removeComponent();
 
-    this.componentFactory.getComponent(questionType).then(componentClass => {
-      this.createdComponentRef = this.questionHost()?.createComponent(componentClass)
+    this.componentFactory.getComponent(questionType).then((componentClass) => {
+      this.createdComponentRef = this.questionHost()?.createComponent(componentClass);
 
-      this.createdComponentRef?.setInput('question', question)
-      this.createdComponentRef?.setInput('parentComponentId', this.componentId())
+      this.createdComponentRef?.setInput('question', question);
+      this.createdComponentRef?.setInput('parentComponentId', this.componentId());
 
-      const instance = this.createdComponentRef?.instance
+      const instance = this.createdComponentRef?.instance;
       if (instance instanceof EditFormQuestionComponent) {
-        instance.moreMenuItemId.subscribe(val => this.toggleSelectedMoreMenuItemIds(val))
-        instance.canSaveQuestion.subscribe(val => this.canSaveQuestion.set(val))
-        instance.hasError.subscribe(val => this.hasError.set(val))
+        instance.moreMenuItemId.subscribe((val) => this.toggleSelectedMoreMenuItemIds(val));
+        instance.canSaveQuestion.subscribe((val) => this.canSaveQuestion.set(val));
+        instance.hasError.subscribe((val) => this.hasError.set(val));
 
-        instance.updateQuestion.subscribe(val => {
-          const questionUpdateReq: AnyQuestionUpdateReq = {
-            ...val,
-            questionId: this.question().id,
-            questionType: this.formGroup.value.questionType!
+        instance.updateQuestion.subscribe((val) => {
+          if ('req' in val && 'updateType' in val) {
+            const questionUpdateReq: AnyQuestionUpdateReq = {
+              ...val.req,
+              questionId: this.question().id,
+              questionType: this.formGroup.value.questionType!,
+            };
+
+            this.updateQuestion(
+              { questionUpdateReq: questionUpdateReq, updateType: val.updateType },
+              false,
+            );
+          } else {
+            const questionUpdateReq: AnyQuestionUpdateReq = {
+              ...val,
+              questionId: this.question().id,
+              questionType: this.formGroup.value.questionType!,
+            };
+
+            this.updateQuestion({ questionUpdateReq: questionUpdateReq }, false);
           }
-          this.updateQuestion(questionUpdateReq, false)
-        })
-
+        });
       }
 
-      this.selectedMoreMenuItemIds.set(new Set())
-      this.setMoreMenuItems(questionType)
+      this.selectedMoreMenuItemIds.set(new Set());
+      this.setMoreMenuItems(questionType);
 
       if (question.description) {
-        this.addSelectedMoreMenuItemIds('description')
+        this.addSelectedMoreMenuItemIds('description');
       }
-    })
+    });
   }
 
-  private updateQuestion(questionUpdateReq: AnyQuestionUpdateReq, recreateComponent: boolean) {
+  private updateQuestion(
+    req: { questionUpdateReq: AnyQuestionUpdateReq; updateType?: TaskWeight },
+    recreateComponent: boolean,
+  ) {
+    if (!this.canSaveQuestion()) return;
 
-    if (!this.canSaveQuestion()) return
-
-    const showLoader = this.question().questionType !== questionUpdateReq.questionType
-
-    if (showLoader) {
-      this.editFormStateService.isFormGettingModified.set(true)
+    if (req.updateType === 'CRITICAL') {
+      this.editFormStateService.showGlobalLoader.set(true);
     }
 
-    this.editFormService.updateQuestion2(
-      questionUpdateReq, questionRes => {
+    this.editFormStateService.isFormGettingModified.set(true);
 
-        if (showLoader) {
-          this.editFormStateService.isFormGettingModified.set(false)
+    this.editFormService.updateQuestion(
+      req.questionUpdateReq,
+      req.updateType ?? 'NORMAL',
+      (questionRes) => {
+        if (req.updateType === 'CRITICAL') {
+          this.editFormStateService.showGlobalLoader.set(false);
         }
+
+        this.editFormStateService.isFormGettingModified.set(false);
 
         if (recreateComponent) {
-          this.createComponent(questionRes.questionType, questionRes)
+          this.createComponent(questionRes.questionType, questionRes);
         }
-      }
-    )
+      },
+    );
   }
 
   private removeComponent() {
     if (this.createdComponentRef) {
-      this.createdComponentRef.destroy()
-      this.createdComponentRef = undefined
+      this.createdComponentRef.destroy();
+      this.createdComponentRef = undefined;
     }
   }
 
   private setMoreMenuItems(questionType: QuestionType) {
     const items = EditQuestionConstant.EDIT_QUESTION_MORE_MENU_ITEM_MAP.get(questionType);
     if (items) {
-      this.moreMenuItems.set(items)
+      this.moreMenuItems.set(items);
     }
   }
 }

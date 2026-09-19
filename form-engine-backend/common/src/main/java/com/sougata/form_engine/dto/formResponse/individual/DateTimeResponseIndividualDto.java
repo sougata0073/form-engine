@@ -11,6 +11,6 @@ import java.time.Instant;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DateTimeResponseIndividualDto extends ResponseIndividualDto {
+public class DateTimeResponseIndividualDto extends QuestionResponseIndividualDto {
     private Instant dateTime;
 }

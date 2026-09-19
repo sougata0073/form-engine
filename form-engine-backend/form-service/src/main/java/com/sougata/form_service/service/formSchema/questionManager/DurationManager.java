@@ -69,9 +69,7 @@ public class DurationManager extends QuestionManager<Duration, DurationAddReqDto
 
         var question = updateQuestion(questionId, questionUpdateReq);
 
-        durationRepository.save(dur);
-
-        return toQuestionResDto(dur, question);
+        return toQuestionResDto(durationRepository.save(dur), question);
     }
 
     @Override

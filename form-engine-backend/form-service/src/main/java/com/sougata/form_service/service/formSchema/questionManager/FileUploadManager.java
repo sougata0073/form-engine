@@ -96,9 +96,7 @@ public class FileUploadManager extends QuestionManager<FileUpload, FileUploadAdd
             }
         });
 
-        fileUploadRepository.save(fu);
-
-        return toQuestionResDto(fu, question);
+        return toQuestionResDto(fileUploadRepository.save(fu), question);
     }
 
     @Override

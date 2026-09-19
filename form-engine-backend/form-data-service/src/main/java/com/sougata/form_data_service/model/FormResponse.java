@@ -1,6 +1,6 @@
 package com.sougata.form_data_service.model;
 
-import com.github.f4b6a3.tsid.TsidCreator;
+import com.datastax.oss.driver.api.core.uuid.Uuids;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,6 +28,9 @@ public class FormResponse {
     @Column("responded_question_ids")
     private Set<Long> respondedQuestionIds;
 
+    @Column("submitted_on")
+    private Instant submittedOn = Instant.now();
+
     @NoArgsConstructor
     @AllArgsConstructor
     @Getter
@@ -39,10 +42,8 @@ public class FormResponse {
         private UUID formId;
 
         @PrimaryKeyColumn(name = "form_response_id", ordinal = 1, type = PrimaryKeyType.CLUSTERED)
-        private Long formResponseId = TsidCreator.getTsid().toLong();
-
-        @PrimaryKeyColumn(name = "submitted_on", ordinal = 2, type = PrimaryKeyType.CLUSTERED)
-        private Instant submittedOn = Instant.now();
+        @CassandraType(type = CassandraType.Name.TIMEUUID)
+        private UUID formResponseId = Uuids.timeBased();
 
     }
 

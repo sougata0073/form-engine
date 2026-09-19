@@ -69,9 +69,7 @@ public class DateTimeManager extends QuestionManager<DateTime, DateTimeAddReqDto
 
         var question = updateQuestion(questionId, questionUpdateReq);
 
-        dateTimeRepository.save(dt);
-
-        return toQuestionResDto(dt, question);
+        return toQuestionResDto(dateTimeRepository.save(dt), question);
     }
 
     @Override

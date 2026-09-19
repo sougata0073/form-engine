@@ -1,7 +1,7 @@
 package com.sougata.form_response_service.model;
 
-import com.github.f4b6a3.tsid.TsidCreator;
 import com.sougata.form_engine.constant.QuestionType;
+import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.springframework.data.domain.Persistable;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
@@ -19,10 +18,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @AllArgsConstructor
 @Getter
 @Setter
-public class QuestionResponse implements Persistable<Long> {
+public class QuestionResponse {
 
     @Id
-    private Long id = TsidCreator.getTsid().toLong();
+    @Tsid
+    private Long id;
 
     @Column(nullable = false)
     private Long questionId;
@@ -36,17 +36,4 @@ public class QuestionResponse implements Persistable<Long> {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private FormResponse formResponse;
 
-    @Transient
-    private boolean isNew = true;
-
-    @Override
-    public boolean isNew() {
-        return isNew;
-    }
-
-    @PostPersist
-    @PostLoad
-    void markNotNew() {
-        isNew = false;
-    }
 }

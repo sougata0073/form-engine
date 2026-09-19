@@ -4,11 +4,11 @@
   <div class="main-content-container" cdkScrollable>
     <div
       class="main-content"
-      [class.loading]="editFormStateService.isFormGettingModified() || editFormStateService.showGlobalLoader()">
+      [class.loading]="editFormStateService.showGlobalLoader()">
       <router-outlet/>
     </div>
 
-    @if (editFormStateService.isFormGettingModified() || editFormStateService.showGlobalLoader()) {
+    @if (editFormStateService.showGlobalLoader()) {
       <div class="loader-overlay">
         <mat-spinner/>
       </div>

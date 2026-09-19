@@ -61,14 +61,8 @@ public class AuthenticationService {
         var authToken = new UsernamePasswordAuthenticationToken(
                 dto.getEmail(), dto.getPassword()
         );
-        Authentication auth;
 
-        try {
-            auth = authenticationManager.authenticate(authToken);
-        } catch (Exception ex) {
-            System.out.println("Exception: " + ex);
-            throw ex;
-        }
+        Authentication auth = authenticationManager.authenticate(authToken);
 
         if (auth.isAuthenticated() && auth.getPrincipal() instanceof UserPrincipal user) {
 

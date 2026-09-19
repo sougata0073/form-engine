@@ -8,8 +8,8 @@ export interface MultipleChoiceGridUpdateReq extends OnlyMultipleChoiceGridUpdat
 
 export interface OnlyMultipleChoiceGridUpdateReq extends OnlyQuestionUpdateReq {
     eachRowRequired?: boolean
-    row?: MultipleChoiceGridRowUpdateReq,
-    column?: MultipleChoiceGridColumnUpdateReq
+    rows?: MultipleChoiceGridRowUpdateReq[],
+    columns?: MultipleChoiceGridColumnUpdateReq[]
 }
 
 export interface MultipleChoiceGridRowUpdateReq {

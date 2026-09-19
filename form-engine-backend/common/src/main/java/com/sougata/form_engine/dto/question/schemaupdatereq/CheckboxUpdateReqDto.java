@@ -13,6 +13,8 @@ import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.validator.constraints.Length;
 
+import java.util.List;
+
 @NoArgsConstructor
 @Getter
 @Setter
@@ -20,7 +22,7 @@ import org.hibernate.validator.constraints.Length;
 public class CheckboxUpdateReqDto extends QuestionUpdateReqDto {
 
     @Valid
-    private Option option;
+    private List<Option> options;
 
     @Valid
     private ValidationConfig validationConfig;

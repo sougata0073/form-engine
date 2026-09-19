@@ -1,4 +1,4 @@
-import { Component, inject, OnChanges, OnInit, signal, SimpleChanges } from '@angular/core';
+import { Component, inject, OnChanges, OnInit, signal, SimpleChange, SimpleChanges } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormField, MatInput, MatLabel } from '@angular/material/input';
 import { EditFormQuestionComponent } from '../../../../type/edit-form-question-component';
@@ -89,6 +89,10 @@ export class EditFormParagraph
         }
       )
     })
+  }
+
+  override onQuestionInputChange(change: SimpleChange<ParagraphRes<AnyParagraphValidationConfig>>): void {
+    
   }
 
   override ngOnChanges(changes: SimpleChanges) {
