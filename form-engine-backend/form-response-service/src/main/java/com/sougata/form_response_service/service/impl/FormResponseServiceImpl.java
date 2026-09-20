@@ -1,17 +1,13 @@
 package com.sougata.form_response_service.service.impl;
 
-import com.sougata.form_engine.constant.cache.FormResponseCacheNames;
 import com.sougata.form_engine.dto.form.FormResponseCountDto;
 import com.sougata.form_engine.dto.form.FormResponseSummariesDto;
-import com.sougata.form_engine.dto.form.FormResponseSummaryDto;
-import com.sougata.form_engine.dto.formResponse.individual.QuestionResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.individual.FormResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.question.ResponseByQuestionResponse;
 import com.sougata.form_engine.dto.formResponse.question.ResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.ResponseSummaryDto;
 import com.sougata.form_engine.dto.formResponse.summary.ResponseSummaryResDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
-import com.sougata.form_engine.dto.user.UserSummaryShortDto;
 import com.sougata.form_response_service.configuration.AppConfiguration;
 import com.sougata.form_response_service.feignClient.AuthServiceFeignClient;
 import com.sougata.form_response_service.feignClient.FormServiceFeignClient;
@@ -19,15 +15,16 @@ import com.sougata.form_response_service.repository.FormResponseRepository;
 import com.sougata.form_response_service.repository.QuestionResponseRepository;
 import com.sougata.form_response_service.service.FormResponseService;
 import com.sougata.form_response_service.service.responseManager.ResponseManagerFactory;
-import com.sougata.form_response_service.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,7 +41,9 @@ public class FormResponseServiceImpl implements FormResponseService {
 
     @Override
     public boolean getIsResponseAlreadySubmitted(UUID formId, UUID userId) {
-        return formResponseRepository.existsByFormIdAndUserId(formId, userId);
+//        return formResponseRepository.existsByFormIdAndUserId(formId, userId);
+
+        return false;
     }
 
     @Override
@@ -61,7 +60,9 @@ public class FormResponseServiceImpl implements FormResponseService {
             var manager = responseManagerFactory.get(qType);
             var summaries = manager.getResponseSummaries(formId, filteredQuestions);
 
-            result.addAll(summaries);
+            if (summaries != null) {
+                result.addAll(summaries);
+            }
         });
 
         result.sort(Comparator.comparingInt(ResponseSummaryDto::getOrderIndex));
@@ -71,44 +72,48 @@ public class FormResponseServiceImpl implements FormResponseService {
 
     @Override
     public ResponseSummaryDto<?> getResponseSummary(UUID formId, Long questionId, Pageable pageable) {
-        var question = formServiceFeignClient.getQuestion(formId, questionId);
-        var manager = responseManagerFactory.get(question.getQuestionType());
+//        var question = formServiceFeignClient.getQuestion(formId, questionId);
+//        var manager = responseManagerFactory.get(question.getQuestionType());
+//
+//        return manager.getResponseSummary(formId, questionId, question, pageable);
 
-        return manager.getResponseSummary(formId, questionId, question, pageable);
+        return null;
     }
 
     @Override
     public FormResponseSummariesDto getFormResponseSummaries(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
-        var questionSummary = formServiceFeignClient.getQuestionSummary(formId, questionId);
-        var manager = responseManagerFactory.get(questionSummary.getQuestionType());
+//        var questionSummary = formServiceFeignClient.getQuestionSummary(formId, questionId);
+//        var manager = responseManagerFactory.get(questionSummary.getQuestionType());
+//
+//        var resAndUserIds = manager.getFormResponseAndUserIds(formId, questionId, formResponsesIdentifier, pageable);
+//
+//        var userIds = resAndUserIds.stream().map(tuple -> tuple.get("userId", UUID.class)).toList();
+//
+//        var userSummaries = authServiceFeignClient.userSummaries(userIds).getUsers();
+//
+//        var userSummariesMap = new HashMap<UUID, UserSummaryShortDto>();
+//        userSummaries.forEach(userSummary -> userSummariesMap.put(userSummary.getId(), userSummary));
+//
+//        var formResponseSummaries = new ArrayList<FormResponseSummaryDto>();
+//
+//        resAndUserIds.forEach(tuple -> {
+//            var resId = tuple.get("responseId", Long.class);
+//            var userId = tuple.get("userId", UUID.class);
+//
+//            var user = Optional.ofNullable(userSummariesMap.get(userId)).orElse(new UserSummaryShortDto(null, null));
+//
+//            formResponseSummaries.add(
+//                    new FormResponseSummaryDto(
+//                            resId,
+//                            user.getId(),
+//                            user.getUserName()
+//                    )
+//            );
+//        });
+//
+//        return new FormResponseSummariesDto(formResponseSummaries);
 
-        var resAndUserIds = manager.getFormResponseAndUserIds(formId, questionId, formResponsesIdentifier, pageable);
-
-        var userIds = resAndUserIds.stream().map(tuple -> tuple.get("userId", UUID.class)).toList();
-
-        var userSummaries = authServiceFeignClient.userSummaries(userIds).getUsers();
-
-        var userSummariesMap = new HashMap<UUID, UserSummaryShortDto>();
-        userSummaries.forEach(userSummary -> userSummariesMap.put(userSummary.getId(), userSummary));
-
-        var formResponseSummaries = new ArrayList<FormResponseSummaryDto>();
-
-        resAndUserIds.forEach(tuple -> {
-            var resId = tuple.get("responseId", Long.class);
-            var userId = tuple.get("userId", UUID.class);
-
-            var user = Optional.ofNullable(userSummariesMap.get(userId)).orElse(new UserSummaryShortDto(null, null));
-
-            formResponseSummaries.add(
-                    new FormResponseSummaryDto(
-                            resId,
-                            user.getId(),
-                            user.getUserName()
-                    )
-            );
-        });
-
-        return new FormResponseSummariesDto(formResponseSummaries);
+        return null;
     }
 
     @Override
@@ -121,57 +126,65 @@ public class FormResponseServiceImpl implements FormResponseService {
     @Transactional(readOnly = true)
     public FormResponseIndividualDto getIndividualFormResponseByPage(UUID formId, Long page) {
 
-        var formResponseId = formResponseRepository.getFormResponseIdFromPage(formId, page)
-                .orElseThrow(() -> new IllegalArgumentException("Form response not found for page: " + page));
+//        var formResponseId = formResponseRepository.getFormResponseIdFromPage(formId, page)
+//                .orElseThrow(() -> new IllegalArgumentException("Form response not found for page: " + page));
+//
+//        var indiFormResponseCacheKey = CacheUtil.buildKey(FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE, "formId=" + formId, "formResponseId=" + formResponseId);
+//
+//        var indiFormResponseCached = (FormResponseIndividualDto) redisTemplate.opsForValue().get(indiFormResponseCacheKey);
+//
+//        if (indiFormResponseCached != null) {
+//            return indiFormResponseCached;
+//        }
+//
+//        var indiFormResponse = getIndividualFormResponseHelper(formId, formResponseId, page);
+//
+//        redisTemplate.opsForValue().set(indiFormResponseCacheKey, indiFormResponse, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
+//
+//        return indiFormResponse;
 
-        var indiFormResponseCacheKey = CacheUtil.buildKey(FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE, "formId=" + formId, "formResponseId=" + formResponseId);
-
-        var indiFormResponseCached = (FormResponseIndividualDto) redisTemplate.opsForValue().get(indiFormResponseCacheKey);
-
-        if (indiFormResponseCached != null) {
-            return indiFormResponseCached;
-        }
-
-        var indiFormResponse = getIndividualFormResponseHelper(formId, formResponseId, page);
-
-        redisTemplate.opsForValue().set(indiFormResponseCacheKey, indiFormResponse, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
-
-        return indiFormResponse;
+        return null;
     }
 
     @Override
     public ResponseQuestionDto<? extends ResponseByQuestionResponse> getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
-        var qSummary = formServiceFeignClient.getQuestionSummary(formId, questionId);
-        var manager = responseManagerFactory.get(qSummary.getQuestionType());
+//        var qSummary = formServiceFeignClient.getQuestionSummary(formId, questionId);
+//        var manager = responseManagerFactory.get(qSummary.getQuestionType());
+//
+//        return manager.getResponseByQuestion(formId, qSummary.getId(), extraParams, pageable);
 
-        return manager.getResponseByQuestion(formId, qSummary.getId(), extraParams, pageable);
+        return null;
     }
 
     @Override
     public FormResponseCountDto getFormResponseCount(UUID formId) {
-        return new FormResponseCountDto(formResponseRepository.getFormResponseCount(formId));
+//        return new FormResponseCountDto(formResponseRepository.getFormResponseCount(formId));
+
+        return null;
     }
 
     private FormResponseIndividualDto getIndividualFormResponseHelper(UUID formId, Long formResponseId, Long formResponsePage) {
 
-        var formResponse = formResponseRepository.findById(formResponseId)
-                .orElseThrow(() -> new IllegalArgumentException("Form response not found with ID: " + formResponseId));
+//        var formResponse = formResponseRepository.findById(formResponseId)
+//                .orElseThrow(() -> new IllegalArgumentException("Form response not found with ID: " + formResponseId));
+//
+//        var formResponseQuestionTypes = questionResponseRepository.findDistinctQuestionTypesByFormResponseId(formResponseId);
+//
+//        var result = new ArrayList<QuestionResponseIndividualDto>();
+//
+//        formResponseQuestionTypes.forEach(qType -> {
+//            var manager = responseManagerFactory.get(qType);
+//
+//            var indiResponses = manager.getIndividualResponses(formId, formResponseId);
+//
+//            result.addAll(indiResponses);
+//        });
+//
+//        var finalFormResponsePage = formResponsePage == null ? formResponseRepository.getPageNumberOfFormResponse(formId, formResponseId)
+//                .orElseThrow(() -> new IllegalArgumentException("Form response not found with ID: " + formResponseId)) : formResponsePage;
+//
+//        return new FormResponseIndividualDto(formResponseId, finalFormResponsePage, formResponse.getUserId(), result);
 
-        var formResponseQuestionTypes = questionResponseRepository.findDistinctQuestionTypesByFormResponseId(formResponseId);
-
-        var result = new ArrayList<QuestionResponseIndividualDto>();
-
-        formResponseQuestionTypes.forEach(qType -> {
-            var manager = responseManagerFactory.get(qType);
-
-            var indiResponses = manager.getIndividualResponses(formId, formResponseId);
-
-            result.addAll(indiResponses);
-        });
-
-        var finalFormResponsePage = formResponsePage == null ? formResponseRepository.getPageNumberOfFormResponse(formId, formResponseId)
-                .orElseThrow(() -> new IllegalArgumentException("Form response not found with ID: " + formResponseId)) : formResponsePage;
-
-        return new FormResponseIndividualDto(formResponseId, finalFormResponsePage, formResponse.getUserId(), result);
+        return null;
     }
 }

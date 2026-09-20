@@ -202,7 +202,7 @@ services:
     image: cassandra:5.0
     environment:
       - MAX_HEAP_SIZE=500M
-      - HEAP_NEWSIZE=500M
+      - HEAP_NEWSIZE=256M
       - CASSANDRA_SEEDS=form-data-cassandra-1
       - CASSANDRA_CLUSTER_NAME=form-engine-cluster
       - CASSANDRA_DC=north
@@ -220,7 +220,7 @@ services:
       image: cassandra:5.0
       environment:
         - MAX_HEAP_SIZE=500M
-        - HEAP_NEWSIZE=500M
+        - HEAP_NEWSIZE=256M
         - CASSANDRA_SEEDS=form-data-cassandra-1
         - CASSANDRA_CLUSTER_NAME=form-engine-cluster
         - CASSANDRA_DC=north
@@ -241,7 +241,7 @@ services:
     image: cassandra:5.0
     environment:
       - MAX_HEAP_SIZE=500M
-      - HEAP_NEWSIZE=500M
+      - HEAP_NEWSIZE=256M
       - CASSANDRA_SEEDS=form-data-cassandra-1
       - CASSANDRA_CLUSTER_NAME=form-engine-cluster
       - CASSANDRA_DC=east
@@ -262,7 +262,7 @@ services:
     image: cassandra:5.0
     environment:
       - MAX_HEAP_SIZE=500M
-      - HEAP_NEWSIZE=500M
+      - HEAP_NEWSIZE=256M
       - CASSANDRA_SEEDS=form-data-cassandra-1
       - CASSANDRA_CLUSTER_NAME=form-engine-cluster
       - CASSANDRA_DC=east
@@ -283,7 +283,7 @@ services:
     image: cassandra:5.0
     environment:
       - MAX_HEAP_SIZE=500M
-      - HEAP_NEWSIZE=500M
+      - HEAP_NEWSIZE=256M
       - CASSANDRA_SEEDS=form-data-cassandra-1
       - CASSANDRA_CLUSTER_NAME=form-engine-cluster
       - CASSANDRA_DC=west
@@ -304,7 +304,7 @@ services:
     image: cassandra:5.0
     environment:
       - MAX_HEAP_SIZE=500M
-      - HEAP_NEWSIZE=500M
+      - HEAP_NEWSIZE=256M
       - CASSANDRA_SEEDS=form-data-cassandra-1
       - CASSANDRA_CLUSTER_NAME=form-engine-cluster
       - CASSANDRA_DC=south

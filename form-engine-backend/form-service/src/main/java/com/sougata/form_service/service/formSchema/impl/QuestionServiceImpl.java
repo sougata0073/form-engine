@@ -5,13 +5,15 @@ import com.sougata.form_engine.constant.cache.FormCacheNames;
 import com.sougata.form_engine.constant.cache.QuestionCacheNames;
 import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.dto.form.FormDetailsDto;
+import com.sougata.form_engine.dto.messaging.QuestionCreatedMessage;
 import com.sougata.form_engine.dto.messaging.QuestionDeleteMessage;
+import com.sougata.form_engine.dto.messaging.QuestionUpdatedMessage;
 import com.sougata.form_engine.dto.others.SuccessMessageDto;
 import com.sougata.form_engine.dto.question.details.MultipleQuestionDetailsDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
+import com.sougata.form_engine.dto.question.schemaaddrequest.QuestionAddReqDto;
 import com.sougata.form_engine.dto.question.schemaupdatereq.MultipleQuestionUpdateReqDto;
 import com.sougata.form_engine.dto.question.schemaupdatereq.QuestionOrderUpdateReqDto;
-import com.sougata.form_engine.dto.question.schemaaddrequest.QuestionAddReqDto;
 import com.sougata.form_engine.dto.question.summary.QuestionSummariesDto;
 import com.sougata.form_engine.dto.question.summary.QuestionSummaryDto;
 import com.sougata.form_service.configuration.AppConfiguration;
@@ -49,14 +51,16 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public QuestionDetailsDto createQuestion(UUID formId, QuestionAddReqDto dto) {
         var questionManager = questionManagerFactory.get(dto.getQuestionType());
-        var question = questionManager.create(formId, dto);
+        var questionDetails = questionManager.create(formId, dto);
 
-        addQuestionInQuestionSummaries(formId, question);
-        addQuestionInFormDetails(formId, question);
-        putQuestionDetails(question);
-        putQuestionSummary(new QuestionSummaryDto(question.getId(), question.getQuestion(), question.getQuestionType(), question.getOrderIndex()));
+        addQuestionInQuestionSummaries(formId, questionDetails);
+        addQuestionInFormDetails(formId, questionDetails);
+        putQuestionDetails(questionDetails);
+        putQuestionSummary(new QuestionSummaryDto(questionDetails.getId(), questionDetails.getQuestion(), questionDetails.getQuestionType(), questionDetails.getOrderIndex()));
 
-        return question;
+        redisTemplate.convertAndSend(MessagingChannelNames.QUESTION_CREATED, new QuestionCreatedMessage<>(formId, questionDetails));
+
+        return questionDetails;
     }
 
     @Override
@@ -79,11 +83,14 @@ public class QuestionServiceImpl implements QuestionService {
                 var manager = questionManagerFactory.get(prevQType);
 
                 updatedQuestionDetails = manager.update(formId, questionId, question);
+
             } else {
                 var prevManager = questionManagerFactory.get(prevQType);
                 var newManager = questionManagerFactory.get(question.getQuestionType());
 
                 prevManager.delete(questionId);
+
+                redisTemplate.convertAndSend(MessagingChannelNames.QUESTION_DELETED, new QuestionDeleteMessage(formId, questionId));
 
                 updatedQuestionDetails = newManager.create(formId, questionId, question.getAddReqForQuestionTypeUpdate());
             }
@@ -94,6 +101,9 @@ public class QuestionServiceImpl implements QuestionService {
             putQuestionSummary(new QuestionSummaryDto(updatedQuestionDetails.getId(), updatedQuestionDetails.getQuestion(), updatedQuestionDetails.getQuestionType(), updatedQuestionDetails.getOrderIndex()));
 
             questionDetailsList.add(updatedQuestionDetails);
+
+            redisTemplate.convertAndSend(MessagingChannelNames.QUESTION_UPDATED, new QuestionUpdatedMessage<>(formId, updatedQuestionDetails, question.getUpdateFields()));
+
         });
 
         return new MultipleQuestionDetailsDto(questionDetailsList);
@@ -106,16 +116,14 @@ public class QuestionServiceImpl implements QuestionService {
         var question = questionRepository.findQuestionSummaryById(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(questionId));
 
-        redisTemplate.convertAndSend(
-                MessagingChannelNames.QUESTION_DELETED, new QuestionDeleteMessage(formId, questionId)
-        );
-
         questionRepository.deleteQuestion(questionId);
 
         questionRepository.setQuestionOrderAfterDeleteQuestion(formId, question.getOrderIndex());
 
         deleteQuestionInFormDetails(formId, questionId);
         deleteQuestionInQuestionSummaries(formId, questionId);
+
+        redisTemplate.convertAndSend(MessagingChannelNames.QUESTION_DELETED, new QuestionDeleteMessage(formId, questionId));
 
         return SuccessMessageDto.create("Question deleted successfully with question ID: " + questionId);
     }

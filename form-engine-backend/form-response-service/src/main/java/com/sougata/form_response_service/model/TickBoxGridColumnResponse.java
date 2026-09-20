@@ -6,24 +6,37 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.FieldNameConstants;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
-@Table(name = "question_responses")
-@Getter
-@Setter
+@Table(name = "tick_box_grid_column_responses")
 @AllArgsConstructor
 @NoArgsConstructor
-public class QuestionResponse {
+@Getter
+@Setter
+@FieldNameConstants
+@DynamicUpdate
+public class TickBoxGridColumnResponse {
 
     @Id
     @Tsid
     private Long id;
 
+    @Column(nullable = false)
+    private Long rowId;
+
+    @Column(nullable = false)
+    private Long columnId;
+
+    @Column(nullable = false)
+    private Long responseCount;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private QuestionResponseSummary questionResponseSummary;
+    private TickBoxGridResponse tickBoxGridResponse;
 
 }

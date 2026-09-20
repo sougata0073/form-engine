@@ -16,11 +16,15 @@ import org.hibernate.annotations.OnDeleteAction;
 public class AnyTypeQuestionResponse {
 
     @Id
+    @Column(unique = true, insertable = false, updatable = false)
     private Long questionResponseId;
+
+    @Column(nullable = false)
+    private Long responseCount;
 
     @MapsId
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false, unique = true, name = "question_response_id")
+    @JoinColumn(nullable = false, unique = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private QuestionResponse questionResponse;
 

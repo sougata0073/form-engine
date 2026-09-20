@@ -4,6 +4,8 @@ import com.sougata.form_engine.constant.cache.FormResponseCacheNames;
 import com.sougata.form_engine.constant.messaging.CommonMessagingNames;
 import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.dto.messaging.FormResponseSavedMessage;
+import com.sougata.form_response_service.repository.FormResponseRepository;
+import com.sougata.form_response_service.service.responseManager.ResponseManagerFactory;
 import com.sougata.form_response_service.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -12,6 +14,7 @@ import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,11 +25,22 @@ public class FormResponseSavedMessageHandler implements MessageListener {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final GenericJacksonJsonRedisSerializer redisSerializer;
+    private final FormResponseRepository formResponseRepository;
+    private final ResponseManagerFactory responseManagerFactory;
 
     @Override
+    @Transactional
     public void onMessage(Message message, byte @Nullable [] pattern) {
 
         var messageData = redisSerializer.deserialize(message.getBody(), FormResponseSavedMessage.class);
+
+        formResponseRepository.incrementResponseCount(messageData.getFormId(), 1L);
+
+        messageData.getResponses().forEach(response -> {
+            var manager = responseManagerFactory.get(response.getQuestionType());
+
+            manager.update(messageData.getFormId(), response);
+        });
 
         var formResponseCountCacheKey = CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_COUNT, messageData.getFormId());
         var responseSummariesCacheKey = CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_SUMMARIES, messageData.getFormId());

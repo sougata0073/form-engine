@@ -3,7 +3,9 @@ package com.sougata.form_service.service.formSchema.impl;
 import com.sougata.form_engine.constant.ViewFormErrorReason;
 import com.sougata.form_engine.constant.cache.CommonCacheNames;
 import com.sougata.form_engine.constant.cache.FormCacheNames;
+import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.dto.form.*;
+import com.sougata.form_engine.dto.messaging.FormCreatedMessage;
 import com.sougata.form_engine.dto.others.SuccessMessageDto;
 import com.sougata.form_engine.dto.template.TemplateDetails;
 import com.sougata.form_service.configuration.AppConfiguration;
@@ -55,6 +57,8 @@ public class FormServiceImpl implements FormService {
         var formInfo = toFormInfo(savedForm);
 
         addFirstInRecentForms(userId, formInfo);
+
+        redisTemplate.convertAndSend(MessagingChannelNames.FORM_CREATED, new FormCreatedMessage(savedForm.getId()));
 
         return formInfo;
     }

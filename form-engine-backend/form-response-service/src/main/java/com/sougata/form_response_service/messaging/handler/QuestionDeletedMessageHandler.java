@@ -4,16 +4,16 @@ import com.sougata.form_engine.constant.cache.FormResponseCacheNames;
 import com.sougata.form_engine.constant.messaging.CommonMessagingNames;
 import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.dto.messaging.QuestionDeleteMessage;
+import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import com.sougata.form_response_service.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.stereotype.Component;
-import tools.jackson.databind.ObjectMapper;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,14 +22,15 @@ import java.util.List;
 public class QuestionDeletedMessageHandler implements MessageListener {
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ObjectMapper objectMapper;
+    private final GenericJacksonJsonRedisSerializer redisSerializer;
+    private final QuestionResponseSummaryRepository questionResponseSummaryRepository;
 
     @Override
     public void onMessage(Message message, byte @Nullable [] pattern) {
 
-        var messageData = objectMapper.readValue(
-                new String(message.getBody(), StandardCharsets.UTF_8), QuestionDeleteMessage.class
-        );
+        var messageData = redisSerializer.deserialize(message.getBody(), QuestionDeleteMessage.class);
+
+        questionResponseSummaryRepository.deleteByQuestionId(messageData.getQuestionId());
 
         var formResponseCountCacheKey = CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_COUNT, messageData.getFormId());
         var responseSummariesCacheKey = CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_SUMMARIES, messageData.getFormId());
