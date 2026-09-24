@@ -6,8 +6,10 @@ import com.sougata.form_engine.dto.formResponse.question.FileUploadResponseQuest
 import com.sougata.form_engine.dto.formResponse.summary.FileUploadResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.FileUploadDetailsDto;
 import com.sougata.form_engine.dto.question.responseputrequest.FileUploadResponsePutReqDto;
+import com.sougata.form_response_service.model.FormResponseIndividual;
+import com.sougata.form_response_service.model.FormResponseSummary;
 import com.sougata.form_response_service.repository.FileUploadResponseRepository;
-import com.sougata.form_response_service.repository.FormResponseRepository;
+import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Service("FILE_UPLOAD_RESPONSE_MANAGER")
@@ -32,23 +33,13 @@ public class FileUploadResponseManager extends ResponseManager<
     private final FileUploadResponseRepository fileUploadRepository;
 
     @Autowired
-    public FileUploadResponseManager(FormResponseRepository formResponseRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, FileUploadResponseRepository fileUploadRepository) {
-        super(formResponseRepository, questionResponseSummaryRepository);
+    public FileUploadResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, FileUploadResponseRepository fileUploadRepository) {
+        super(formResponseSummaryRepository, questionResponseSummaryRepository);
         this.fileUploadRepository = fileUploadRepository;
     }
 
     @Override
-    public void create(UUID formId, FileUploadDetailsDto fileUploadDetailsDto) {
-
-    }
-
-    @Override
-    public void update(UUID formId, FileUploadDetailsDto fileUploadDetailsDto, Set<String> updatedFields) {
-
-    }
-
-    @Override
-    public void update(UUID formId, FileUploadResponsePutReqDto fileUploadResponsePutReqDto) {
+    public void onResponseSave(FormResponseSummary formResponseSummary, FormResponseIndividual formResponseIndividual, List<FileUploadResponsePutReqDto> questionResponsePutRequests) {
 
     }
 

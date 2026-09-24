@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Repository
-public interface FormResponseRepository extends JpaRepository<FormResponseSummary, UUID> {
+public interface FormResponseSummaryRepository extends JpaRepository<FormResponseSummary, UUID> {
 
     @Modifying
     @Transactional
@@ -21,4 +21,8 @@ public interface FormResponseRepository extends JpaRepository<FormResponseSummar
     @Transactional
     @Query("update FormResponseSummary fr set fr.responseCount = fr.responseCount - :decrementBy where fr.formId = :formId")
     void decrementResponseCount(UUID formId, Long decrementBy);
+
+    @Query("select coalesce(sum(frs.responseCount), 0) from FormResponseSummary frs where frs.formId = :formId")
+    Long findFormResponseCountByFormId(UUID formId);
+
 }

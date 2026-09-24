@@ -6,7 +6,9 @@ import com.sougata.form_engine.dto.formResponse.question.TickBoxGridResponseQues
 import com.sougata.form_engine.dto.formResponse.summary.TickBoxGridResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.TickBoxGridDetailsDto;
 import com.sougata.form_engine.dto.question.responseputrequest.TickBoxGridResponsePutReqDto;
-import com.sougata.form_response_service.repository.FormResponseRepository;
+import com.sougata.form_response_service.model.FormResponseIndividual;
+import com.sougata.form_response_service.model.FormResponseSummary;
+import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import com.sougata.form_response_service.repository.TickBoxGridResponseRepository;
 import jakarta.persistence.Tuple;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Service("TICK_BOX_GRID_RESPONSE_MANAGER")
@@ -32,23 +33,13 @@ public class TickBoxGridResponseManager extends ResponseManager<
     private final TickBoxGridResponseRepository tickBoxGridRepository;
 
     @Autowired
-    public TickBoxGridResponseManager(FormResponseRepository formResponseRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, TickBoxGridResponseRepository tickBoxGridRepository) {
-        super(formResponseRepository, questionResponseSummaryRepository);
+    public TickBoxGridResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, TickBoxGridResponseRepository tickBoxGridRepository) {
+        super(formResponseSummaryRepository, questionResponseSummaryRepository);
         this.tickBoxGridRepository = tickBoxGridRepository;
     }
 
     @Override
-    public void create(UUID formId, TickBoxGridDetailsDto tickBoxGridDetailsDto) {
-
-    }
-
-    @Override
-    public void update(UUID formId, TickBoxGridDetailsDto tickBoxGridDetailsDto, Set<String> updatedFields) {
-
-    }
-
-    @Override
-    public void update(UUID formId, TickBoxGridResponsePutReqDto tickBoxGridResponsePutReqDto) {
+    public void onResponseSave(FormResponseSummary formResponseSummary, FormResponseIndividual formResponseIndividual, List<TickBoxGridResponsePutReqDto> questionResponsePutRequests) {
 
     }
 

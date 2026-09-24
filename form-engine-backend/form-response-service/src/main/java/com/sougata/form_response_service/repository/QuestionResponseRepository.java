@@ -12,15 +12,4 @@ import java.util.Set;
 
 @Repository
 public interface QuestionResponseRepository extends JpaRepository<QuestionResponse, Long> {
-
-    @Modifying
-    @Transactional
-    @Query("delete from QuestionResponse qr where qr.id in :ids")
-    void deleteAllQuestionResponsesById(Set<Long> ids);
-
-    @Modifying
-    @Transactional
-    @Query("delete from QuestionResponse qr where qr.id in :ids")
-    void deleteAllQuestionResponsesById(List<Long> ids);
-
 }

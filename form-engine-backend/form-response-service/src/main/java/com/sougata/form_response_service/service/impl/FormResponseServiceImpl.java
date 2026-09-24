@@ -11,7 +11,7 @@ import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
 import com.sougata.form_response_service.configuration.AppConfiguration;
 import com.sougata.form_response_service.feignClient.AuthServiceFeignClient;
 import com.sougata.form_response_service.feignClient.FormServiceFeignClient;
-import com.sougata.form_response_service.repository.FormResponseRepository;
+import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.QuestionResponseRepository;
 import com.sougata.form_response_service.service.FormResponseService;
 import com.sougata.form_response_service.service.responseManager.ResponseManagerFactory;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FormResponseServiceImpl implements FormResponseService {
 
-    private final FormResponseRepository formResponseRepository;
+    private final FormResponseSummaryRepository formResponseSummaryRepository;
     private final FormServiceFeignClient formServiceFeignClient;
     private final AuthServiceFeignClient authServiceFeignClient;
     private final ResponseManagerFactory responseManagerFactory;
@@ -47,6 +47,7 @@ public class FormResponseServiceImpl implements FormResponseService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseSummaryResDto getResponseSummaries(UUID formId) {
         var questions = formServiceFeignClient.getFormDetails(formId).getQuestions();
 
@@ -158,9 +159,9 @@ public class FormResponseServiceImpl implements FormResponseService {
 
     @Override
     public FormResponseCountDto getFormResponseCount(UUID formId) {
-//        return new FormResponseCountDto(formResponseRepository.getFormResponseCount(formId));
-
-        return null;
+        return new FormResponseCountDto(
+                formResponseSummaryRepository.findFormResponseCountByFormId(formId)
+        );
     }
 
     private FormResponseIndividualDto getIndividualFormResponseHelper(UUID formId, Long formResponseId, Long formResponsePage) {

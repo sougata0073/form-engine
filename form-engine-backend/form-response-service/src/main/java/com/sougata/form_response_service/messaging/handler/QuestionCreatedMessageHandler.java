@@ -25,8 +25,6 @@ public class QuestionCreatedMessageHandler implements MessageListener {
         var messageData = redisSerializer.deserialize(message.getBody(), QuestionCreatedMessage.class);
 
         var questionResponseManager = responseManagerFactory.get(messageData.getQuestionDetails().getQuestionType());
-
-        questionResponseManager.create(messageData.getFormId(), messageData.getQuestionDetails());
     }
 
 }

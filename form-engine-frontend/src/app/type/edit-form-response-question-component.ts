@@ -5,6 +5,7 @@ import {ResponseQuestionSummary} from '../model/edit-form/responses/question/res
 import {FormResponseService} from '../service/form-response-service';
 import {CommonResponseQuestionResponse} from '../model/edit-form/responses/question/common-response-question-response';
 import {QuestionRes} from '../model/edit-form/question/response/question-res';
+import { FormResponseServiceShared } from '../service/form-response-service-shared';
 
 @Directive()
 export class EditFormResponseQuestionComponent<
@@ -33,6 +34,7 @@ export class EditFormResponseQuestionComponent<
   }
 
   loadNextPage(resetPreviousResponse?: boolean) {
+
     if (this.isNextPageLoading() || !this.hasMoreItems) return
 
     this.isNextPageLoading.set(true)

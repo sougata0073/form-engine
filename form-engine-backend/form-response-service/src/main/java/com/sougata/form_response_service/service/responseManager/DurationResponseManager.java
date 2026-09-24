@@ -6,8 +6,10 @@ import com.sougata.form_engine.dto.formResponse.question.DurationResponseQuestio
 import com.sougata.form_engine.dto.formResponse.summary.DurationResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.DurationDetailsDto;
 import com.sougata.form_engine.dto.question.responseputrequest.DurationResponsePutReqDto;
+import com.sougata.form_response_service.model.FormResponseIndividual;
+import com.sougata.form_response_service.model.FormResponseSummary;
 import com.sougata.form_response_service.repository.DurationResponseRepository;
-import com.sougata.form_response_service.repository.FormResponseRepository;
+import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Service("DURATION_RESPONSE_MANAGER")
@@ -32,23 +33,13 @@ public class DurationResponseManager extends ResponseManager<
     private final DurationResponseRepository durationRepository;
 
     @Autowired
-    public DurationResponseManager(FormResponseRepository formResponseRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, DurationResponseRepository durationRepository) {
-        super(formResponseRepository, questionResponseSummaryRepository);
+    public DurationResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, DurationResponseRepository durationRepository) {
+        super(formResponseSummaryRepository, questionResponseSummaryRepository);
         this.durationRepository = durationRepository;
     }
 
     @Override
-    public void create(UUID formId, DurationDetailsDto durationDetailsDto) {
-
-    }
-
-    @Override
-    public void update(UUID formId, DurationDetailsDto durationDetailsDto, Set<String> updatedFields) {
-
-    }
-
-    @Override
-    public void update(UUID formId, DurationResponsePutReqDto durationResponsePutReqDto) {
+    public void onResponseSave(FormResponseSummary formResponseSummary, FormResponseIndividual formResponseIndividual, List<DurationResponsePutReqDto> questionResponsePutRequests) {
 
     }
 

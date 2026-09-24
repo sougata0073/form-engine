@@ -6,8 +6,10 @@ import com.sougata.form_engine.dto.formResponse.question.DropdownResponseQuestio
 import com.sougata.form_engine.dto.formResponse.summary.DropdownResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.DropdownDetailsDto;
 import com.sougata.form_engine.dto.question.responseputrequest.DropdownResponsePutReqDto;
+import com.sougata.form_response_service.model.FormResponseIndividual;
+import com.sougata.form_response_service.model.FormResponseSummary;
 import com.sougata.form_response_service.repository.DropdownResponseRepository;
-import com.sougata.form_response_service.repository.FormResponseRepository;
+import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Service("DROPDOWN_RESPONSE_MANAGER")
@@ -32,23 +33,13 @@ public class DropdownResponseManager extends ResponseManager<
     private final DropdownResponseRepository dropdownRepository;
 
     @Autowired
-    public DropdownResponseManager(FormResponseRepository formResponseRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, DropdownResponseRepository dropdownRepository) {
-        super(formResponseRepository, questionResponseSummaryRepository);
+    public DropdownResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, DropdownResponseRepository dropdownRepository) {
+        super(formResponseSummaryRepository, questionResponseSummaryRepository);
         this.dropdownRepository = dropdownRepository;
     }
 
     @Override
-    public void create(UUID formId, DropdownDetailsDto dropdownDetailsDto) {
-
-    }
-
-    @Override
-    public void update(UUID formId, DropdownDetailsDto dropdownDetailsDto, Set<String> updatedFields) {
-
-    }
-
-    @Override
-    public void update(UUID formId, DropdownResponsePutReqDto dropdownResponsePutReqDto) {
+    public void onResponseSave(FormResponseSummary formResponseSummary, FormResponseIndividual formResponseIndividual, List<DropdownResponsePutReqDto> questionResponsePutRequests) {
 
     }
 

@@ -25,8 +25,6 @@ public class QuestionUpdatedMessageHandler implements MessageListener {
         var messageData = redisSerializer.deserialize(message.getBody(), QuestionUpdatedMessage.class);
 
         var questionResponseManager = responseManagerFactory.get(messageData.getQuestionDetails().getQuestionType());
-
-        questionResponseManager.update(messageData.getFormId(), messageData.getQuestionDetails(), messageData.getUpdatedFields());
     }
 
 }

@@ -6,7 +6,9 @@ import com.sougata.form_engine.dto.formResponse.question.MultipleChoiceGridRespo
 import com.sougata.form_engine.dto.formResponse.summary.MultipleChoiceGridResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.MultipleChoiceGridDetailsDto;
 import com.sougata.form_engine.dto.question.responseputrequest.MultipleChoiceGridResponsePutReqDto;
-import com.sougata.form_response_service.repository.FormResponseRepository;
+import com.sougata.form_response_service.model.FormResponseIndividual;
+import com.sougata.form_response_service.model.FormResponseSummary;
+import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.MultipleChoiceGridResponseRepository;
 import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Service("MULTIPLE_CHOICE_GRID_RESPONSE_MANAGER")
@@ -32,23 +33,13 @@ public class MultipleChoiceGridResponseManager extends ResponseManager<
     private final MultipleChoiceGridResponseRepository multipleChoiceGridRepository;
 
     @Autowired
-    public MultipleChoiceGridResponseManager(FormResponseRepository formResponseRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, MultipleChoiceGridResponseRepository multipleChoiceGridRepository) {
-        super(formResponseRepository, questionResponseSummaryRepository);
+    public MultipleChoiceGridResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, MultipleChoiceGridResponseRepository multipleChoiceGridRepository) {
+        super(formResponseSummaryRepository, questionResponseSummaryRepository);
         this.multipleChoiceGridRepository = multipleChoiceGridRepository;
     }
 
     @Override
-    public void create(UUID formId, MultipleChoiceGridDetailsDto multipleChoiceGridDetailsDto) {
-
-    }
-
-    @Override
-    public void update(UUID formId, MultipleChoiceGridDetailsDto multipleChoiceGridDetailsDto, Set<String> updatedFields) {
-
-    }
-
-    @Override
-    public void update(UUID formId, MultipleChoiceGridResponsePutReqDto multipleChoiceGridResponsePutReqDto) {
+    public void onResponseSave(FormResponseSummary formResponseSummary, FormResponseIndividual formResponseIndividual, List<MultipleChoiceGridResponsePutReqDto> questionResponsePutRequests) {
 
     }
 

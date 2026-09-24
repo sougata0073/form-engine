@@ -6,7 +6,9 @@ import com.sougata.form_engine.dto.formResponse.question.ShortAnswerResponseQues
 import com.sougata.form_engine.dto.formResponse.summary.ShortAnswerResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.ShortAnswerDetailsDto;
 import com.sougata.form_engine.dto.question.responseputrequest.ShortAnswerResponsePutReqDto;
-import com.sougata.form_response_service.repository.FormResponseRepository;
+import com.sougata.form_response_service.model.FormResponseIndividual;
+import com.sougata.form_response_service.model.FormResponseSummary;
+import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import com.sougata.form_response_service.repository.ShortAnswerResponseRepository;
 import jakarta.persistence.Tuple;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Service("SHORT_ANSWER_RESPONSE_MANAGER")
@@ -32,23 +33,13 @@ public class ShortAnswerResponseManager extends ResponseManager<
     private final ShortAnswerResponseRepository shortAnswerRepository;
 
     @Autowired
-    public ShortAnswerResponseManager(FormResponseRepository formResponseRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, ShortAnswerResponseRepository shortAnswerRepository) {
-        super(formResponseRepository, questionResponseSummaryRepository);
+    public ShortAnswerResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, ShortAnswerResponseRepository shortAnswerRepository) {
+        super(formResponseSummaryRepository, questionResponseSummaryRepository);
         this.shortAnswerRepository = shortAnswerRepository;
     }
 
     @Override
-    public void create(UUID formId, ShortAnswerDetailsDto shortAnswerDetailsDto) {
-
-    }
-
-    @Override
-    public void update(UUID formId, ShortAnswerDetailsDto shortAnswerDetailsDto, Set<String> updatedFields) {
-
-    }
-
-    @Override
-    public void update(UUID formId, ShortAnswerResponsePutReqDto shortAnswerResponsePutReqDto) {
+    public void onResponseSave(FormResponseSummary formResponseSummary, FormResponseIndividual formResponseIndividual, List<ShortAnswerResponsePutReqDto> questionResponsePutRequests) {
 
     }
 

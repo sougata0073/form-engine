@@ -6,7 +6,9 @@ import com.sougata.form_engine.dto.formResponse.question.RatingResponseQuestionD
 import com.sougata.form_engine.dto.formResponse.summary.RatingResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.RatingDetailsDto;
 import com.sougata.form_engine.dto.question.responseputrequest.RatingResponsePutReqDto;
-import com.sougata.form_response_service.repository.FormResponseRepository;
+import com.sougata.form_response_service.model.FormResponseIndividual;
+import com.sougata.form_response_service.model.FormResponseSummary;
+import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import com.sougata.form_response_service.repository.RatingResponseRepository;
 import jakarta.persistence.Tuple;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Service("RATING_RESPONSE_MANAGER")
@@ -32,23 +33,13 @@ public class RatingResponseManager extends ResponseManager<
     private final RatingResponseRepository ratingRepository;
 
     @Autowired
-    public RatingResponseManager(FormResponseRepository formResponseRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, RatingResponseRepository ratingRepository) {
-        super(formResponseRepository, questionResponseSummaryRepository);
+    public RatingResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, RatingResponseRepository ratingRepository) {
+        super(formResponseSummaryRepository, questionResponseSummaryRepository);
         this.ratingRepository = ratingRepository;
     }
 
     @Override
-    public void create(UUID formId, RatingDetailsDto ratingDetailsDto) {
-
-    }
-
-    @Override
-    public void update(UUID formId, RatingDetailsDto ratingDetailsDto, Set<String> updatedFields) {
-
-    }
-
-    @Override
-    public void update(UUID formId, RatingResponsePutReqDto ratingResponsePutReqDto) {
+    public void onResponseSave(FormResponseSummary formResponseSummary, FormResponseIndividual formResponseIndividual, List<RatingResponsePutReqDto> questionResponsePutRequests) {
 
     }
 

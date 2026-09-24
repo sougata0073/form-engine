@@ -61,11 +61,14 @@ public class FormResponseServiceImpl implements FormResponseService {
 
         var formResponsePartitionKey = new FormResponse.PartitionKey();
         formResponsePartitionKey.setFormId(formId);
+        formResponsePartitionKey.setUserId(responderId);
 
         formResponse.setKey(formResponsePartitionKey);
-        formResponse.setUserId(responderId);
         formResponse.setRespondedQuestionIds(
-                req.getResponses().stream().map(QuestionResponsePutReqDto::getQuestionId).collect(Collectors.toSet())
+                req.getResponses()
+                        .stream()
+                        .map(QuestionResponsePutReqDto::getQuestionId)
+                        .collect(Collectors.toSet())
         );
 
         var savedFormResponse = formResponseRepository.save(formResponse);
@@ -77,7 +80,15 @@ public class FormResponseServiceImpl implements FormResponseService {
             responseManager.create(response, savedFormResponse);
         });
 
-        redisTemplate.convertAndSend(MessagingChannelNames.FORM_RESPONSE_SAVED, new FormResponseSavedMessage(formId, responderId, req.getResponses()));
+        redisTemplate.convertAndSend(
+                MessagingChannelNames.FORM_RESPONSE_SAVED,
+                new FormResponseSavedMessage(
+                        formId,
+                        savedFormResponse.getKey().getFormResponseId(),
+                        responderId,
+                        req.getResponses()
+                )
+        );
 
         return new FormResponsePutResDto(savedFormResponse.getKey().getFormResponseId());
     }

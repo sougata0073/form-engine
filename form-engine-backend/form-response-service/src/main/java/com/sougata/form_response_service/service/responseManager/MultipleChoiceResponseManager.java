@@ -6,7 +6,9 @@ import com.sougata.form_engine.dto.formResponse.question.MultipleChoiceResponseQ
 import com.sougata.form_engine.dto.formResponse.summary.MultipleChoiceResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.MultipleChoiceDetailsDto;
 import com.sougata.form_engine.dto.question.responseputrequest.MultipleChoiceResponsePutReqDto;
-import com.sougata.form_response_service.repository.FormResponseRepository;
+import com.sougata.form_response_service.model.FormResponseIndividual;
+import com.sougata.form_response_service.model.FormResponseSummary;
+import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.MultipleChoiceResponseRepository;
 import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Service("MULTIPLE_CHOICE_RESPONSE_MANAGER")
@@ -32,23 +33,13 @@ public class MultipleChoiceResponseManager extends ResponseManager<
     private final MultipleChoiceResponseRepository multipleChoiceRepository;
 
     @Autowired
-    public MultipleChoiceResponseManager(FormResponseRepository formResponseRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, MultipleChoiceResponseRepository multipleChoiceRepository) {
-        super(formResponseRepository, questionResponseSummaryRepository);
+    public MultipleChoiceResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, MultipleChoiceResponseRepository multipleChoiceRepository) {
+        super(formResponseSummaryRepository, questionResponseSummaryRepository);
         this.multipleChoiceRepository = multipleChoiceRepository;
     }
 
     @Override
-    public void create(UUID formId, MultipleChoiceDetailsDto multipleChoiceDetailsDto) {
-
-    }
-
-    @Override
-    public void update(UUID formId, MultipleChoiceDetailsDto multipleChoiceDetailsDto, Set<String> updatedFields) {
-
-    }
-
-    @Override
-    public void update(UUID formId, MultipleChoiceResponsePutReqDto multipleChoiceResponsePutReqDto) {
+    public void onResponseSave(FormResponseSummary formResponseSummary, FormResponseIndividual formResponseIndividual, List<MultipleChoiceResponsePutReqDto> questionResponsePutRequests) {
 
     }
 

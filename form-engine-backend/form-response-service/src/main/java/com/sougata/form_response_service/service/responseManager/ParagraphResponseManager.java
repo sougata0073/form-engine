@@ -6,7 +6,9 @@ import com.sougata.form_engine.dto.formResponse.question.ParagraphResponseQuesti
 import com.sougata.form_engine.dto.formResponse.summary.ParagraphResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.ParagraphDetailsDto;
 import com.sougata.form_engine.dto.question.responseputrequest.ParagraphResponsePutReqDto;
-import com.sougata.form_response_service.repository.FormResponseRepository;
+import com.sougata.form_response_service.model.FormResponseIndividual;
+import com.sougata.form_response_service.model.FormResponseSummary;
+import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.ParagraphResponseRepository;
 import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Service("PARAGRAPH_RESPONSE_MANAGER")
@@ -32,23 +33,13 @@ public class ParagraphResponseManager extends ResponseManager<
     private final ParagraphResponseRepository paragraphRepository;
 
     @Autowired
-    public ParagraphResponseManager(FormResponseRepository formResponseRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, ParagraphResponseRepository paragraphRepository) {
-        super(formResponseRepository, questionResponseSummaryRepository);
+    public ParagraphResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, ParagraphResponseRepository paragraphRepository) {
+        super(formResponseSummaryRepository, questionResponseSummaryRepository);
         this.paragraphRepository = paragraphRepository;
     }
 
     @Override
-    public void create(UUID formId, ParagraphDetailsDto paragraphDetailsDto) {
-
-    }
-
-    @Override
-    public void update(UUID formId, ParagraphDetailsDto paragraphDetailsDto, Set<String> updatedFields) {
-
-    }
-
-    @Override
-    public void update(UUID formId, ParagraphResponsePutReqDto paragraphResponsePutReqDto) {
+    public void onResponseSave(FormResponseSummary formResponseSummary, FormResponseIndividual formResponseIndividual, List<ParagraphResponsePutReqDto> questionResponsePutRequests) {
 
     }
 

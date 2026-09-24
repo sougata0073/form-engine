@@ -6,7 +6,9 @@ import com.sougata.form_engine.dto.formResponse.question.TimeResponseQuestionDto
 import com.sougata.form_engine.dto.formResponse.summary.TimeResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.TimeDetailsDto;
 import com.sougata.form_engine.dto.question.responseputrequest.TimeResponsePutReqDto;
-import com.sougata.form_response_service.repository.FormResponseRepository;
+import com.sougata.form_response_service.model.FormResponseIndividual;
+import com.sougata.form_response_service.model.FormResponseSummary;
+import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import com.sougata.form_response_service.repository.TimeResponseRepository;
 import jakarta.persistence.Tuple;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Service("TIME_RESPONSE_MANAGER")
@@ -32,23 +33,13 @@ public class TimeResponseManager extends ResponseManager<
     private final TimeResponseRepository timeRepository;
 
     @Autowired
-    public TimeResponseManager(FormResponseRepository formResponseRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, TimeResponseRepository timeRepository) {
-        super(formResponseRepository, questionResponseSummaryRepository);
+    public TimeResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, TimeResponseRepository timeRepository) {
+        super(formResponseSummaryRepository, questionResponseSummaryRepository);
         this.timeRepository = timeRepository;
     }
 
     @Override
-    public void create(UUID formId, TimeDetailsDto timeDetailsDto) {
-
-    }
-
-    @Override
-    public void update(UUID formId, TimeDetailsDto timeDetailsDto, Set<String> updatedFields) {
-
-    }
-
-    @Override
-    public void update(UUID formId, TimeResponsePutReqDto timeResponsePutReqDto) {
+    public void onResponseSave(FormResponseSummary formResponseSummary, FormResponseIndividual formResponseIndividual, List<TimeResponsePutReqDto> questionResponsePutRequests) {
 
     }
 

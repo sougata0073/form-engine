@@ -6,7 +6,9 @@ import com.sougata.form_engine.dto.formResponse.question.LinearScaleResponseQues
 import com.sougata.form_engine.dto.formResponse.summary.LinearScaleResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.LinearScaleDetailsDto;
 import com.sougata.form_engine.dto.question.responseputrequest.LinearScaleResponsePutReqDto;
-import com.sougata.form_response_service.repository.FormResponseRepository;
+import com.sougata.form_response_service.model.FormResponseIndividual;
+import com.sougata.form_response_service.model.FormResponseSummary;
+import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.LinearScaleResponseRepository;
 import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Service("LINEAR_SCALE_RESPONSE_MANAGER")
@@ -32,23 +33,13 @@ public class LinearScaleResponseManager extends ResponseManager<
     private final LinearScaleResponseRepository linearScaleRepository;
 
     @Autowired
-    public LinearScaleResponseManager(FormResponseRepository formResponseRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, LinearScaleResponseRepository linearScaleRepository) {
-        super(formResponseRepository, questionResponseSummaryRepository);
+    public LinearScaleResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, LinearScaleResponseRepository linearScaleRepository) {
+        super(formResponseSummaryRepository, questionResponseSummaryRepository);
         this.linearScaleRepository = linearScaleRepository;
     }
 
     @Override
-    public void create(UUID formId, LinearScaleDetailsDto linearScaleDetailsDto) {
-
-    }
-
-    @Override
-    public void update(UUID formId, LinearScaleDetailsDto linearScaleDetailsDto, Set<String> updatedFields) {
-
-    }
-
-    @Override
-    public void update(UUID formId, LinearScaleResponsePutReqDto linearScaleResponsePutReqDto) {
+    public void onResponseSave(FormResponseSummary formResponseSummary, FormResponseIndividual formResponseIndividual, List<LinearScaleResponsePutReqDto> questionResponsePutRequests) {
 
     }
 

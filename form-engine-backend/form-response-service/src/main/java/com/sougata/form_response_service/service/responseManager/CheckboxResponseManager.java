@@ -6,14 +6,8 @@ import com.sougata.form_engine.dto.formResponse.question.CheckboxResponseQuestio
 import com.sougata.form_engine.dto.formResponse.summary.CheckboxResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.CheckboxDetailsDto;
 import com.sougata.form_engine.dto.question.responseputrequest.CheckboxResponsePutReqDto;
-import com.sougata.form_engine.dto.question.schemaupdatereq.CheckboxUpdateReqDto;
-import com.sougata.form_response_service.model.CheckboxResponse;
-import com.sougata.form_response_service.model.QuestionResponse;
-import com.sougata.form_response_service.model.QuestionResponseSummary;
-import com.sougata.form_response_service.repository.CheckboxResponseRepository;
-import com.sougata.form_response_service.repository.FormResponseRepository;
-import com.sougata.form_response_service.repository.QuestionResponseRepository;
-import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
+import com.sougata.form_response_service.model.*;
+import com.sougata.form_response_service.repository.*;
 import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -36,11 +30,9 @@ public class CheckboxResponseManager extends ResponseManager<
     private final QuestionResponseSummaryRepository questionResponseSummaryRepository;
     private final QuestionResponseRepository questionResponseRepository;
     private final CheckboxResponseRepository checkboxResponseRepository;
-    private final FormResponseRepository formResponseRepository;
 
-    public CheckboxResponseManager(FormResponseRepository formResponseRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, QuestionResponseRepository questionResponseRepository, CheckboxResponseRepository checkboxResponseRepository) {
-        super(formResponseRepository, questionResponseSummaryRepository);
-        this.formResponseRepository = formResponseRepository;
+    public CheckboxResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, QuestionResponseRepository questionResponseRepository, CheckboxResponseRepository checkboxResponseRepository) {
+        super(formResponseSummaryRepository, questionResponseSummaryRepository);
         this.questionResponseSummaryRepository = questionResponseSummaryRepository;
         this.questionResponseRepository = questionResponseRepository;
         this.checkboxResponseRepository = checkboxResponseRepository;
@@ -48,115 +40,134 @@ public class CheckboxResponseManager extends ResponseManager<
 
     @Override
     @Transactional
-    public void create(UUID formId, CheckboxDetailsDto checkboxDetailsDto) {
+    public void onResponseSave(FormResponseSummary formResponseSummary, FormResponseIndividual formResponseIndividual, List<CheckboxResponsePutReqDto> questionResponsePutRequests) {
 
-        var questionResponses = new ArrayList<QuestionResponse>();
-        var checkboxResponses = new ArrayList<CheckboxResponse>();
+        var checkboxResponses = checkboxResponseRepository.findAllByFormId(formResponseSummary.getFormId());
 
-        var qResSummary = createQuestionResponseSummary(formId, checkboxDetailsDto);
+        var checkboxResponsesMapByQuestionId = checkboxResponses
+                .stream()
+                .collect(Collectors.groupingBy(cr -> cr.getQuestionResponse().getQuestionResponseSummary().getQuestionId()));
 
-        for (int i = 0; i < checkboxDetailsDto.getOptions().size(); i++) {
-            var qr = new QuestionResponse();
+        var questionResponseSummariesToSave = new ArrayList<QuestionResponseSummary>();
+        var questionResponsesToSave = new ArrayList<QuestionResponse>();
+        var checkboxResponsesToSave = new ArrayList<CheckboxResponse>();
+        var missingOptionIdsMap = new HashMap<Long, Set<Long>>();
 
-            qr.setQuestionResponseSummary(qResSummary);
+        questionResponsePutRequests.forEach(response -> {
 
-            questionResponses.add(qr);
-        }
+            var checkboxResponsesForThisQuestion = checkboxResponsesMapByQuestionId.get(response.getQuestionId());
 
-        var savedQuestionResponses = questionResponseRepository.saveAll(questionResponses);
+            if (checkboxResponsesForThisQuestion == null) {
+                var questionResponseSummary = new QuestionResponseSummary();
 
-        for (int i = 0; i < savedQuestionResponses.size(); i++) {
-            var cb = new CheckboxResponse();
+                questionResponseSummary.setResponseCount(1L);
+                questionResponseSummary.setQuestionId(response.getQuestionId());
+                questionResponseSummary.setFormResponseSummary(formResponseSummary);
 
-            cb.setQuestionResponse(savedQuestionResponses.get(i));
-            cb.setOptionId(checkboxDetailsDto.getOptions().get(i).getId());
+                questionResponseSummariesToSave.add(questionResponseSummary);
+            }
 
-            checkboxResponses.add(cb);
-        }
+            Set<Long> optionIdsForThisQuestion = checkboxResponsesForThisQuestion == null ? Set.of() :
+                    checkboxResponsesForThisQuestion.stream().map(CheckboxResponse::getOptionId).collect(Collectors.toSet());
 
-        checkboxResponseRepository.saveAll(checkboxResponses);
-    }
+            var missingOptionIds = response.getResponseOptionIds()
+                    .stream()
+                    .filter(optionId -> !optionIdsForThisQuestion.contains(optionId))
+                    .collect(Collectors.toSet());
 
-    @Override
-    public void update(UUID formId, CheckboxDetailsDto checkboxDetailsDto, Set<String> updatedFields) {
+            var alreadySavedOptionIds = new HashSet<>(response.getResponseOptionIds());
+            alreadySavedOptionIds.removeAll(missingOptionIds);
 
-        if (!updatedFields.contains(CheckboxUpdateReqDto.Fields.options)) {
+            if (!alreadySavedOptionIds.isEmpty()) {
+                checkboxResponseRepository.incrementResponseCountByOptionIds(
+                        alreadySavedOptionIds, 1L
+                );
+
+                checkboxResponseRepository.insertFormResponseIndividualByOptionIds(
+                        formResponseIndividual.getFormResponseId(),
+                        alreadySavedOptionIds
+                );
+            }
+
+            if (!missingOptionIds.isEmpty()) {
+                missingOptionIdsMap.put(response.getQuestionId(), missingOptionIds);
+            }
+
+        });
+
+        if (missingOptionIdsMap.isEmpty()) {
             return;
         }
 
-        var checkboxResponses = checkboxResponseRepository.findAllByQuestionId(checkboxDetailsDto.getId());
+        var alreadySavedQuestionResponseSummaries = questionResponseSummaryRepository.findAllByFormId(formResponseSummary.getFormId());
+        ArrayList<QuestionResponseSummary> savedQuestionResponseSummaries = questionResponseSummariesToSave.isEmpty() ? new ArrayList<>() :
+                new ArrayList<>(questionResponseSummaryRepository.saveAll(questionResponseSummariesToSave));
 
-        var prevOptionIds = checkboxResponses.stream().map(CheckboxResponse::getOptionId).collect(Collectors.toSet());
-        var currentOptionIds = checkboxDetailsDto.getOptions().stream().map(CheckboxDetailsDto.Option::getId).collect(Collectors.toSet());
+        savedQuestionResponseSummaries.addAll(alreadySavedQuestionResponseSummaries);
 
-        var optionsToAdd = new HashSet<>(currentOptionIds);
-        optionsToAdd.removeAll(prevOptionIds);
+        var savedQuestionResponseSummariesMapByQuestionId = savedQuestionResponseSummaries
+                .stream()
+                .collect(Collectors.toMap(QuestionResponseSummary::getQuestionId, Function.identity()));
 
-        var optionsToDelete = new HashSet<>(prevOptionIds);
-        optionsToDelete.removeAll(currentOptionIds);
+        missingOptionIdsMap.forEach((questionId, missingOptionIds) -> {
 
-        if (!optionsToAdd.isEmpty()) {
-            // Option adding start
-            var questionResponseSummary = questionResponseSummaryRepository
-                    .findByQuestionId(checkboxDetailsDto.getId())
-                    .orElseGet(() -> {
-                        var formResponseSummary = formResponseRepository.findById(formId)
-                                .orElseThrow(() -> new IllegalArgumentException("Form response summary not found for form ID: " + formId));
+            var questionResponseSummary = savedQuestionResponseSummariesMapByQuestionId.get(questionId);
 
-                        var newQuestionResponseSummary = new QuestionResponseSummary();
-
-                        newQuestionResponseSummary.setResponseCount(0L);
-                        newQuestionResponseSummary.setQuestionId(checkboxDetailsDto.getId());
-                        newQuestionResponseSummary.setFormResponseSummary(formResponseSummary);
-
-                        return questionResponseSummaryRepository.save(newQuestionResponseSummary);
-                    });
-
-            var questionResponsesToSave = new ArrayList<QuestionResponse>();
-
-            for (int i = 0; i < optionsToAdd.size(); i++) {
-                var questionResponse = new QuestionResponse();
-
-                questionResponse.setQuestionResponseSummary(questionResponseSummary);
-
-                questionResponsesToSave.add(questionResponse);
+            if (questionResponseSummary == null) {
+                throw new IllegalArgumentException("Question response summary not found for question ID: " + questionId);
             }
 
-            var savedQuestionResponses = questionResponseRepository.saveAll(questionResponsesToSave);
-            var optionsToAddList = optionsToAdd.stream().toList();
+            missingOptionIds.forEach(_ -> {
 
-            var checkboxResponsesToSave = new ArrayList<CheckboxResponse>();
+                var questionResponseToSave = new QuestionResponse();
 
-            for (int i = 0; i < optionsToAdd.size(); i++) {
-                var cbRes = new CheckboxResponse();
+                questionResponseToSave.setQuestionResponseSummary(questionResponseSummary);
+                questionResponseToSave.setFormResponseIndividuals(
+                        List.of(formResponseIndividual)
+                );
 
-                cbRes.setOptionId(optionsToAddList.get(i));
-                cbRes.setResponseCount(0L);
-                cbRes.setQuestionResponse(savedQuestionResponses.get(i));
+                questionResponsesToSave.add(questionResponseToSave);
+            });
 
-                checkboxResponsesToSave.add(cbRes);
+        });
+
+        List<QuestionResponse> savedQuestionResponses = questionResponsesToSave.isEmpty() ? List.of() :
+                questionResponseRepository.saveAll(questionResponsesToSave);
+
+        var savedQuestionResponsesMapByQuestionId = savedQuestionResponses
+                .stream()
+                .collect(Collectors.groupingBy(qr -> qr.getQuestionResponseSummary().getQuestionId()));
+
+        missingOptionIdsMap.forEach((questionId, missingOptionIds) -> {
+
+            var missingOptionIdList = missingOptionIds.stream().toList();
+            var questionResponsesForThisQuestion = savedQuestionResponsesMapByQuestionId.get(questionId);
+
+            if (questionResponsesForThisQuestion == null) {
+                throw new RuntimeException("Question responses not found for question ID: " + questionId);
             }
 
-            var savedCheckboxResponses = checkboxResponseRepository.saveAll(checkboxResponsesToSave);
-            // Option adding end
-        }
+            if (missingOptionIds.size() != questionResponsesForThisQuestion.size()) {
+                throw new RuntimeException(
+                        "Invalid number of question responses saved. Number of missing option IDs: " + missingOptionIds.size() +
+                                ". Number of question responses saved: " + questionResponsesForThisQuestion.size()
+                );
+            }
 
-        if (!optionsToDelete.isEmpty()) {
-            // Option deleting start
-            var questionResponseIdsToDelete = checkboxResponses
-                    .stream()
-                    .filter(cb -> optionsToDelete.contains(cb.getOptionId()))
-                    .map(CheckboxResponse::getQuestionResponseId)
-                    .toList();
+            for (int i = 0; i < questionResponsesForThisQuestion.size(); i++) {
+                var checkboxResponseToSave = new CheckboxResponse();
 
-            questionResponseRepository.deleteAllQuestionResponsesById(questionResponseIdsToDelete);
-            // Option deleting end
-        }
-    }
+                checkboxResponseToSave.setResponseCount(1L);
+                checkboxResponseToSave.setOptionId(missingOptionIdList.get(i));
+                checkboxResponseToSave.setQuestionResponse(questionResponsesForThisQuestion.get(i));
 
-    @Override
-    public void update(UUID formId, CheckboxResponsePutReqDto checkboxResponsePutReqDto) {
+                checkboxResponsesToSave.add(checkboxResponseToSave);
+            }
 
+        });
+
+        List<CheckboxResponse> savedCheckboxResponses = checkboxResponsesToSave.isEmpty() ? List.of() :
+                checkboxResponseRepository.saveAll(checkboxResponsesToSave);
     }
 
     @Override
@@ -175,12 +186,7 @@ public class CheckboxResponseManager extends ResponseManager<
         var result = new ArrayList<CheckboxResponseSummaryDto>();
 
         questionDetailsList.forEach(qd -> {
-
             var questionResponseSummary = questionResponseSummariesMapByQuestionId.get(qd.getId());
-
-            if (questionResponseSummary == null) {
-                throw new IllegalArgumentException("Question response summary not found for question ID: " + qd.getId());
-            }
 
             var cbSummary = new CheckboxResponseSummaryDto();
 
@@ -188,15 +194,15 @@ public class CheckboxResponseManager extends ResponseManager<
             cbSummary.setQuestion(qd.getQuestion());
             cbSummary.setOrderIndex(qd.getOrderIndex());
             cbSummary.setQuestionType(qd.getQuestionType());
-            cbSummary.setNumberOfResponses(questionResponseSummary.getResponseCount());
+            cbSummary.setNumberOfResponses(
+                    questionResponseSummary == null ? 0L : questionResponseSummary.getResponseCount()
+            );
 
             var checkboxResponsesForThisQuestion = checkboxResponsesMapByQuestionId.get(qd.getId());
 
-            if (checkboxResponsesForThisQuestion == null) {
-                throw new IllegalArgumentException("Checkbox responses does not exists for question ID: " + qd.getId());
-            }
-
-            var checkboxResponsesMapByOptionId = checkboxResponsesForThisQuestion
+            Map<Long, CheckboxResponse> checkboxResponsesMapByOptionId = checkboxResponsesForThisQuestion == null
+                    ? Map.of()
+                    : checkboxResponsesForThisQuestion
                     .stream()
                     .collect(Collectors.toMap(CheckboxResponse::getOptionId, Function.identity()));
 
@@ -204,14 +210,10 @@ public class CheckboxResponseManager extends ResponseManager<
 
                 var cbResponse = checkboxResponsesMapByOptionId.get(option.getId());
 
-                if (cbResponse == null) {
-                    throw new IllegalArgumentException("Checkbox response does not exists form option ID: " + option.getId());
-                }
-
                 return new CheckboxResponseSummaryDto.Response(
-                        cbResponse.getOptionId(),
+                        option.getId(),
                         option.getOption(),
-                        cbResponse.getResponseCount()
+                        cbResponse == null ? 0L : cbResponse.getResponseCount()
                 );
 
             }).toList();
@@ -226,8 +228,7 @@ public class CheckboxResponseManager extends ResponseManager<
 
     @Override
     public CheckboxResponseSummaryDto getResponseSummary(Long questionId, CheckboxDetailsDto questionDetails, Pageable pageable) {
-        var questionResponse = questionResponseSummaryRepository.findByQuestionId(questionId)
-                .orElseThrow(() -> new IllegalArgumentException("Question response summary not found for question ID: " + questionId));
+        var questionResponseSummaryOptional = questionResponseSummaryRepository.findByQuestionId(questionId);
 
         var cbSummary = new CheckboxResponseSummaryDto();
 
@@ -235,7 +236,10 @@ public class CheckboxResponseManager extends ResponseManager<
         cbSummary.setQuestion(questionDetails.getQuestion());
         cbSummary.setQuestionType(questionDetails.getQuestionType());
         cbSummary.setOrderIndex(questionDetails.getOrderIndex());
-        cbSummary.setNumberOfResponses(questionResponse.getResponseCount());
+        cbSummary.setNumberOfResponses(
+                questionResponseSummaryOptional.isEmpty()
+                        ? 0L : questionResponseSummaryOptional.get().getResponseCount()
+        );
         cbSummary.setResponses(List.of());
 
         return cbSummary;

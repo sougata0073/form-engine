@@ -6,8 +6,10 @@ import com.sougata.form_engine.dto.formResponse.question.DateTimeResponseQuestio
 import com.sougata.form_engine.dto.formResponse.summary.DateTimeResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.DateTimeDetailsDto;
 import com.sougata.form_engine.dto.question.responseputrequest.DateTimeResponsePutReqDto;
+import com.sougata.form_response_service.model.FormResponseIndividual;
+import com.sougata.form_response_service.model.FormResponseSummary;
 import com.sougata.form_response_service.repository.DateTimeResponseRepository;
-import com.sougata.form_response_service.repository.FormResponseRepository;
+import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Service("DATE_TIME_RESPONSE_MANAGER")
@@ -32,23 +33,13 @@ public class DateTimeResponseManager extends ResponseManager<
     private final DateTimeResponseRepository dateTimeRepository;
 
     @Autowired
-    public DateTimeResponseManager(FormResponseRepository formResponseRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, DateTimeResponseRepository dateTimeRepository) {
-        super(formResponseRepository, questionResponseSummaryRepository);
+    public DateTimeResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, DateTimeResponseRepository dateTimeRepository) {
+        super(formResponseSummaryRepository, questionResponseSummaryRepository);
         this.dateTimeRepository = dateTimeRepository;
     }
 
     @Override
-    public void create(UUID formId, DateTimeDetailsDto dateTimeDetailsDto) {
-
-    }
-
-    @Override
-    public void update(UUID formId, DateTimeDetailsDto dateTimeDetailsDto, Set<String> updatedFields) {
-
-    }
-
-    @Override
-    public void update(UUID formId, DateTimeResponsePutReqDto dateTimeResponsePutReqDto) {
+    public void onResponseSave(FormResponseSummary formResponseSummary, FormResponseIndividual formResponseIndividual, List<DateTimeResponsePutReqDto> questionResponsePutRequests) {
 
     }
 

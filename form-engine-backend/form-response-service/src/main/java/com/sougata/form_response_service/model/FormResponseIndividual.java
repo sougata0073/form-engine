@@ -7,7 +7,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Persistable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -16,27 +20,31 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class FormResponseIndividual {
+public class FormResponseIndividual implements Persistable<UUID> {
 
-    @EmbeddedId
-    private PKey id;
+    @Id
+    private UUID formResponseId;
 
-    @MapsId("questionResponseId")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "question_response_id", nullable = false)
+    @ManyToMany(mappedBy = "formResponseIndividuals")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private QuestionResponse questionResponse;
+    private List<QuestionResponse> questionResponses = new ArrayList<>();
 
-    @Embeddable
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Getter
-    @Setter
-    public static class PKey {
+    @Transient
+    private boolean isNew;
 
-        private UUID formResponseId;
+    @Override
+    public @Nullable UUID getId() {
+        return formResponseId;
+    }
 
-        private Long questionResponseId;
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
 
+    @PostPersist
+    @PostLoad
+    void markNotNew() {
+        isNew = false;
     }
 }

@@ -69,9 +69,9 @@ public class CassandraConfiguration extends AbstractCassandraConfiguration {
                 .with(KeyspaceOption.DURABLE_WRITES, true)
                 .withNetworkReplication(
                         DataCenterReplication.of("north", 1),
-                        DataCenterReplication.of("east", 1),
-                        DataCenterReplication.of("west", 1),
-                        DataCenterReplication.of("south", 1)
+                        DataCenterReplication.of("east", 1)
+//                        DataCenterReplication.of("west", 1),
+//                        DataCenterReplication.of("south", 1)
                 );
 
         return List.of(formData);

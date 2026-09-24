@@ -6,8 +6,10 @@ import com.sougata.form_engine.dto.formResponse.question.DateResponseQuestionDto
 import com.sougata.form_engine.dto.formResponse.summary.DateResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.DateDetailsDto;
 import com.sougata.form_engine.dto.question.responseputrequest.DateResponsePutReqDto;
+import com.sougata.form_response_service.model.FormResponseIndividual;
+import com.sougata.form_response_service.model.FormResponseSummary;
 import com.sougata.form_response_service.repository.DateResponseRepository;
-import com.sougata.form_response_service.repository.FormResponseRepository;
+import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,23 +31,13 @@ public class DateResponseManager extends ResponseManager<
     private final DateResponseRepository dateRepository;
 
     @Autowired
-    public DateResponseManager(FormResponseRepository formResponseRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, DateResponseRepository dateRepository) {
-        super(formResponseRepository, questionResponseSummaryRepository);
+    public DateResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, DateResponseRepository dateRepository) {
+        super(formResponseSummaryRepository, questionResponseSummaryRepository);
         this.dateRepository = dateRepository;
     }
 
     @Override
-    public void create(UUID formId, DateDetailsDto dateDetailsDto) {
-
-    }
-
-    @Override
-    public void update(UUID formId, DateDetailsDto dateDetailsDto, Set<String> updatedFields) {
-
-    }
-
-    @Override
-    public void update(UUID formId, DateResponsePutReqDto dateResponsePutReqDto) {
+    public void onResponseSave(FormResponseSummary formResponseSummary, FormResponseIndividual formResponseIndividual, List<DateResponsePutReqDto> questionResponsePutRequests) {
 
     }
 

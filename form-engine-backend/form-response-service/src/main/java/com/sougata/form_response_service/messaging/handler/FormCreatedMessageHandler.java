@@ -4,7 +4,7 @@ import com.sougata.form_engine.constant.messaging.CommonMessagingNames;
 import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.dto.messaging.FormCreatedMessage;
 import com.sougata.form_response_service.model.FormResponseSummary;
-import com.sougata.form_response_service.repository.FormResponseRepository;
+import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.redis.connection.Message;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class FormCreatedMessageHandler implements MessageListener {
 
-    private final FormResponseRepository formResponseRepository;
+    private final FormResponseSummaryRepository formResponseSummaryRepository;
     private final GenericJacksonJsonRedisSerializer redisSerializer;
 
     @Override
@@ -28,6 +28,6 @@ public class FormCreatedMessageHandler implements MessageListener {
         formResponseCount.setFormId(messageData.getFormId());
         formResponseCount.setResponseCount(0L);
 
-        formResponseRepository.save(formResponseCount);
+        formResponseSummaryRepository.save(formResponseCount);
     }
 }

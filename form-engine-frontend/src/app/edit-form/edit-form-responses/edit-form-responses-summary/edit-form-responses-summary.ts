@@ -21,7 +21,7 @@ export class EditFormResponsesSummary implements OnInit {
 
   private activatedRoute = inject(ActivatedRoute)
   private responseService = inject(FormResponseService)
-  private formResponseServiceShared = inject(FormResponseServiceShared)
+  protected formResponseServiceShared = inject(FormResponseServiceShared)
 
   protected responseSummaries = signal<ResponseSummaryRes | null>(null)
 
@@ -30,11 +30,13 @@ export class EditFormResponsesSummary implements OnInit {
     this.activatedRoute.parent!.parent!.paramMap.subscribe(params => {
       this.formId.set(params.get('formId')!);
 
-      this.responseService.getResponseSummaries(this.formId()!, res => {
-        this.responseSummaries.set(res)
-      })
-
       this.formResponseServiceShared.getFormResponseCount(this.formId()!, res => {
+
+        if (res.count !== '0') {
+          this.responseService.getResponseSummaries(this.formId()!, res => {
+            this.responseSummaries.set(res)
+          })
+        }
 
       })
     })
