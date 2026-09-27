@@ -20,6 +20,9 @@ public class AnyTypeQuestionResponse {
     private Long questionResponseId;
 
     @Column(nullable = false)
+    private Long questionId;
+
+    @Column(nullable = false)
     private Long responseCount;
 
     @MapsId

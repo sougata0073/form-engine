@@ -8,8 +8,10 @@ import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.MultipleChoiceGridResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service("MULTIPLE_CHOICE_GRID_RESPONSE_MANAGER")
@@ -24,7 +26,8 @@ public class MultipleChoiceGridManager extends ResponseManager<MultipleChoiceGri
     }
 
     @Override
-    public void create(MultipleChoiceGridResponsePutReqDto response, FormResponse formResponse) {
+    @Async
+    public CompletableFuture<Void> create(MultipleChoiceGridResponsePutReqDto response, FormResponse formResponse) {
         MultipleChoiceGrid multipleChoiceGrid = new MultipleChoiceGrid();
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
@@ -37,6 +40,8 @@ public class MultipleChoiceGridManager extends ResponseManager<MultipleChoiceGri
         );
 
         multipleChoiceGridRepository.save(multipleChoiceGrid);
+
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override

@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "form_responses")
+@Table(name = "form_response_summaries")
 @Getter
 @Setter
 @AllArgsConstructor

@@ -4,10 +4,10 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.formResponse.individual.DateResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.question.DateResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.DateResponseSummaryDto;
+import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.DateDetailsDto;
 import com.sougata.form_engine.dto.question.responseputrequest.DateResponsePutReqDto;
-import com.sougata.form_response_service.model.FormResponseIndividual;
-import com.sougata.form_response_service.model.FormResponseSummary;
+import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.repository.DateResponseRepository;
 import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
@@ -15,8 +15,11 @@ import jakarta.persistence.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service("DATE_RESPONSE_MANAGER")
 public class DateResponseManager extends ResponseManager<
@@ -37,7 +40,15 @@ public class DateResponseManager extends ResponseManager<
     }
 
     @Override
-    public void onResponseSave(FormResponseSummary formResponseSummary, FormResponseIndividual formResponseIndividual, List<DateResponsePutReqDto> questionResponsePutRequests) {
+    @Transactional
+    public void onResponseSave(UUID formId, UUID formResponseId, List<DateResponsePutReqDto> questionResponsePutRequests) {
+
+        var responseData = new ResponseIncrementOrCreate<>(questionResponsePutRequests);
+        var responseDataJson = JsonUtil.toJson(responseData);
+
+        dateRepository.createOrIncrement(
+                responseDataJson, formResponseId, 1L
+        );
 
     }
 

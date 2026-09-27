@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Repository
@@ -17,12 +18,18 @@ public interface QuestionResponseSummaryRepository extends JpaRepository<Questio
     @Query("select qrs from QuestionResponseSummary qrs where qrs.formResponseSummary.formId = :formId")
     List<QuestionResponseSummary> findAllByFormId(UUID formId);
 
-    Optional<QuestionResponseSummary> findByQuestionId(Long questionId);
+    @Query("select qrs.questionId from QuestionResponseSummary qrs where qrs.formResponseSummary.formId = :formId")
+    Set<Long> findAllQuestionIdsByFormId(UUID formId);
 
-    boolean existsByQuestionId(Long questionId);
+    Optional<QuestionResponseSummary> findByQuestionId(Long questionId);
 
     @Modifying
     @Transactional
     @Query("delete from QuestionResponseSummary qrs where qrs.questionId = :questionId")
     void deleteByQuestionId(Long questionId);
+
+    @Modifying
+    @Transactional
+    @Query("update QuestionResponseSummary qrs set qrs.responseCount = qrs.responseCount + :incrementBy where qrs.questionId in :questionIds")
+    void incrementResponseCounts(Set<Long> questionIds, Long incrementBy);
 }

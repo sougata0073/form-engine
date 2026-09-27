@@ -8,7 +8,10 @@ import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.FileUploadResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service("FILE_UPLOAD_RESPONSE_MANAGER")
 public class FileUploadManager extends ResponseManager<FileUploadResponsePutReqDto> {
@@ -22,7 +25,8 @@ public class FileUploadManager extends ResponseManager<FileUploadResponsePutReqD
     }
 
     @Override
-    public void create(FileUploadResponsePutReqDto response, FormResponse formResponse) {
+    @Async
+    public CompletableFuture<Void> create(FileUploadResponsePutReqDto response, FormResponse formResponse) {
         FileUpload fileUpload = new FileUpload();
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
@@ -34,6 +38,8 @@ public class FileUploadManager extends ResponseManager<FileUploadResponsePutReqD
         fileUpload.setFileSize(response.getFileSize());
 
         fileUploadRepository.save(fileUpload);
+
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override

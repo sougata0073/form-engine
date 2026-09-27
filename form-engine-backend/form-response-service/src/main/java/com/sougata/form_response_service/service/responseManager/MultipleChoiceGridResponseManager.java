@@ -6,8 +6,6 @@ import com.sougata.form_engine.dto.formResponse.question.MultipleChoiceGridRespo
 import com.sougata.form_engine.dto.formResponse.summary.MultipleChoiceGridResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.MultipleChoiceGridDetailsDto;
 import com.sougata.form_engine.dto.question.responseputrequest.MultipleChoiceGridResponsePutReqDto;
-import com.sougata.form_response_service.model.FormResponseIndividual;
-import com.sougata.form_response_service.model.FormResponseSummary;
 import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.MultipleChoiceGridResponseRepository;
 import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
@@ -39,7 +37,7 @@ public class MultipleChoiceGridResponseManager extends ResponseManager<
     }
 
     @Override
-    public void onResponseSave(FormResponseSummary formResponseSummary, FormResponseIndividual formResponseIndividual, List<MultipleChoiceGridResponsePutReqDto> questionResponsePutRequests) {
+    public void onResponseSave(UUID formId, UUID formResponseId, List<MultipleChoiceGridResponsePutReqDto> questionResponsePutRequests) {
 
     }
 

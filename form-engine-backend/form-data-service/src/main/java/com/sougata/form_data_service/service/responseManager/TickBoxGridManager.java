@@ -8,8 +8,10 @@ import com.sougata.form_data_service.repository.TickBoxGridRepository;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.TickBoxGridResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service("TICK_BOX_GRID_RESPONSE_MANAGER")
@@ -24,7 +26,8 @@ public class TickBoxGridManager extends ResponseManager<TickBoxGridResponsePutRe
     }
 
     @Override
-    public void create(TickBoxGridResponsePutReqDto response, FormResponse formResponse) {
+    @Async
+    public CompletableFuture<Void> create(TickBoxGridResponsePutReqDto response, FormResponse formResponse) {
         TickBoxGrid tickBoxGrid = new TickBoxGrid();
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
@@ -39,6 +42,8 @@ public class TickBoxGridManager extends ResponseManager<TickBoxGridResponsePutRe
         );
 
         tickBoxGridRepository.save(tickBoxGrid);
+
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override

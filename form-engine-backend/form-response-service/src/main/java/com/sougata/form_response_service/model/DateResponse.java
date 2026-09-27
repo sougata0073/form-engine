@@ -3,6 +3,7 @@ package com.sougata.form_response_service.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,18 @@ import lombok.Setter;
 import java.time.Instant;
 
 @Entity
-@Table(name = "date_responses")
+@Table(
+        name = "date_responses",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "date_uk_date_question_id",
+                        columnNames = {
+                                "date",
+                                "question_id"
+                        }
+                )
+        }
+)
 @Getter
 @Setter
 @AllArgsConstructor

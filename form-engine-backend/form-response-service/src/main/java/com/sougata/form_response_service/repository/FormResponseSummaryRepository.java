@@ -25,4 +25,19 @@ public interface FormResponseSummaryRepository extends JpaRepository<FormRespons
     @Query("select coalesce(sum(frs.responseCount), 0) from FormResponseSummary frs where frs.formId = :formId")
     Long findFormResponseCountByFormId(UUID formId);
 
+    @Query(value = """
+            select save_form_response_summary(
+                :formId, :formResponseId, :incrementFormResponseCountBy, :incrementQuestionResponseCountBy,
+                cast(:questionIdsJson as jsonb)
+            )
+            """, nativeQuery = true
+    )
+    void saveFormResponseSummary(
+            UUID formId,
+            UUID formResponseId,
+            Long incrementFormResponseCountBy,
+            Long incrementQuestionResponseCountBy,
+            String questionIdsJson
+    );
+
 }

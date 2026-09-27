@@ -8,7 +8,10 @@ import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.MultipleChoiceResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service("MULTIPLE_CHOICE_RESPONSE_MANAGER")
 public class MultipleChoiceManager extends ResponseManager<MultipleChoiceResponsePutReqDto> {
@@ -22,7 +25,8 @@ public class MultipleChoiceManager extends ResponseManager<MultipleChoiceRespons
     }
 
     @Override
-    public void create(MultipleChoiceResponsePutReqDto response, FormResponse formResponse) {
+    @Async
+    public CompletableFuture<Void> create(MultipleChoiceResponsePutReqDto response, FormResponse formResponse) {
         MultipleChoice multipleChoice = new MultipleChoice();
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
@@ -31,6 +35,8 @@ public class MultipleChoiceManager extends ResponseManager<MultipleChoiceRespons
         multipleChoice.setResponseOptionId(response.getResponseOptionId());
 
         multipleChoiceRepository.save(multipleChoice);
+
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override

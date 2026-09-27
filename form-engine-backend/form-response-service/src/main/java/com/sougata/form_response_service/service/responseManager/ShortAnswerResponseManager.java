@@ -4,10 +4,10 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.formResponse.individual.ShortAnswerResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.question.ShortAnswerResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.ShortAnswerResponseSummaryDto;
+import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.ShortAnswerDetailsDto;
 import com.sougata.form_engine.dto.question.responseputrequest.ShortAnswerResponsePutReqDto;
-import com.sougata.form_response_service.model.FormResponseIndividual;
-import com.sougata.form_response_service.model.FormResponseSummary;
+import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import com.sougata.form_response_service.repository.ShortAnswerResponseRepository;
@@ -39,8 +39,13 @@ public class ShortAnswerResponseManager extends ResponseManager<
     }
 
     @Override
-    public void onResponseSave(FormResponseSummary formResponseSummary, FormResponseIndividual formResponseIndividual, List<ShortAnswerResponsePutReqDto> questionResponsePutRequests) {
+    public void onResponseSave(UUID formId, UUID formResponseId, List<ShortAnswerResponsePutReqDto> questionResponsePutRequests) {
+        var responseData = new ResponseIncrementOrCreate<>(questionResponsePutRequests);
+        var responseDataJson = JsonUtil.toJson(responseData);
 
+        shortAnswerRepository.createOrIncrement(
+                responseDataJson, formResponseId, 1L
+        );
     }
 
     @Override

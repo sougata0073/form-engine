@@ -8,7 +8,10 @@ import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.ParagraphResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service("PARAGRAPH_RESPONSE_MANAGER")
 public class ParagraphManager extends ResponseManager<ParagraphResponsePutReqDto> {
@@ -22,7 +25,8 @@ public class ParagraphManager extends ResponseManager<ParagraphResponsePutReqDto
     }
 
     @Override
-    public void create(ParagraphResponsePutReqDto response, FormResponse formResponse) {
+    @Async
+    public CompletableFuture<Void> create(ParagraphResponsePutReqDto response, FormResponse formResponse) {
         Paragraph paragraph = new Paragraph();
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
@@ -31,6 +35,8 @@ public class ParagraphManager extends ResponseManager<ParagraphResponsePutReqDto
         paragraph.setText(response.getText());
 
         paragraphRepository.save(paragraph);
+
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override

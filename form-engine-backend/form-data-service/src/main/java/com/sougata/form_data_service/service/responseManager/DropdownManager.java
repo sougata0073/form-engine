@@ -8,7 +8,10 @@ import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.DropdownResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service("DROPDOWN_RESPONSE_MANAGER")
 public class DropdownManager extends ResponseManager<DropdownResponsePutReqDto> {
@@ -22,7 +25,8 @@ public class DropdownManager extends ResponseManager<DropdownResponsePutReqDto> 
     }
 
     @Override
-    public void create(DropdownResponsePutReqDto response, FormResponse formResponse) {
+    @Async
+    public CompletableFuture<Void> create(DropdownResponsePutReqDto response, FormResponse formResponse) {
         Dropdown dropdown = new Dropdown();
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
@@ -31,6 +35,8 @@ public class DropdownManager extends ResponseManager<DropdownResponsePutReqDto> 
         dropdown.setResponseOptionId(response.getResponseOptionId());
 
         dropdownRepository.save(dropdown);
+
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override

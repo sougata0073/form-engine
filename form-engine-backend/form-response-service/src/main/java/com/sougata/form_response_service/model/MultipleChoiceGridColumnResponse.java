@@ -12,7 +12,18 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
-@Table(name = "multiple_choice_grid_column_responses")
+@Table(
+        name = "multiple_choice_grid_column_responses",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "multiple_choice_grid_column_uk_column_id_row_id",
+                        columnNames = {
+                                "column_id",
+                                "row_id"
+                        }
+                )
+        }
+)
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter

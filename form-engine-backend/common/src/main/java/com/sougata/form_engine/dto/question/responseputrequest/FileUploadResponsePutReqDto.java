@@ -14,6 +14,7 @@ import lombok.Setter;
 @Setter
 public class FileUploadResponsePutReqDto extends QuestionResponsePutReqDto {
 
+    @NotNull
     private String fileName;
 
     @NotNull

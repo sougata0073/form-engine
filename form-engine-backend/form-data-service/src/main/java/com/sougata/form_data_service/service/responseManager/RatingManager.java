@@ -8,7 +8,10 @@ import com.sougata.form_data_service.repository.RatingRepository;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.RatingResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service("RATING_RESPONSE_MANAGER")
 public class RatingManager extends ResponseManager<RatingResponsePutReqDto> {
@@ -22,7 +25,8 @@ public class RatingManager extends ResponseManager<RatingResponsePutReqDto> {
     }
 
     @Override
-    public void create(RatingResponsePutReqDto response, FormResponse formResponse) {
+    @Async
+    public CompletableFuture<Void> create(RatingResponsePutReqDto response, FormResponse formResponse) {
         Rating rating = new Rating();
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
@@ -31,6 +35,8 @@ public class RatingManager extends ResponseManager<RatingResponsePutReqDto> {
         rating.setRating(response.getRating());
 
         ratingRepository.save(rating);
+
+        return CompletableFuture.completedFuture(null);
     }
 
 

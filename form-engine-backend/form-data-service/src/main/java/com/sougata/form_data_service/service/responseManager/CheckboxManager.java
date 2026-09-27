@@ -8,7 +8,10 @@ import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.CheckboxResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service("CHECKBOX_RESPONSE_MANAGER")
 public class CheckboxManager extends ResponseManager<CheckboxResponsePutReqDto> {
@@ -22,7 +25,8 @@ public class CheckboxManager extends ResponseManager<CheckboxResponsePutReqDto> 
     }
 
     @Override
-    public void create(CheckboxResponsePutReqDto response, FormResponse formResponse) {
+    @Async
+    public CompletableFuture<Void> create(CheckboxResponsePutReqDto response, FormResponse formResponse) {
         Checkbox cb = new Checkbox();
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
@@ -31,6 +35,8 @@ public class CheckboxManager extends ResponseManager<CheckboxResponsePutReqDto> 
         cb.setResponseOptionIds(response.getResponseOptionIds());
 
         checkboxRepository.save(cb);
+
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override

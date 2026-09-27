@@ -8,7 +8,10 @@ import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.LinearScaleResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service("LINEAR_SCALE_RESPONSE_MANAGER")
 public class LinearScaleManager extends ResponseManager<LinearScaleResponsePutReqDto> {
@@ -22,7 +25,8 @@ public class LinearScaleManager extends ResponseManager<LinearScaleResponsePutRe
     }
 
     @Override
-    public void create(LinearScaleResponsePutReqDto response, FormResponse formResponse) {
+    @Async
+    public CompletableFuture<Void> create(LinearScaleResponsePutReqDto response, FormResponse formResponse) {
         LinearScale linearScale = new LinearScale();
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
@@ -31,6 +35,8 @@ public class LinearScaleManager extends ResponseManager<LinearScaleResponsePutRe
         linearScale.setScale(response.getScale());
 
         linearScaleRepository.save(linearScale);
+
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override

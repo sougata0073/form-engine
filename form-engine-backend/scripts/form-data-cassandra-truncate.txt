@@ -1,0 +1,16 @@
+TRUNCATE checkboxes;
+TRUNCATE durations;
+TRUNCATE multiple_choice_grids;
+TRUNCATE ratings;
+TRUNCATE date_times;
+TRUNCATE file_uploads;
+TRUNCATE multiple_choices;
+TRUNCATE short_answers;
+TRUNCATE dates;
+TRUNCATE form_responses;
+TRUNCATE paragraphs;
+TRUNCATE tick_box_grids;
+TRUNCATE dropdowns;
+TRUNCATE linear_scales;
+TRUNCATE question_responses;
+TRUNCATE times;

@@ -6,6 +6,8 @@ import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.QuestionResponsePutReqDto;
 
+import java.util.concurrent.CompletableFuture;
+
 public abstract class ResponseManager<QR extends QuestionResponsePutReqDto> {
 
     private final QuestionResponseRepository questionResponseRepository;
@@ -14,7 +16,7 @@ public abstract class ResponseManager<QR extends QuestionResponsePutReqDto> {
         this.questionResponseRepository = questionResponseRepository;
     }
 
-    public abstract void create(QR response, FormResponse formResponse);
+    public abstract CompletableFuture<Void> create(QR response, FormResponse formResponse);
 
     public abstract void deleteResponsesByQuestionId(Long questionId);
 

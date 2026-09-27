@@ -20,7 +20,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -73,12 +75,18 @@ public class FormResponseServiceImpl implements FormResponseService {
 
         var savedFormResponse = formResponseRepository.save(formResponse);
 
+        var questionResponseFutures = new ArrayList<CompletableFuture<Void>>();
+
         req.getResponses().forEach(response -> {
             var responseManager = responseManagerFactory.get(
                     response.getQuestionType()
             );
-            responseManager.create(response, savedFormResponse);
+            var future = responseManager.create(response, savedFormResponse);
+
+            questionResponseFutures.add(future);
         });
+
+        CompletableFuture.allOf(questionResponseFutures.toArray(CompletableFuture[]::new)).join();
 
         redisTemplate.convertAndSend(
                 MessagingChannelNames.FORM_RESPONSE_SAVED,

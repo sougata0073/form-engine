@@ -8,7 +8,10 @@ import com.sougata.form_data_service.repository.ShortAnswerRepository;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.ShortAnswerResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service("SHORT_ANSWER_RESPONSE_MANAGER")
 public class ShortAnswerManager extends ResponseManager<ShortAnswerResponsePutReqDto> {
@@ -22,7 +25,8 @@ public class ShortAnswerManager extends ResponseManager<ShortAnswerResponsePutRe
     }
 
     @Override
-    public void create(ShortAnswerResponsePutReqDto response, FormResponse formResponse) {
+    @Async
+    public CompletableFuture<Void> create(ShortAnswerResponsePutReqDto response, FormResponse formResponse) {
         ShortAnswer shortAnswer = new ShortAnswer();
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
@@ -31,6 +35,8 @@ public class ShortAnswerManager extends ResponseManager<ShortAnswerResponsePutRe
         shortAnswer.setText(response.getText());
 
         shortAnswerRepository.save(shortAnswer);
+
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override

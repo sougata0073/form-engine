@@ -7,7 +7,18 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "checkbox_responses")
+@Table(
+        name = "checkbox_responses",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "checkbox_uk_option_id_question_id",
+                        columnNames = {
+                                "option_id",
+                                "question_id"
+                        }
+                )
+        }
+)
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter

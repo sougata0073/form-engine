@@ -15,6 +15,10 @@ public final class JsonUtil {
         }
     }
 
+    public static String toJson(Object obj) {
+        return newMapper.writeValueAsString(obj);
+    }
+
     public static com.fasterxml.jackson.databind.JsonNode objectToOldJsonNode(Object obj) {
         return oldMapper.valueToTree(obj);
     }

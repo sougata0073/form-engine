@@ -4,10 +4,10 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.formResponse.individual.LinearScaleResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.question.LinearScaleResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.LinearScaleResponseSummaryDto;
+import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.LinearScaleDetailsDto;
 import com.sougata.form_engine.dto.question.responseputrequest.LinearScaleResponsePutReqDto;
-import com.sougata.form_response_service.model.FormResponseIndividual;
-import com.sougata.form_response_service.model.FormResponseSummary;
+import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.LinearScaleResponseRepository;
 import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
@@ -39,8 +39,13 @@ public class LinearScaleResponseManager extends ResponseManager<
     }
 
     @Override
-    public void onResponseSave(FormResponseSummary formResponseSummary, FormResponseIndividual formResponseIndividual, List<LinearScaleResponsePutReqDto> questionResponsePutRequests) {
+    public void onResponseSave(UUID formId, UUID formResponseId, List<LinearScaleResponsePutReqDto> questionResponsePutRequests) {
+        var responseData = new ResponseIncrementOrCreate<>(questionResponsePutRequests);
+        var responseDataJson = JsonUtil.toJson(responseData);
 
+        linearScaleRepository.createOrIncrement(
+                responseDataJson, formResponseId, 1L
+        );
     }
 
     @Override

@@ -8,7 +8,10 @@ import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.DurationResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service("DURATION_RESPONSE_MANAGER")
 public class DurationManager extends ResponseManager<DurationResponsePutReqDto> {
@@ -22,7 +25,8 @@ public class DurationManager extends ResponseManager<DurationResponsePutReqDto> 
     }
 
     @Override
-    public void create(DurationResponsePutReqDto response, FormResponse formResponse) {
+    @Async
+    public CompletableFuture<Void> create(DurationResponsePutReqDto response, FormResponse formResponse) {
         Duration duration = new Duration();
 
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
@@ -33,6 +37,8 @@ public class DurationManager extends ResponseManager<DurationResponsePutReqDto> 
         duration.setSeconds(response.getSeconds());
 
         durationRepository.save(duration);
+
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override

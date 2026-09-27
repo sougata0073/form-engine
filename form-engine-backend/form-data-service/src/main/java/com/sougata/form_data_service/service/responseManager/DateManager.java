@@ -8,7 +8,10 @@ import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.DateResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service("DATE_RESPONSE_MANAGER")
 public class DateManager extends ResponseManager<DateResponsePutReqDto> {
@@ -22,7 +25,8 @@ public class DateManager extends ResponseManager<DateResponsePutReqDto> {
     }
 
     @Override
-    public void create(DateResponsePutReqDto response, FormResponse formResponse) {
+    @Async
+    public CompletableFuture<Void> create(DateResponsePutReqDto response, FormResponse formResponse) {
         Date date = new Date();
         var qr = createQuestionResponse(response.getQuestionId(), formResponse);
 
@@ -30,6 +34,8 @@ public class DateManager extends ResponseManager<DateResponsePutReqDto> {
         date.setDate(response.getDate());
 
         dateRepository.save(date);
+
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override

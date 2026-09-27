@@ -4,10 +4,10 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.formResponse.individual.DurationResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.question.DurationResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.DurationResponseSummaryDto;
+import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.DurationDetailsDto;
 import com.sougata.form_engine.dto.question.responseputrequest.DurationResponsePutReqDto;
-import com.sougata.form_response_service.model.FormResponseIndividual;
-import com.sougata.form_response_service.model.FormResponseSummary;
+import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.repository.DurationResponseRepository;
 import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
@@ -39,8 +39,13 @@ public class DurationResponseManager extends ResponseManager<
     }
 
     @Override
-    public void onResponseSave(FormResponseSummary formResponseSummary, FormResponseIndividual formResponseIndividual, List<DurationResponsePutReqDto> questionResponsePutRequests) {
+    public void onResponseSave(UUID formId, UUID formResponseId, List<DurationResponsePutReqDto> questionResponsePutRequests) {
+        var responseData = new ResponseIncrementOrCreate<>(questionResponsePutRequests);
+        var responseDataJson = JsonUtil.toJson(responseData);
 
+        durationRepository.createOrIncrement(
+                responseDataJson, formResponseId, 1L
+        );
     }
 
     @Override

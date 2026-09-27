@@ -1,38 +1,39 @@
 package com.sougata.form_response_service.messaging.handler;
 
+import com.sougata.form_engine.constant.DistributedLockNames;
 import com.sougata.form_engine.constant.cache.FormResponseCacheNames;
 import com.sougata.form_engine.constant.messaging.CommonMessagingNames;
 import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.dto.messaging.FormResponseSavedMessage;
+import com.sougata.form_engine.dto.pgfunctionparameter.FormResponseQuestionIds;
 import com.sougata.form_engine.dto.question.responseputrequest.QuestionResponsePutReqDto;
-import com.sougata.form_response_service.model.FormResponseIndividual;
-import com.sougata.form_response_service.model.FormResponseSummary;
+import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.repository.FormResponseIndividualRepository;
 import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
+import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import com.sougata.form_response_service.service.responseManager.ResponseManagerFactory;
 import com.sougata.form_response_service.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
+import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Component(MessagingChannelNames.FORM_RESPONSE_SAVED + "_" + CommonMessagingNames.MESSAGE_HANDLER_SUFFIX)
 @RequiredArgsConstructor
 public class FormResponseSavedMessageHandler implements MessageListener {
 
-    private final RedisTemplate<String, Object> redisTemplate;
     private final GenericJacksonJsonRedisSerializer redisSerializer;
     private final FormResponseSummaryRepository formResponseSummaryRepository;
     private final ResponseManagerFactory responseManagerFactory;
     private final FormResponseIndividualRepository formResponseIndividualRepository;
+    private final RedissonClient redissonClient;
+    private final QuestionResponseSummaryRepository questionResponseSummaryRepository;
 
     @Override
     @Transactional
@@ -40,30 +41,33 @@ public class FormResponseSavedMessageHandler implements MessageListener {
 
         var messageData = redisSerializer.deserialize(message.getBody(), FormResponseSavedMessage.class);
 
-        var formResponseSummaryOptional = formResponseSummaryRepository.findById(messageData.getFormId());
+        var redisLock = redissonClient.getLock(DistributedLockNames.FORM_RESPONSE_PROCESS + messageData.getFormResponseId());
 
-        FormResponseSummary formResponseSummary;
-
-        if (formResponseSummaryOptional.isPresent()) {
-            formResponseSummary = formResponseSummaryOptional.get();
-            formResponseSummaryRepository.incrementResponseCount(messageData.getFormId(), 1L);
-        } else {
-            var formResponseSummaryToSave = new FormResponseSummary();
-
-            formResponseSummaryToSave.setFormId(messageData.getFormId());
-            formResponseSummaryToSave.setResponseCount(1L);
-
-            formResponseSummary = formResponseSummaryRepository.save(formResponseSummaryToSave);
+        if (!redisLock.tryLock()) {
+            return;
         }
 
-        var formResponseIndividual = formResponseIndividualRepository.findById(messageData.getFormResponseId())
-                .orElseGet(() -> {
-                    var formResponseIndividualToSave = new FormResponseIndividual();
+        if (formResponseIndividualRepository.existsById(messageData.getFormResponseId())) {
+            redisLock.unlock();
+            return;
+        }
 
-                    formResponseIndividualToSave.setFormResponseId(messageData.getFormResponseId());
+        var responseQuestionIds = messageData.getResponses()
+                .stream()
+                .map(QuestionResponsePutReqDto::getQuestionId)
+                .collect(Collectors.toSet());
 
-                    return formResponseIndividualRepository.save(formResponseIndividualToSave);
-                });
+        var responseQuestionIdsJson = JsonUtil.toJson(
+                new FormResponseQuestionIds(responseQuestionIds)
+        );
+
+        formResponseSummaryRepository.saveFormResponseSummary(
+                messageData.getFormId(),
+                messageData.getFormResponseId(),
+                1L,
+                1L,
+                responseQuestionIdsJson
+        );
 
         var responsesGroupedByQuestionType = messageData
                 .getResponses()
@@ -73,24 +77,27 @@ public class FormResponseSavedMessageHandler implements MessageListener {
         responsesGroupedByQuestionType.forEach((qType, responses) -> {
             var manager = responseManagerFactory.get(qType);
 
-            manager.onResponseSave(formResponseSummary, formResponseIndividual, responses);
+            manager.onResponseSave(messageData.getFormId(), messageData.getFormResponseId(), responses);
         });
 
+        evictCache(messageData);
+
+        redisLock.unlock();
+    }
+
+    private void evictCache(FormResponseSavedMessage messageData) {
         var formResponseCountCacheKey = CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_COUNT, messageData.getFormId());
         var responseSummariesCacheKey = CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_SUMMARIES, messageData.getFormId());
 
-        var responseByQuestionCacheKeys = redisTemplate.keys(CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_BY_QUESTION, "formId=" + messageData.getFormId()) + "::*");
-        var formResponseSummariesCacheKeys = redisTemplate.keys(CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_SUMMARIES, "formId=" + messageData.getFormId()) + "::*");
-        var responseSummaryCacheKeys = redisTemplate.keys(CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_SUMMARY, "formId=" + messageData.getFormId()) + "::*");
+        var responseByQuestionCacheKeyPattern = CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_BY_QUESTION, "formId=" + messageData.getFormId()) + "::*";
+        var formResponseSummariesCacheKeyPattern = CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_SUMMARIES, "formId=" + messageData.getFormId()) + "::*";
+        var responseSummaryCacheKeyPattern = CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_SUMMARY, "formId=" + messageData.getFormId()) + "::*";
 
-        var cacheKeys = new ArrayList<>(
-                List.of(formResponseCountCacheKey, responseSummariesCacheKey)
-        );
+        var rKeys = redissonClient.getKeys();
 
-        cacheKeys.addAll(responseByQuestionCacheKeys);
-        cacheKeys.addAll(formResponseSummariesCacheKeys);
-        cacheKeys.addAll(responseSummaryCacheKeys);
-
-        redisTemplate.delete(cacheKeys);
+        rKeys.delete(formResponseCountCacheKey, responseSummariesCacheKey);
+        rKeys.deleteByPattern(responseByQuestionCacheKeyPattern);
+        rKeys.deleteByPattern(formResponseSummariesCacheKeyPattern);
+        rKeys.deleteByPattern(responseSummaryCacheKeyPattern);
     }
 }
