@@ -6,13 +6,12 @@ import com.sougata.form_engine.dto.formResponse.question.LinearScaleResponseQues
 import com.sougata.form_engine.dto.formResponse.summary.LinearScaleResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.LinearScaleDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.LinearScaleResponseBatch;
+import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.LinearScaleResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
-import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.LinearScaleResponseRepository;
-import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -27,14 +26,14 @@ public class LinearScaleResponseManager extends ResponseManager<
         LinearScaleResponseSummaryDto,
         LinearScaleResponseQuestionDto,
         LinearScaleResponseQuestionDto.Response,
-        LinearScaleResponseIndividualDto
+        LinearScaleResponseIndividualDto,
+        LinearScaleResponseBatch,
+        LinearScaleResponseBatch.Response
         > {
 
     private final LinearScaleResponseRepository linearScaleRepository;
 
-    @Autowired
-    public LinearScaleResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, LinearScaleResponseRepository linearScaleRepository) {
-        super(formResponseSummaryRepository, questionResponseSummaryRepository);
+    public LinearScaleResponseManager(LinearScaleResponseRepository linearScaleRepository) {
         this.linearScaleRepository = linearScaleRepository;
     }
 
@@ -193,6 +192,11 @@ public class LinearScaleResponseManager extends ResponseManager<
 //
 //        return linearScaleRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
 
+        return null;
+    }
+
+    @Override
+    public LinearScaleResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<LinearScaleResponsePutReqDto>> questionResponsePutReqs) {
         return null;
     }
 

@@ -6,13 +6,12 @@ import com.sougata.form_engine.dto.formResponse.question.DurationResponseQuestio
 import com.sougata.form_engine.dto.formResponse.summary.DurationResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.DurationDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.DurationResponseBatch;
+import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.DurationResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.repository.DurationResponseRepository;
-import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
-import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -27,14 +26,14 @@ public class DurationResponseManager extends ResponseManager<
         DurationResponseSummaryDto,
         DurationResponseQuestionDto,
         DurationResponseQuestionDto.Response,
-        DurationResponseIndividualDto
+        DurationResponseIndividualDto,
+        DurationResponseBatch,
+        DurationResponseBatch.Response
         > {
 
     private final DurationResponseRepository durationRepository;
 
-    @Autowired
-    public DurationResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, DurationResponseRepository durationRepository) {
-        super(formResponseSummaryRepository, questionResponseSummaryRepository);
+    public DurationResponseManager(DurationResponseRepository durationRepository) {
         this.durationRepository = durationRepository;
     }
 
@@ -220,6 +219,11 @@ public class DurationResponseManager extends ResponseManager<
 //
 //        return durationRepository.getResponseIdsByGroupedResponse(formId, questionId, h, m, s, pageable);
 
+        return null;
+    }
+
+    @Override
+    public DurationResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<DurationResponsePutReqDto>> questionResponsePutReqs) {
         return null;
     }
 

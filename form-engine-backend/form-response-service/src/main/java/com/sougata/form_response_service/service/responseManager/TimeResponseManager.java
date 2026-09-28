@@ -6,13 +6,12 @@ import com.sougata.form_engine.dto.formResponse.question.TimeResponseQuestionDto
 import com.sougata.form_engine.dto.formResponse.summary.TimeResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.TimeDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
+import com.sougata.form_engine.dto.question.responseputreqbatch.TimeResponseBatch;
 import com.sougata.form_engine.dto.question.responseputrequest.TimeResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
-import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
-import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import com.sougata.form_response_service.repository.TimeResponseRepository;
 import jakarta.persistence.Tuple;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -27,14 +26,14 @@ public class TimeResponseManager extends ResponseManager<
         TimeResponseSummaryDto,
         TimeResponseQuestionDto,
         TimeResponseQuestionDto.Response,
-        TimeResponseIndividualDto
+        TimeResponseIndividualDto,
+        TimeResponseBatch,
+        TimeResponseBatch.Response
         > {
 
     private final TimeResponseRepository timeRepository;
 
-    @Autowired
-    public TimeResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, TimeResponseRepository timeRepository) {
-        super(formResponseSummaryRepository, questionResponseSummaryRepository);
+    public TimeResponseManager(TimeResponseRepository timeRepository) {
         this.timeRepository = timeRepository;
     }
 
@@ -197,6 +196,11 @@ public class TimeResponseManager extends ResponseManager<
 //
 //        return timeRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
 
+        return null;
+    }
+
+    @Override
+    public TimeResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<TimeResponsePutReqDto>> questionResponsePutReqs) {
         return null;
     }
 

@@ -6,13 +6,12 @@ import com.sougata.form_engine.dto.formResponse.question.DateResponseQuestionDto
 import com.sougata.form_engine.dto.formResponse.summary.DateResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.DateDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.DateResponseBatch;
+import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.DateResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.repository.DateResponseRepository;
-import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
-import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,14 +27,14 @@ public class DateResponseManager extends ResponseManager<
         DateResponseSummaryDto,
         DateResponseQuestionDto,
         DateResponseQuestionDto.Response,
-        DateResponseIndividualDto
+        DateResponseIndividualDto,
+        DateResponseBatch,
+        DateResponseBatch.Response
         > {
 
     private final DateResponseRepository dateRepository;
 
-    @Autowired
-    public DateResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, DateResponseRepository dateRepository) {
-        super(formResponseSummaryRepository, questionResponseSummaryRepository);
+    public DateResponseManager(DateResponseRepository dateRepository) {
         this.dateRepository = dateRepository;
     }
 
@@ -204,6 +203,11 @@ public class DateResponseManager extends ResponseManager<
 //
 //        return dateRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
 
+        return null;
+    }
+
+    @Override
+    public DateResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<DateResponsePutReqDto>> questionResponsePutReqs) {
         return null;
     }
 

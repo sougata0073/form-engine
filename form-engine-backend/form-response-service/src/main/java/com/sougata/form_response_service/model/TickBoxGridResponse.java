@@ -16,9 +16,10 @@ import org.hibernate.annotations.DynamicUpdate;
         name = "tick_box_grid_responses",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "tick_box_grid_uk_row_id_question_id",
+                        name = "tick_box_grid_column_uk_row_id_column_id_question_id",
                         columnNames = {
                                 "row_id",
+                                "column_id",
                                 "question_id"
                         }
                 )
@@ -32,8 +33,10 @@ import org.hibernate.annotations.DynamicUpdate;
 @DynamicUpdate
 public class TickBoxGridResponse extends AnyTypeQuestionResponse {
 
-        @Column(nullable = false)
-        private Long rowId;
+    @Column(nullable = false)
+    private Long rowId;
 
+    @Column(nullable = false)
+    private Long columnId;
 
 }

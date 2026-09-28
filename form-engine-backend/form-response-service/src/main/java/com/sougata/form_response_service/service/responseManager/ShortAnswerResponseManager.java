@@ -6,13 +6,12 @@ import com.sougata.form_engine.dto.formResponse.question.ShortAnswerResponseQues
 import com.sougata.form_engine.dto.formResponse.summary.ShortAnswerResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.ShortAnswerDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
+import com.sougata.form_engine.dto.question.responseputreqbatch.ShortAnswerResponseBatch;
 import com.sougata.form_engine.dto.question.responseputrequest.ShortAnswerResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
-import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
-import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import com.sougata.form_response_service.repository.ShortAnswerResponseRepository;
 import jakarta.persistence.Tuple;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -27,14 +26,14 @@ public class ShortAnswerResponseManager extends ResponseManager<
         ShortAnswerResponseSummaryDto,
         ShortAnswerResponseQuestionDto,
         ShortAnswerResponseQuestionDto.Response,
-        ShortAnswerResponseIndividualDto
+        ShortAnswerResponseIndividualDto,
+        ShortAnswerResponseBatch,
+        ShortAnswerResponseBatch.Response
         > {
 
     private final ShortAnswerResponseRepository shortAnswerRepository;
 
-    @Autowired
-    public ShortAnswerResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, ShortAnswerResponseRepository shortAnswerRepository) {
-        super(formResponseSummaryRepository, questionResponseSummaryRepository);
+    public ShortAnswerResponseManager(ShortAnswerResponseRepository shortAnswerRepository) {
         this.shortAnswerRepository = shortAnswerRepository;
     }
 
@@ -175,6 +174,11 @@ public class ShortAnswerResponseManager extends ResponseManager<
 //
 //        return shortAnswerRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
 
+        return null;
+    }
+
+    @Override
+    public ShortAnswerResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<ShortAnswerResponsePutReqDto>> questionResponsePutReqs) {
         return null;
     }
 

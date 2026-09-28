@@ -6,13 +6,12 @@ import com.sougata.form_engine.dto.formResponse.question.ParagraphResponseQuesti
 import com.sougata.form_engine.dto.formResponse.summary.ParagraphResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.ParagraphDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.ParagraphResponseBatch;
+import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.ParagraphResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
-import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.ParagraphResponseRepository;
-import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -27,14 +26,14 @@ public class ParagraphResponseManager extends ResponseManager<
         ParagraphResponseSummaryDto,
         ParagraphResponseQuestionDto,
         ParagraphResponseQuestionDto.Response,
-        ParagraphResponseIndividualDto
+        ParagraphResponseIndividualDto,
+        ParagraphResponseBatch,
+        ParagraphResponseBatch.Response
         > {
 
     private final ParagraphResponseRepository paragraphRepository;
 
-    @Autowired
-    public ParagraphResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, ParagraphResponseRepository paragraphRepository) {
-        super(formResponseSummaryRepository, questionResponseSummaryRepository);
+    public ParagraphResponseManager(ParagraphResponseRepository paragraphRepository) {
         this.paragraphRepository = paragraphRepository;
     }
 
@@ -174,6 +173,11 @@ public class ParagraphResponseManager extends ResponseManager<
 //
 //        return paragraphRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
 
+        return null;
+    }
+
+    @Override
+    public ParagraphResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<ParagraphResponsePutReqDto>> questionResponsePutReqs) {
         return null;
     }
 

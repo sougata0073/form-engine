@@ -6,13 +6,12 @@ import com.sougata.form_engine.dto.formResponse.question.MultipleChoiceResponseQ
 import com.sougata.form_engine.dto.formResponse.summary.MultipleChoiceResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.MultipleChoiceDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.MultipleChoiceResponseBatch;
+import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.MultipleChoiceResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
-import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.MultipleChoiceResponseRepository;
-import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -27,14 +26,14 @@ public class MultipleChoiceResponseManager extends ResponseManager<
         MultipleChoiceResponseSummaryDto,
         MultipleChoiceResponseQuestionDto,
         MultipleChoiceResponseQuestionDto.Response,
-        MultipleChoiceResponseIndividualDto
+        MultipleChoiceResponseIndividualDto,
+        MultipleChoiceResponseBatch,
+        MultipleChoiceResponseBatch.Response
         > {
 
     private final MultipleChoiceResponseRepository multipleChoiceRepository;
 
-    @Autowired
-    public MultipleChoiceResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, MultipleChoiceResponseRepository multipleChoiceRepository) {
-        super(formResponseSummaryRepository, questionResponseSummaryRepository);
+    public MultipleChoiceResponseManager(MultipleChoiceResponseRepository multipleChoiceRepository) {
         this.multipleChoiceRepository = multipleChoiceRepository;
     }
 
@@ -192,6 +191,11 @@ public class MultipleChoiceResponseManager extends ResponseManager<
 //
 //        return multipleChoiceRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
 
+        return null;
+    }
+
+    @Override
+    public MultipleChoiceResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<MultipleChoiceResponsePutReqDto>> questionResponsePutReqs) {
         return null;
     }
 

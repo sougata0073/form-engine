@@ -5,12 +5,11 @@ import com.sougata.form_engine.dto.formResponse.individual.MultipleChoiceGridRes
 import com.sougata.form_engine.dto.formResponse.question.MultipleChoiceGridResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.MultipleChoiceGridResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.MultipleChoiceGridDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.MultipleChoiceGridResponseBatch;
+import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.MultipleChoiceGridResponsePutReqDto;
-import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.repository.MultipleChoiceGridResponseRepository;
-import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -25,14 +24,14 @@ public class MultipleChoiceGridResponseManager extends ResponseManager<
         MultipleChoiceGridResponseSummaryDto,
         MultipleChoiceGridResponseQuestionDto,
         MultipleChoiceGridResponseQuestionDto.Response,
-        MultipleChoiceGridResponseIndividualDto
+        MultipleChoiceGridResponseIndividualDto,
+        MultipleChoiceGridResponseBatch,
+        MultipleChoiceGridResponseBatch.Response
         > {
 
     private final MultipleChoiceGridResponseRepository multipleChoiceGridRepository;
 
-    @Autowired
-    public MultipleChoiceGridResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, MultipleChoiceGridResponseRepository multipleChoiceGridRepository) {
-        super(formResponseSummaryRepository, questionResponseSummaryRepository);
+    public MultipleChoiceGridResponseManager(MultipleChoiceGridResponseRepository multipleChoiceGridRepository) {
         this.multipleChoiceGridRepository = multipleChoiceGridRepository;
     }
 
@@ -235,6 +234,11 @@ public class MultipleChoiceGridResponseManager extends ResponseManager<
 //
 //        return multipleChoiceGridRepository.getResponseIdsByGroupedResponse(formId, questionId, rowIdResponse, columnIdResponse, pageable);
 
+        return null;
+    }
+
+    @Override
+    public MultipleChoiceGridResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<MultipleChoiceGridResponsePutReqDto>> questionResponsePutReqs) {
         return null;
     }
 

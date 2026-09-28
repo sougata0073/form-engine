@@ -6,13 +6,12 @@ import com.sougata.form_engine.dto.formResponse.question.FileUploadResponseQuest
 import com.sougata.form_engine.dto.formResponse.summary.FileUploadResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.FileUploadDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.FileUploadResponseBatch;
+import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.FileUploadResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.repository.FileUploadResponseRepository;
-import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
-import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -27,14 +26,14 @@ public class FileUploadResponseManager extends ResponseManager<
         FileUploadResponseSummaryDto,
         FileUploadResponseQuestionDto,
         FileUploadResponseQuestionDto.Response,
-        FileUploadResponseIndividualDto
+        FileUploadResponseIndividualDto,
+        FileUploadResponseBatch,
+        FileUploadResponseBatch.Response
         > {
 
     private final FileUploadResponseRepository fileUploadRepository;
 
-    @Autowired
-    public FileUploadResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, FileUploadResponseRepository fileUploadRepository) {
-        super(formResponseSummaryRepository, questionResponseSummaryRepository);
+    public FileUploadResponseManager(FileUploadResponseRepository fileUploadRepository) {
         this.fileUploadRepository = fileUploadRepository;
     }
 
@@ -194,6 +193,11 @@ public class FileUploadResponseManager extends ResponseManager<
 //
 //        return fileUploadRepository.getResponseIdsByGroupedResponse(formId, questionId, fName, fUrl, fMimeType, pageable);
 
+        return null;
+    }
+
+    @Override
+    public FileUploadResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<FileUploadResponsePutReqDto>> questionResponsePutReqs) {
         return null;
     }
 

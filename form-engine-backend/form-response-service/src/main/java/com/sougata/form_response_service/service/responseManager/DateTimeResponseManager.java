@@ -6,13 +6,12 @@ import com.sougata.form_engine.dto.formResponse.question.DateTimeResponseQuestio
 import com.sougata.form_engine.dto.formResponse.summary.DateTimeResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.DateTimeDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.DateTimeResponseBatch;
+import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.DateTimeResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.repository.DateTimeResponseRepository;
-import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
-import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -27,14 +26,14 @@ public class DateTimeResponseManager extends ResponseManager<
         DateTimeResponseSummaryDto,
         DateTimeResponseQuestionDto,
         DateTimeResponseQuestionDto.Response,
-        DateTimeResponseIndividualDto
+        DateTimeResponseIndividualDto,
+        DateTimeResponseBatch,
+        DateTimeResponseBatch.Response
         > {
 
     private final DateTimeResponseRepository dateTimeRepository;
 
-    @Autowired
-    public DateTimeResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, DateTimeResponseRepository dateTimeRepository) {
-        super(formResponseSummaryRepository, questionResponseSummaryRepository);
+    public DateTimeResponseManager(DateTimeResponseRepository dateTimeRepository) {
         this.dateTimeRepository = dateTimeRepository;
     }
 
@@ -186,6 +185,11 @@ public class DateTimeResponseManager extends ResponseManager<
 //
 //        return dateTimeRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
 
+        return null;
+    }
+
+    @Override
+    public DateTimeResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<DateTimeResponsePutReqDto>> questionResponsePutReqs) {
         return null;
     }
 

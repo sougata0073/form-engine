@@ -13,5 +13,5 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResponseValidationRequestDto {
-    private List<QuestionResponsePutReqDto> responses;
+    private List<? extends QuestionResponsePutReqDto> responses;
 }

@@ -6,6 +6,8 @@ import com.sougata.form_engine.dto.formResponse.question.CheckboxResponseQuestio
 import com.sougata.form_engine.dto.formResponse.summary.CheckboxResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.CheckboxDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.CheckboxResponseBatch;
+import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.CheckboxResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.model.*;
@@ -26,14 +28,15 @@ public class CheckboxResponseManager extends ResponseManager<
         CheckboxResponseSummaryDto,
         CheckboxResponseQuestionDto,
         CheckboxResponseQuestionDto.Response,
-        CheckboxResponseIndividualDto
+        CheckboxResponseIndividualDto,
+        CheckboxResponseBatch,
+        CheckboxResponseBatch.Response
         > {
 
     private final QuestionResponseSummaryRepository questionResponseSummaryRepository;
     private final CheckboxResponseRepository checkboxResponseRepository;
 
-    public CheckboxResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, CheckboxResponseRepository checkboxResponseRepository) {
-        super(formResponseSummaryRepository, questionResponseSummaryRepository);
+    public CheckboxResponseManager(QuestionResponseSummaryRepository questionResponseSummaryRepository, CheckboxResponseRepository checkboxResponseRepository) {
         this.questionResponseSummaryRepository = questionResponseSummaryRepository;
         this.checkboxResponseRepository = checkboxResponseRepository;
     }
@@ -217,6 +220,38 @@ public class CheckboxResponseManager extends ResponseManager<
 //        return checkboxRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
 
         return null;
+    }
+
+    @Override
+    public CheckboxResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<CheckboxResponsePutReqDto>> questionResponsePutReqs) {
+        var batch = new CheckboxResponseBatch();
+
+        var formResponseOptionIdMap = new HashMap<Long, ArrayList<UUID>>();
+
+        questionResponsePutReqs.forEach(q ->
+                q.getQuestionResponsePutReq().getResponseOptionIds().forEach(optionId ->
+                        formResponseOptionIdMap.computeIfAbsent(optionId, _ -> new ArrayList<>()).add(q.getFormResponseId())
+                )
+        );
+
+        batch.setQuestionId(questionId);
+        batch.setQuestionType(getQuestionType());
+        batch.setResponseCount((long) questionResponsePutReqs.size());
+
+        var responses = formResponseOptionIdMap.entrySet()
+                .stream()
+                .map(entry -> {
+                    var res = new CheckboxResponseBatch.Response();
+
+                    res.setOptionId(entry.getKey());
+                    res.setFormResponseIds(entry.getValue());
+
+                    return res;
+                }).toList();
+
+        batch.setResponses(responses);
+
+        return batch;
     }
 
     @Override

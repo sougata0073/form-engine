@@ -5,12 +5,11 @@ import com.sougata.form_engine.dto.formResponse.individual.TickBoxGridResponseIn
 import com.sougata.form_engine.dto.formResponse.question.TickBoxGridResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.TickBoxGridResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.TickBoxGridDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
+import com.sougata.form_engine.dto.question.responseputreqbatch.TickBoxGridResponseBatch;
 import com.sougata.form_engine.dto.question.responseputrequest.TickBoxGridResponsePutReqDto;
-import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
-import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import com.sougata.form_response_service.repository.TickBoxGridResponseRepository;
 import jakarta.persistence.Tuple;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -25,14 +24,14 @@ public class TickBoxGridResponseManager extends ResponseManager<
         TickBoxGridResponseSummaryDto,
         TickBoxGridResponseQuestionDto,
         TickBoxGridResponseQuestionDto.Response,
-        TickBoxGridResponseIndividualDto
+        TickBoxGridResponseIndividualDto,
+        TickBoxGridResponseBatch,
+        TickBoxGridResponseBatch.Response
         > {
 
     private final TickBoxGridResponseRepository tickBoxGridRepository;
 
-    @Autowired
-    public TickBoxGridResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, TickBoxGridResponseRepository tickBoxGridRepository) {
-        super(formResponseSummaryRepository, questionResponseSummaryRepository);
+    public TickBoxGridResponseManager(TickBoxGridResponseRepository tickBoxGridRepository) {
         this.tickBoxGridRepository = tickBoxGridRepository;
     }
 
@@ -240,6 +239,11 @@ public class TickBoxGridResponseManager extends ResponseManager<
 //
 //        return tickBoxGridRepository.getResponseIdsByGroupedResponse(formId, questionId, rowIdResponse, columnIdsResponse, pageable);
 
+        return null;
+    }
+
+    @Override
+    public TickBoxGridResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<TickBoxGridResponsePutReqDto>> questionResponsePutReqs) {
         return null;
     }
 

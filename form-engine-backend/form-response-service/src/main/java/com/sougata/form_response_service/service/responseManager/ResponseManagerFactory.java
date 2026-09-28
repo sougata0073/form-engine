@@ -6,6 +6,7 @@ import com.sougata.form_engine.dto.formResponse.question.ResponseByQuestionRespo
 import com.sougata.form_engine.dto.formResponse.question.ResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.ResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseBatch;
 import com.sougata.form_engine.dto.question.responseputrequest.QuestionResponsePutReqDto;
 import com.sougata.form_engine.exception.NoResponseManagerFoundException;
 import org.springframework.beans.BeansException;
@@ -31,9 +32,11 @@ public class ResponseManagerFactory {
             RS extends ResponseSummaryDto<?>,
             ResByQ extends ResponseQuestionDto<ResByQRes>,
             ResByQRes extends ResponseByQuestionResponse,
-            ResIndi extends QuestionResponseIndividualDto
+            ResIndi extends QuestionResponseIndividualDto,
+            QResBatch extends QuestionResponseBatch<QResBatchResponse>,
+            QResBatchResponse extends QuestionResponseBatch.Response
             >
-    ResponseManager<QRes, TQuestionResponsePutReq, RS, ResByQ, ResByQRes, ResIndi> get(QuestionType questionType) {
+    ResponseManager<QRes, TQuestionResponsePutReq, RS, ResByQ, ResByQRes, ResIndi, QResBatch, QResBatchResponse> get(QuestionType questionType) {
         try {
             return applicationContext.getBean(
                     String.format("%s_RESPONSE_MANAGER", questionType.name()),
@@ -51,10 +54,12 @@ public class ResponseManagerFactory {
             RS extends ResponseSummaryDto<?>,
             ResByQ extends ResponseQuestionDto<ResByQRes>,
             ResByQRes extends ResponseByQuestionResponse,
-            ResIndi extends QuestionResponseIndividualDto
+            ResIndi extends QuestionResponseIndividualDto,
+            QResBatch extends QuestionResponseBatch<QResBatchResponse>,
+            QResBatchResponse extends QuestionResponseBatch.Response
             >
-    List<ResponseManager<QRes, TQuestionResponsePutReq, RS, ResByQ, ResByQRes, ResIndi>> getAll() {
-        List<ResponseManager<QRes, TQuestionResponsePutReq, RS, ResByQ, ResByQRes, ResIndi>> repos = new ArrayList<>();
+    List<ResponseManager<QRes, TQuestionResponsePutReq, RS, ResByQ, ResByQRes, ResIndi, QResBatch, QResBatchResponse>> getAll() {
+        List<ResponseManager<QRes, TQuestionResponsePutReq, RS, ResByQ, ResByQRes, ResIndi, QResBatch, QResBatchResponse>> repos = new ArrayList<>();
 
         for (QuestionType questionType : QuestionType.values()) {
             var repo = applicationContext.getBean(

@@ -7,6 +7,8 @@ import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.repository.FormResponseRepository;
 import com.sougata.form_data_service.service.FormResponseService;
 import com.sougata.form_data_service.service.responseManager.ResponseManagerFactory;
+import com.sougata.form_engine.constant.RedisStreamKeys;
+import com.sougata.form_engine.constant.RedisStreamNames;
 import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.dto.form.FormResponsePutReqDto;
 import com.sougata.form_engine.dto.form.FormResponsePutResDto;
@@ -16,11 +18,13 @@ import com.sougata.form_engine.dto.others.SuccessMessageDto;
 import com.sougata.form_engine.dto.question.responseputrequest.QuestionResponsePutReqDto;
 import com.sougata.form_engine.dto.validation.request.ResponseValidationRequestDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.connection.stream.StreamRecords;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -88,14 +92,15 @@ public class FormResponseServiceImpl implements FormResponseService {
 
         CompletableFuture.allOf(questionResponseFutures.toArray(CompletableFuture[]::new)).join();
 
-        redisTemplate.convertAndSend(
-                MessagingChannelNames.FORM_RESPONSE_SAVED,
-                new FormResponseSavedMessage(
-                        formId,
-                        savedFormResponse.getKey().getFormResponseId(),
-                        responderId,
-                        req.getResponses()
-                )
+        redisTemplate.opsForStream().add(
+                StreamRecords.newRecord()
+                        .ofMap(Map.of(RedisStreamKeys.FORM_RESPONSE, new FormResponseSavedMessage(
+                                formId,
+                                savedFormResponse.getKey().getFormResponseId(),
+                                responderId,
+                                req.getResponses()
+                        )))
+                        .withStreamKey(RedisStreamNames.FORM_RESPONSE_STREAM)
         );
 
         return new FormResponsePutResDto(savedFormResponse.getKey().getFormResponseId());

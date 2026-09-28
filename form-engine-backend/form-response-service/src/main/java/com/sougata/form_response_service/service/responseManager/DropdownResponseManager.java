@@ -6,13 +6,12 @@ import com.sougata.form_engine.dto.formResponse.question.DropdownResponseQuestio
 import com.sougata.form_engine.dto.formResponse.summary.DropdownResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.DropdownDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.DropdownResponseBatch;
+import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.DropdownResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.repository.DropdownResponseRepository;
-import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
-import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -27,14 +26,14 @@ public class DropdownResponseManager extends ResponseManager<
         DropdownResponseSummaryDto,
         DropdownResponseQuestionDto,
         DropdownResponseQuestionDto.Response,
-        DropdownResponseIndividualDto
+        DropdownResponseIndividualDto,
+        DropdownResponseBatch,
+        DropdownResponseBatch.Response
         > {
 
     private final DropdownResponseRepository dropdownRepository;
 
-    @Autowired
-    public DropdownResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, DropdownResponseRepository dropdownRepository) {
-        super(formResponseSummaryRepository, questionResponseSummaryRepository);
+    public DropdownResponseManager(DropdownResponseRepository dropdownRepository) {
         this.dropdownRepository = dropdownRepository;
     }
 
@@ -191,6 +190,11 @@ public class DropdownResponseManager extends ResponseManager<
 //
 //        return dropdownRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
 
+        return null;
+    }
+
+    @Override
+    public DropdownResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<DropdownResponsePutReqDto>> questionResponsePutReqs) {
         return null;
     }
 

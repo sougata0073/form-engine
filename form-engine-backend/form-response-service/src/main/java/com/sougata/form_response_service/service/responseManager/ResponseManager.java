@@ -6,10 +6,9 @@ import com.sougata.form_engine.dto.formResponse.question.ResponseByQuestionRespo
 import com.sougata.form_engine.dto.formResponse.question.ResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.ResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseBatch;
+import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.QuestionResponsePutReqDto;
-import com.sougata.form_response_service.model.QuestionResponseSummary;
-import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
-import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Pageable;
 
@@ -23,16 +22,10 @@ public abstract class ResponseManager<
         TResponseSummary extends ResponseSummaryDto<?>,
         ResByQ extends ResponseQuestionDto<ResByQRes>,
         ResByQRes extends ResponseByQuestionResponse,
-        ResIndi extends QuestionResponseIndividualDto
+        ResIndi extends QuestionResponseIndividualDto,
+        QResBatch extends QuestionResponseBatch<QResBatchResponse>,
+        QResBatchResponse extends QuestionResponseBatch.Response
         > {
-
-    private final FormResponseSummaryRepository formResponseSummaryRepository;
-    private final QuestionResponseSummaryRepository questionResponseSummaryRepository;
-
-    protected ResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository) {
-        this.formResponseSummaryRepository = formResponseSummaryRepository;
-        this.questionResponseSummaryRepository = questionResponseSummaryRepository;
-    }
 
     public abstract void onResponseSave(UUID formId, UUID formResponseId, List<TQuestionResponsePutReq> questionResponsePutRequests);
 
@@ -46,19 +39,8 @@ public abstract class ResponseManager<
 
     public abstract List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable);
 
+    public abstract QResBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<TQuestionResponsePutReq>> questionResponsePutReqs);
+
     public abstract QuestionType getQuestionType();
-
-    public QuestionResponseSummary createQuestionResponseSummary(UUID formId, TQuestionDetails questionDetails) {
-        var formResponse = formResponseSummaryRepository.findById(formId)
-                .orElseThrow(() -> new IllegalArgumentException("Form response summary not found with ID: " + formId));
-
-        var qResSummary = new QuestionResponseSummary();
-
-        qResSummary.setFormResponseSummary(formResponse);
-        qResSummary.setQuestionId(questionDetails.getId());
-        qResSummary.setResponseCount(0L);
-
-        return questionResponseSummaryRepository.save(qResSummary);
-    }
 
 }

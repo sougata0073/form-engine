@@ -6,13 +6,12 @@ import com.sougata.form_engine.dto.formResponse.question.RatingResponseQuestionD
 import com.sougata.form_engine.dto.formResponse.summary.RatingResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.RatingDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
+import com.sougata.form_engine.dto.question.responseputreqbatch.RatingResponseBatch;
 import com.sougata.form_engine.dto.question.responseputrequest.RatingResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
-import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
-import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import com.sougata.form_response_service.repository.RatingResponseRepository;
 import jakarta.persistence.Tuple;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -27,14 +26,14 @@ public class RatingResponseManager extends ResponseManager<
         RatingResponseSummaryDto,
         RatingResponseQuestionDto,
         RatingResponseQuestionDto.Response,
-        RatingResponseIndividualDto
+        RatingResponseIndividualDto,
+        RatingResponseBatch,
+        RatingResponseBatch.Response
         > {
 
     private final RatingResponseRepository ratingRepository;
 
-    @Autowired
-    public RatingResponseManager(FormResponseSummaryRepository formResponseSummaryRepository, QuestionResponseSummaryRepository questionResponseSummaryRepository, RatingResponseRepository ratingRepository) {
-        super(formResponseSummaryRepository, questionResponseSummaryRepository);
+    public RatingResponseManager(RatingResponseRepository ratingRepository) {
         this.ratingRepository = ratingRepository;
     }
 
@@ -201,6 +200,11 @@ public class RatingResponseManager extends ResponseManager<
 //
 //        return ratingRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
 
+        return null;
+    }
+
+    @Override
+    public RatingResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<RatingResponsePutReqDto>> questionResponsePutReqs) {
         return null;
     }
 
