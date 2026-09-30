@@ -1,7 +1,7 @@
 const POST_URL =
     "http://localhost:9093/api/v1/forms/d27b590f-a119-489e-871e-fd04676c88bc/responses";
 
-const NUMBER_OF_REQUESTS = 2000;
+const NUMBER_OF_REQUESTS = 1000;
 const CONCURRENCY = 1000;
 
 const HEADERS = {
@@ -145,90 +145,90 @@ function generatePayload(index) {
 
     return {
         responses: [
-            // {
-            //     text: `Short answer ${index}`,
-            //     questionId: QUESTION_IDS.SHORT_ANSWER,
-            //     questionType: "SHORT_ANSWER"
-            // },
-            // {
-            //     text: `Paragraph response ${index}.`,
-            //     questionId: QUESTION_IDS.PARAGRAPH,
-            //     questionType: "PARAGRAPH"
-            // },
-            // {
-            //     responseOptionId: randomItem(MULTIPLE_CHOICE_OPTIONS),
-            //     questionId: QUESTION_IDS.MULTIPLE_CHOICE,
-            //     questionType: "MULTIPLE_CHOICE"
-            // },
+            {
+                text: `Short answer ${index}`,
+                questionId: QUESTION_IDS.SHORT_ANSWER,
+                questionType: "SHORT_ANSWER"
+            },
+            {
+                text: `Paragraph response ${index}.`,
+                questionId: QUESTION_IDS.PARAGRAPH,
+                questionType: "PARAGRAPH"
+            },
+            {
+                responseOptionId: randomItem(MULTIPLE_CHOICE_OPTIONS),
+                questionId: QUESTION_IDS.MULTIPLE_CHOICE,
+                questionType: "MULTIPLE_CHOICE"
+            },
             {
                 responseOptionIds: randomSubset(CHECKBOX_OPTIONS),
                 questionId: QUESTION_IDS.CHECKBOX,
                 questionType: "CHECKBOX"
             },
-            // {
-            //     responseOptionId: randomItem(DROPDOWN_OPTIONS),
-            //     questionId: QUESTION_IDS.DROPDOWN,
-            //     questionType: "DROPDOWN"
-            // },
-            // {
-            //     fileName: `image_${index}.jpg`,
-            //     fileUrl: `https://picsum.photos/seed/${index}/1200/800`,
-            //     fileSize:
-            //         Math.floor(
-            //             Math.random() * (10 * 1024 * 1024 - 100 * 1024 + 1)
-            //         ) + 100 * 1024,
-            //     fileMimeType: "image/jpeg",
-            //     questionId: QUESTION_IDS.FILE_UPLOAD,
-            //     questionType: "FILE_UPLOAD"
-            // },
-            // {
-            //     scale: Math.floor(Math.random() * 5) + 1,
-            //     questionId: QUESTION_IDS.LINEAR_SCALE,
-            //     questionType: "LINEAR_SCALE"
-            // },
-            // {
-            //     rating: Math.floor(Math.random() * 10) + 1,
-            //     questionId: QUESTION_IDS.RATING,
-            //     questionType: "RATING"
-            // },
-            // {
-            //     rows: MCG_ROWS.map(rowId => ({
-            //         rowId,
-            //         responseColumnId: randomItem(MCG_COLUMNS)
-            //     })),
-            //     questionId: QUESTION_IDS.MULTIPLE_CHOICE_GRID,
-            //     questionType: "MULTIPLE_CHOICE_GRID"
-            // },
-            // {
-            //     rows: TBG_ROWS.map(rowId => ({
-            //         rowId,
-            //         responseColumnIds: randomSubset(TBG_COLUMNS)
-            //     })),
-            //     questionId: QUESTION_IDS.TICK_BOX_GRID,
-            //     questionType: "TICK_BOX_GRID"
-            // },
-            // {
-            //     date: isoDate(date),
-            //     questionId: QUESTION_IDS.DATE,
-            //     questionType: "DATE"
-            // },
-            // {
-            //     time: isoTime(),
-            //     questionId: QUESTION_IDS.TIME,
-            //     questionType: "TIME"
-            // },
-            // {
-            //     dateTime: date.toISOString(),
-            //     questionId: QUESTION_IDS.DATE_TIME,
-            //     questionType: "DATE_TIME"
-            // },
-            // {
-            //     hours: Math.floor(Math.random() * 73),
-            //     minutes: Math.floor(Math.random() * 60),
-            //     seconds: Math.floor(Math.random() * 60),
-            //     questionId: QUESTION_IDS.DURATION,
-            //     questionType: "DURATION"
-            // }
+            {
+                responseOptionId: randomItem(DROPDOWN_OPTIONS),
+                questionId: QUESTION_IDS.DROPDOWN,
+                questionType: "DROPDOWN"
+            },
+            {
+                fileName: `image_${index}.jpg`,
+                fileUrl: `https://picsum.photos/seed/${index}/1200/800`,
+                fileSize:
+                    Math.floor(
+                        Math.random() * (10 * 1024 * 1024 - 100 * 1024 + 1)
+                    ) + 100 * 1024,
+                fileMimeType: "image/jpeg",
+                questionId: QUESTION_IDS.FILE_UPLOAD,
+                questionType: "FILE_UPLOAD"
+            },
+            {
+                scale: Math.floor(Math.random() * 5) + 1,
+                questionId: QUESTION_IDS.LINEAR_SCALE,
+                questionType: "LINEAR_SCALE"
+            },
+            {
+                rating: Math.floor(Math.random() * 10) + 1,
+                questionId: QUESTION_IDS.RATING,
+                questionType: "RATING"
+            },
+            {
+                rows: MCG_ROWS.map(rowId => ({
+                    rowId,
+                    responseColumnId: randomItem(MCG_COLUMNS)
+                })),
+                questionId: QUESTION_IDS.MULTIPLE_CHOICE_GRID,
+                questionType: "MULTIPLE_CHOICE_GRID"
+            },
+            {
+                rows: TBG_ROWS.map(rowId => ({
+                    rowId,
+                    responseColumnIds: randomSubset(TBG_COLUMNS)
+                })),
+                questionId: QUESTION_IDS.TICK_BOX_GRID,
+                questionType: "TICK_BOX_GRID"
+            },
+            {
+                date: isoDate(date),
+                questionId: QUESTION_IDS.DATE,
+                questionType: "DATE"
+            },
+            {
+                time: isoTime(),
+                questionId: QUESTION_IDS.TIME,
+                questionType: "TIME"
+            },
+            {
+                dateTime: date.toISOString(),
+                questionId: QUESTION_IDS.DATE_TIME,
+                questionType: "DATE_TIME"
+            },
+            {
+                hours: Math.floor(Math.random() * 73),
+                minutes: Math.floor(Math.random() * 60),
+                seconds: Math.floor(Math.random() * 60),
+                questionId: QUESTION_IDS.DURATION,
+                questionType: "DURATION"
+            }
         ]
     };
 }

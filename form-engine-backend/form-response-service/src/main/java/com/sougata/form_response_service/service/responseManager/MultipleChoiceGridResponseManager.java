@@ -5,7 +5,9 @@ import com.sougata.form_engine.dto.formResponse.individual.MultipleChoiceGridRes
 import com.sougata.form_engine.dto.formResponse.question.MultipleChoiceGridResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.MultipleChoiceGridResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.MultipleChoiceGridDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.DurationResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.MultipleChoiceGridResponseBatch;
+import com.sougata.form_engine.dto.question.responseputreqbatch.MultipleChoiceResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.MultipleChoiceGridResponsePutReqDto;
 import com.sougata.form_response_service.repository.MultipleChoiceGridResponseRepository;
@@ -13,9 +15,7 @@ import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service("MULTIPLE_CHOICE_GRID_RESPONSE_MANAGER")
 public class MultipleChoiceGridResponseManager extends ResponseManager<
@@ -239,7 +239,46 @@ public class MultipleChoiceGridResponseManager extends ResponseManager<
 
     @Override
     public MultipleChoiceGridResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<MultipleChoiceGridResponsePutReqDto>> questionResponsePutReqs) {
-        return null;
+        var batch = new MultipleChoiceGridResponseBatch();
+
+        var responseMap = new HashMap<String, ArrayList<UUID>>();
+
+        questionResponsePutReqs.forEach(q ->
+                q.getQuestionResponsePutReq().getRows().forEach(row -> {
+                            var rowColumnString = String.format(
+                                    "%d_%d",
+                                    row.getRowId(),
+                                    row.getResponseColumnId()
+                            );
+                            responseMap
+                                    .computeIfAbsent(rowColumnString, _ -> new ArrayList<>())
+                                    .add(q.getFormResponseId());
+                        }
+                )
+        );
+
+        batch.setQuestionId(questionId);
+        batch.setQuestionType(getQuestionType());
+        batch.setResponseCount((long) questionResponsePutReqs.size());
+
+        var responses = responseMap.entrySet()
+                .stream()
+                .map(entry -> {
+                    var res = new MultipleChoiceGridResponseBatch.Response();
+
+                    var rowColumnString = entry.getKey();
+                    var rowColumnArray = rowColumnString.split("_");
+
+                    res.setRowId(Long.parseLong(rowColumnArray[0]));
+                    res.setColumnId(Long.parseLong(rowColumnArray[1]));
+                    res.setFormResponseIds(entry.getValue());
+
+                    return res;
+                }).toList();
+
+        batch.setResponses(responses);
+
+        return batch;
     }
 
     @Override

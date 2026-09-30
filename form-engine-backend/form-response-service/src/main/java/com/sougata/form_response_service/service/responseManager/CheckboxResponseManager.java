@@ -226,11 +226,11 @@ public class CheckboxResponseManager extends ResponseManager<
     public CheckboxResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<CheckboxResponsePutReqDto>> questionResponsePutReqs) {
         var batch = new CheckboxResponseBatch();
 
-        var formResponseOptionIdMap = new HashMap<Long, ArrayList<UUID>>();
+        var responseMap = new HashMap<Long, ArrayList<UUID>>();
 
         questionResponsePutReqs.forEach(q ->
                 q.getQuestionResponsePutReq().getResponseOptionIds().forEach(optionId ->
-                        formResponseOptionIdMap.computeIfAbsent(optionId, _ -> new ArrayList<>()).add(q.getFormResponseId())
+                        responseMap.computeIfAbsent(optionId, _ -> new ArrayList<>()).add(q.getFormResponseId())
                 )
         );
 
@@ -238,7 +238,7 @@ public class CheckboxResponseManager extends ResponseManager<
         batch.setQuestionType(getQuestionType());
         batch.setResponseCount((long) questionResponsePutReqs.size());
 
-        var responses = formResponseOptionIdMap.entrySet()
+        var responses = responseMap.entrySet()
                 .stream()
                 .map(entry -> {
                     var res = new CheckboxResponseBatch.Response();

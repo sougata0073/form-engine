@@ -6,6 +6,7 @@ import com.sougata.form_engine.dto.formResponse.question.MultipleChoiceResponseQ
 import com.sougata.form_engine.dto.formResponse.summary.MultipleChoiceResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.MultipleChoiceDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.DropdownResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.MultipleChoiceResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.MultipleChoiceResponsePutReqDto;
@@ -15,9 +16,7 @@ import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service("MULTIPLE_CHOICE_RESPONSE_MANAGER")
 public class MultipleChoiceResponseManager extends ResponseManager<
@@ -196,7 +195,34 @@ public class MultipleChoiceResponseManager extends ResponseManager<
 
     @Override
     public MultipleChoiceResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<MultipleChoiceResponsePutReqDto>> questionResponsePutReqs) {
-        return null;
+        var batch = new MultipleChoiceResponseBatch();
+
+        var responseMap = new HashMap<Long, ArrayList<UUID>>();
+
+        questionResponsePutReqs.forEach(q ->
+                responseMap
+                        .computeIfAbsent(q.getQuestionResponsePutReq().getResponseOptionId(), _ -> new ArrayList<>())
+                        .add(q.getFormResponseId())
+        );
+
+        batch.setQuestionId(questionId);
+        batch.setQuestionType(getQuestionType());
+        batch.setResponseCount((long) questionResponsePutReqs.size());
+
+        var responses = responseMap.entrySet()
+                .stream()
+                .map(entry -> {
+                    var res = new MultipleChoiceResponseBatch.Response();
+
+                    res.setOptionId(entry.getKey());
+                    res.setFormResponseIds(entry.getValue());
+
+                    return res;
+                }).toList();
+
+        batch.setResponses(responses);
+
+        return batch;
     }
 
     @Override

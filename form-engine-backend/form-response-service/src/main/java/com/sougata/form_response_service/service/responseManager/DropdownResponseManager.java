@@ -6,6 +6,7 @@ import com.sougata.form_engine.dto.formResponse.question.DropdownResponseQuestio
 import com.sougata.form_engine.dto.formResponse.summary.DropdownResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.DropdownDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.DateTimeResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.DropdownResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.DropdownResponsePutReqDto;
@@ -15,9 +16,8 @@ import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.time.Instant;
+import java.util.*;
 
 @Service("DROPDOWN_RESPONSE_MANAGER")
 public class DropdownResponseManager extends ResponseManager<
@@ -195,7 +195,34 @@ public class DropdownResponseManager extends ResponseManager<
 
     @Override
     public DropdownResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<DropdownResponsePutReqDto>> questionResponsePutReqs) {
-        return null;
+        var batch = new DropdownResponseBatch();
+
+        var responseMap = new HashMap<Long, ArrayList<UUID>>();
+
+        questionResponsePutReqs.forEach(q ->
+                responseMap
+                        .computeIfAbsent(q.getQuestionResponsePutReq().getResponseOptionId(), _ -> new ArrayList<>())
+                        .add(q.getFormResponseId())
+        );
+
+        batch.setQuestionId(questionId);
+        batch.setQuestionType(getQuestionType());
+        batch.setResponseCount((long) questionResponsePutReqs.size());
+
+        var responses = responseMap.entrySet()
+                .stream()
+                .map(entry -> {
+                    var res = new DropdownResponseBatch.Response();
+
+                    res.setOptionId(entry.getKey());
+                    res.setFormResponseIds(entry.getValue());
+
+                    return res;
+                }).toList();
+
+        batch.setResponses(responses);
+
+        return batch;
     }
 
     @Override

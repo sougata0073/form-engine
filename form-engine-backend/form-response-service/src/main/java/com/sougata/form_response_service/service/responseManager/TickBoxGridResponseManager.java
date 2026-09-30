@@ -5,6 +5,7 @@ import com.sougata.form_engine.dto.formResponse.individual.TickBoxGridResponseIn
 import com.sougata.form_engine.dto.formResponse.question.TickBoxGridResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.TickBoxGridResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.TickBoxGridDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.MultipleChoiceGridResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputreqbatch.TickBoxGridResponseBatch;
 import com.sougata.form_engine.dto.question.responseputrequest.TickBoxGridResponsePutReqDto;
@@ -13,9 +14,7 @@ import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service("TICK_BOX_GRID_RESPONSE_MANAGER")
 public class TickBoxGridResponseManager extends ResponseManager<
@@ -244,7 +243,48 @@ public class TickBoxGridResponseManager extends ResponseManager<
 
     @Override
     public TickBoxGridResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<TickBoxGridResponsePutReqDto>> questionResponsePutReqs) {
-        return null;
+        var batch = new TickBoxGridResponseBatch();
+
+        var responseMap = new HashMap<String, ArrayList<UUID>>();
+
+        questionResponsePutReqs.forEach(q ->
+                q.getQuestionResponsePutReq().getRows().forEach(row ->
+                        row.getResponseColumnIds().forEach(columnId -> {
+                            var rowColumnString = String.format(
+                                    "%d_%d",
+                                    row.getRowId(),
+                                    columnId
+                            );
+                            responseMap
+                                    .computeIfAbsent(rowColumnString, _ -> new ArrayList<>())
+                                    .add(q.getFormResponseId());
+
+                        })
+                )
+        );
+
+        batch.setQuestionId(questionId);
+        batch.setQuestionType(getQuestionType());
+        batch.setResponseCount((long) questionResponsePutReqs.size());
+
+        var responses = responseMap.entrySet()
+                .stream()
+                .map(entry -> {
+                    var res = new TickBoxGridResponseBatch.Response();
+
+                    var rowColumnString = entry.getKey();
+                    var rowColumnArray = rowColumnString.split("_");
+
+                    res.setRowId(Long.parseLong(rowColumnArray[0]));
+                    res.setColumnId(Long.parseLong(rowColumnArray[1]));
+                    res.setFormResponseIds(entry.getValue());
+
+                    return res;
+                }).toList();
+
+        batch.setResponses(responses);
+
+        return batch;
     }
 
     @Override

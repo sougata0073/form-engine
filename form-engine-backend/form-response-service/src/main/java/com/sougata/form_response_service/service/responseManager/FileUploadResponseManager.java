@@ -6,6 +6,7 @@ import com.sougata.form_engine.dto.formResponse.question.FileUploadResponseQuest
 import com.sougata.form_engine.dto.formResponse.summary.FileUploadResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.FileUploadDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.DurationResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.FileUploadResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.FileUploadResponsePutReqDto;
@@ -15,9 +16,7 @@ import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service("FILE_UPLOAD_RESPONSE_MANAGER")
 public class FileUploadResponseManager extends ResponseManager<
@@ -198,7 +197,46 @@ public class FileUploadResponseManager extends ResponseManager<
 
     @Override
     public FileUploadResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<FileUploadResponsePutReqDto>> questionResponsePutReqs) {
-        return null;
+        var batch = new FileUploadResponseBatch();
+
+        var responseMap = new HashMap<String, ArrayList<UUID>>();
+
+        questionResponsePutReqs.forEach(q -> {
+                    var fileString = String.format(
+                            "%s\u0000%s\u0000%s",
+                            q.getQuestionResponsePutReq().getFileUrl(),
+                            q.getQuestionResponsePutReq().getFileName(),
+                            q.getQuestionResponsePutReq().getFileMimeType()
+                    );
+                    responseMap
+                            .computeIfAbsent(fileString, _ -> new ArrayList<>())
+                            .add(q.getFormResponseId());
+                }
+        );
+
+        batch.setQuestionId(questionId);
+        batch.setQuestionType(getQuestionType());
+        batch.setResponseCount((long) questionResponsePutReqs.size());
+
+        var responses = responseMap.entrySet()
+                .stream()
+                .map(entry -> {
+                    var res = new FileUploadResponseBatch.Response();
+
+                    var fileString = entry.getKey();
+                    var fileArray = fileString.split("\u0000");
+
+                    res.setFileUrl(fileArray[0]);
+                    res.setFileName(fileArray[1]);
+                    res.setFileMimeType(fileArray[2]);
+                    res.setFormResponseIds(entry.getValue());
+
+                    return res;
+                }).toList();
+
+        batch.setResponses(responses);
+
+        return batch;
     }
 
     @Override

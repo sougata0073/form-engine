@@ -6,6 +6,7 @@ import com.sougata.form_engine.dto.formResponse.question.ParagraphResponseQuesti
 import com.sougata.form_engine.dto.formResponse.summary.ParagraphResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.ParagraphDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.MultipleChoiceResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.ParagraphResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.ParagraphResponsePutReqDto;
@@ -15,9 +16,7 @@ import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service("PARAGRAPH_RESPONSE_MANAGER")
 public class ParagraphResponseManager extends ResponseManager<
@@ -178,7 +177,34 @@ public class ParagraphResponseManager extends ResponseManager<
 
     @Override
     public ParagraphResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<ParagraphResponsePutReqDto>> questionResponsePutReqs) {
-        return null;
+        var batch = new ParagraphResponseBatch();
+
+        var responseMap = new HashMap<String, ArrayList<UUID>>();
+
+        questionResponsePutReqs.forEach(q ->
+                responseMap
+                        .computeIfAbsent(q.getQuestionResponsePutReq().getText(), _ -> new ArrayList<>())
+                        .add(q.getFormResponseId())
+        );
+
+        batch.setQuestionId(questionId);
+        batch.setQuestionType(getQuestionType());
+        batch.setResponseCount((long) questionResponsePutReqs.size());
+
+        var responses = responseMap.entrySet()
+                .stream()
+                .map(entry -> {
+                    var res = new ParagraphResponseBatch.Response();
+
+                    res.setText(entry.getKey());
+                    res.setFormResponseIds(entry.getValue());
+
+                    return res;
+                }).toList();
+
+        batch.setResponses(responses);
+
+        return batch;
     }
 
     @Override

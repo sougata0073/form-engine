@@ -6,6 +6,7 @@ import com.sougata.form_engine.dto.formResponse.question.DateResponseQuestionDto
 import com.sougata.form_engine.dto.formResponse.summary.DateResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.DateDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.CheckboxResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.DateResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.DateResponsePutReqDto;
@@ -16,9 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.time.Instant;
+import java.util.*;
 
 @Service("DATE_RESPONSE_MANAGER")
 public class DateResponseManager extends ResponseManager<
@@ -208,7 +208,34 @@ public class DateResponseManager extends ResponseManager<
 
     @Override
     public DateResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<DateResponsePutReqDto>> questionResponsePutReqs) {
-        return null;
+        var batch = new DateResponseBatch();
+
+        var responseMap = new HashMap<Instant, ArrayList<UUID>>();
+
+        questionResponsePutReqs.forEach(q ->
+                responseMap
+                        .computeIfAbsent(q.getQuestionResponsePutReq().getDate(), _ -> new ArrayList<>())
+                        .add(q.getFormResponseId())
+        );
+
+        batch.setQuestionId(questionId);
+        batch.setQuestionType(getQuestionType());
+        batch.setResponseCount((long) questionResponsePutReqs.size());
+
+        var responses = responseMap.entrySet()
+                .stream()
+                .map(entry -> {
+                    var res = new DateResponseBatch.Response();
+
+                    res.setDate(entry.getKey());
+                    res.setFormResponseIds(entry.getValue());
+
+                    return res;
+                }).toList();
+
+        batch.setResponses(responses);
+
+        return batch;
     }
 
     @Override

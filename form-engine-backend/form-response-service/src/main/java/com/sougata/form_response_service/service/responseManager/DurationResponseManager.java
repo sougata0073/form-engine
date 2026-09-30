@@ -6,6 +6,7 @@ import com.sougata.form_engine.dto.formResponse.question.DurationResponseQuestio
 import com.sougata.form_engine.dto.formResponse.summary.DurationResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
 import com.sougata.form_engine.dto.question.details.DurationDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.DropdownResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.DurationResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.DurationResponsePutReqDto;
@@ -15,9 +16,7 @@ import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service("DURATION_RESPONSE_MANAGER")
 public class DurationResponseManager extends ResponseManager<
@@ -224,7 +223,46 @@ public class DurationResponseManager extends ResponseManager<
 
     @Override
     public DurationResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<DurationResponsePutReqDto>> questionResponsePutReqs) {
-        return null;
+        var batch = new DurationResponseBatch();
+
+        var responseMap = new HashMap<String, ArrayList<UUID>>();
+
+        questionResponsePutReqs.forEach(q -> {
+                    var durationString = String.format(
+                            "%d_%d_%d",
+                            q.getQuestionResponsePutReq().getHours(),
+                            q.getQuestionResponsePutReq().getMinutes(),
+                            q.getQuestionResponsePutReq().getSeconds()
+                    );
+                    responseMap
+                            .computeIfAbsent(durationString, _ -> new ArrayList<>())
+                            .add(q.getFormResponseId());
+                }
+        );
+
+        batch.setQuestionId(questionId);
+        batch.setQuestionType(getQuestionType());
+        batch.setResponseCount((long) questionResponsePutReqs.size());
+
+        var responses = responseMap.entrySet()
+                .stream()
+                .map(entry -> {
+                    var res = new DurationResponseBatch.Response();
+
+                    var durationString = entry.getKey();
+                    var durationArray = durationString.split("_");
+
+                    res.setHours(Integer.parseInt(durationArray[0]));
+                    res.setMinutes(Integer.parseInt(durationArray[1]));
+                    res.setSeconds(Integer.parseInt(durationArray[2]));
+                    res.setFormResponseIds(entry.getValue());
+
+                    return res;
+                }).toList();
+
+        batch.setResponses(responses);
+
+        return batch;
     }
 
     @Override
