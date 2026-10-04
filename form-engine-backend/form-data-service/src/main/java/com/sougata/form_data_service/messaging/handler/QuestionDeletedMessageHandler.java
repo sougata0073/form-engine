@@ -1,6 +1,6 @@
 package com.sougata.form_data_service.messaging.handler;
 
-import com.sougata.form_data_service.service.QuestionResponseService;
+import com.sougata.form_data_service.repository.FormResponseRepository;
 import com.sougata.form_engine.constant.messaging.CommonMessagingNames;
 import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.dto.messaging.QuestionDeleteMessage;
@@ -17,8 +17,8 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 public class QuestionDeletedMessageHandler implements MessageListener {
 
-    private final QuestionResponseService questionResponseService;
     private final ObjectMapper objectMapper;
+    private final FormResponseRepository formResponseRepository;
 
     @Override
     public void onMessage(Message message, byte @Nullable [] pattern) {
@@ -26,7 +26,5 @@ public class QuestionDeletedMessageHandler implements MessageListener {
         var messageData = objectMapper.readValue(
                 new String(message.getBody(), StandardCharsets.UTF_8), QuestionDeleteMessage.class
         );
-
-        questionResponseService.deleteAllByQuestionId(messageData.getQuestionId());
     }
 }

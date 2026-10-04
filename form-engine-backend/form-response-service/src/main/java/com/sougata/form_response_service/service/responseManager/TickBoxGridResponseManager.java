@@ -4,11 +4,12 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.formResponse.individual.TickBoxGridResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.question.TickBoxGridResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.TickBoxGridResponseSummaryDto;
+import com.sougata.form_engine.dto.pgfunctionparameter.QuestionResponseBatches;
 import com.sougata.form_engine.dto.question.details.TickBoxGridDetailsDto;
-import com.sougata.form_engine.dto.question.responseputreqbatch.MultipleChoiceGridResponseBatch;
-import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
+import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
 import com.sougata.form_engine.dto.question.responseputreqbatch.TickBoxGridResponseBatch;
 import com.sougata.form_engine.dto.question.responseputrequest.TickBoxGridResponsePutReqDto;
+import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.repository.TickBoxGridResponseRepository;
 import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Pageable;
@@ -35,7 +36,13 @@ public class TickBoxGridResponseManager extends ResponseManager<
     }
 
     @Override
-    public void onResponseSave(UUID formId, UUID formResponseId, List<TickBoxGridResponsePutReqDto> questionResponsePutRequests) {
+    public void saveBatched(List<TickBoxGridResponseBatch> tickBoxGridResponseBatches) {
+        var responseBatches = new QuestionResponseBatches<>(tickBoxGridResponseBatches);
+        var responseBatchesJson = JsonUtil.toJson(responseBatches);
+
+        tickBoxGridRepository.createOrIncrement(
+                responseBatchesJson
+        );
 
     }
 
@@ -242,7 +249,7 @@ public class TickBoxGridResponseManager extends ResponseManager<
     }
 
     @Override
-    public TickBoxGridResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<TickBoxGridResponsePutReqDto>> questionResponsePutReqs) {
+    public TickBoxGridResponseBatch mapToBatchResponse(List<FormResponseInfoQuestionResponse<TickBoxGridResponsePutReqDto>> questionResponsePutReqs) {
         var batch = new TickBoxGridResponseBatch();
 
         var responseMap = new HashMap<String, ArrayList<UUID>>();
@@ -263,10 +270,6 @@ public class TickBoxGridResponseManager extends ResponseManager<
                 )
         );
 
-        batch.setQuestionId(questionId);
-        batch.setQuestionType(getQuestionType());
-        batch.setResponseCount((long) questionResponsePutReqs.size());
-
         var responses = responseMap.entrySet()
                 .stream()
                 .map(entry -> {
@@ -278,6 +281,7 @@ public class TickBoxGridResponseManager extends ResponseManager<
                     res.setRowId(Long.parseLong(rowColumnArray[0]));
                     res.setColumnId(Long.parseLong(rowColumnArray[1]));
                     res.setFormResponseIds(entry.getValue());
+                    res.setResponseCount((long) entry.getValue().size());
 
                     return res;
                 }).toList();

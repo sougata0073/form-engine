@@ -2,17 +2,18 @@ package com.sougata.form_response_service.service.impl;
 
 import com.sougata.form_engine.dto.form.FormResponseCountDto;
 import com.sougata.form_engine.dto.form.FormResponseSummariesDto;
+import com.sougata.form_engine.dto.form.FormResponseSummaryDto;
 import com.sougata.form_engine.dto.formResponse.individual.FormResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.question.ResponseByQuestionResponse;
 import com.sougata.form_engine.dto.formResponse.question.ResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.ResponseSummaryDto;
 import com.sougata.form_engine.dto.formResponse.summary.ResponseSummaryResDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
+import com.sougata.form_engine.dto.user.UserSummaryShortDto;
 import com.sougata.form_response_service.configuration.AppConfiguration;
 import com.sougata.form_response_service.feignClient.AuthServiceFeignClient;
 import com.sougata.form_response_service.feignClient.FormServiceFeignClient;
 import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
-import com.sougata.form_response_service.repository.QuestionResponseRepository;
 import com.sougata.form_response_service.service.FormResponseService;
 import com.sougata.form_response_service.service.responseManager.ResponseManagerFactory;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +22,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,7 +34,6 @@ public class FormResponseServiceImpl implements FormResponseService {
     private final FormServiceFeignClient formServiceFeignClient;
     private final AuthServiceFeignClient authServiceFeignClient;
     private final ResponseManagerFactory responseManagerFactory;
-    private final QuestionResponseRepository questionResponseRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final AppConfiguration appConfiguration;
 
@@ -83,38 +81,35 @@ public class FormResponseServiceImpl implements FormResponseService {
 
     @Override
     public FormResponseSummariesDto getFormResponseSummaries(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
-//        var questionSummary = formServiceFeignClient.getQuestionSummary(formId, questionId);
-//        var manager = responseManagerFactory.get(questionSummary.getQuestionType());
-//
-//        var resAndUserIds = manager.getFormResponseAndUserIds(formId, questionId, formResponsesIdentifier, pageable);
-//
-//        var userIds = resAndUserIds.stream().map(tuple -> tuple.get("userId", UUID.class)).toList();
-//
-//        var userSummaries = authServiceFeignClient.userSummaries(userIds).getUsers();
-//
-//        var userSummariesMap = new HashMap<UUID, UserSummaryShortDto>();
-//        userSummaries.forEach(userSummary -> userSummariesMap.put(userSummary.getId(), userSummary));
-//
-//        var formResponseSummaries = new ArrayList<FormResponseSummaryDto>();
-//
-//        resAndUserIds.forEach(tuple -> {
-//            var resId = tuple.get("responseId", Long.class);
-//            var userId = tuple.get("userId", UUID.class);
-//
-//            var user = Optional.ofNullable(userSummariesMap.get(userId)).orElse(new UserSummaryShortDto(null, null));
-//
-//            formResponseSummaries.add(
-//                    new FormResponseSummaryDto(
-//                            resId,
-//                            user.getId(),
-//                            user.getUserName()
-//                    )
-//            );
-//        });
-//
-//        return new FormResponseSummariesDto(formResponseSummaries);
+        var questionSummary = formServiceFeignClient.getQuestionSummary(formId, questionId);
+        var manager = responseManagerFactory.get(questionSummary.getQuestionType());
 
-        return null;
+        var resAndUserIds = manager.getFormResponseAndUserIds(formId, questionId, formResponsesIdentifier, pageable);
+
+        var userIds = resAndUserIds.stream().map(tuple -> tuple.get("userId", UUID.class)).toList();
+
+        var userSummaries = authServiceFeignClient.userSummaries(userIds).getUsers();
+
+        var userSummariesMap = userSummaries.stream().collect(Collectors.toMap(UserSummaryShortDto::getId, Function.identity()));
+
+        var formResponseSummaries = new ArrayList<FormResponseSummaryDto>();
+
+        resAndUserIds.forEach(tuple -> {
+            var resId = tuple.get("responseId", UUID.class);
+            var userId = tuple.get("userId", UUID.class);
+
+            var user = userSummariesMap.getOrDefault(userId, new UserSummaryShortDto(null, null));
+
+            formResponseSummaries.add(
+                    new FormResponseSummaryDto(
+                            resId,
+                            user.getId(),
+                            user.getUserName()
+                    )
+            );
+        });
+
+        return new FormResponseSummariesDto(formResponseSummaries);
     }
 
     @Override
@@ -149,12 +144,20 @@ public class FormResponseServiceImpl implements FormResponseService {
 
     @Override
     public ResponseQuestionDto<? extends ResponseByQuestionResponse> getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
-//        var qSummary = formServiceFeignClient.getQuestionSummary(formId, questionId);
-//        var manager = responseManagerFactory.get(qSummary.getQuestionType());
-//
-//        return manager.getResponseByQuestion(formId, qSummary.getId(), extraParams, pageable);
+        var qSummary = formServiceFeignClient.getQuestionSummary(formId, questionId);
+        var manager = responseManagerFactory.get(qSummary.getQuestionType());
 
-        return null;
+        var resByQuestion = manager.getResponseByQuestion(formId, qSummary.getId(), extraParams, pageable);
+
+        resByQuestion.setQuestionId(qSummary.getId());
+        resByQuestion.setQuestionType(qSummary.getQuestionType());
+
+        resByQuestion.getResponses().forEach(res -> {
+            res.setQuestionId(qSummary.getId());
+            res.setQuestionType(qSummary.getQuestionType());
+        });
+
+        return resByQuestion;
     }
 
     @Override

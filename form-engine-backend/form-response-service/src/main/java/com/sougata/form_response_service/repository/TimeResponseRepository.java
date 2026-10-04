@@ -4,16 +4,14 @@ import com.sougata.form_response_service.model.TimeResponse;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.UUID;
-
 @Repository("TIME_RESPONSE_REPOSITORY")
 public interface TimeResponseRepository extends AnyTypeQuestionResponseRepository<TimeResponse, Long> {
 
     @Query(value = """
             select time_responses_increment_or_create(
-                cast(:data as jsonb), :formResponseId, :incrementBy
+                cast(:batchResponses as jsonb)
             )
             """, nativeQuery = true)
-    void createOrIncrement(String data, UUID formResponseId, Long incrementBy);
+    void createOrIncrement(String batchResponses);
 
 }

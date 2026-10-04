@@ -2,15 +2,15 @@ package com.sougata.form_data_service.service.responseManager;
 
 import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.Dropdown;
-import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.repository.DropdownRepository;
-import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.DropdownResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service("DROPDOWN_RESPONSE_MANAGER")
@@ -19,19 +19,20 @@ public class DropdownManager extends ResponseManager<DropdownResponsePutReqDto> 
     private final DropdownRepository dropdownRepository;
 
     @Autowired
-    public DropdownManager(DropdownRepository dropdownRepository, QuestionResponseRepository questionResponseRepository) {
-        super(questionResponseRepository);
+    public DropdownManager(DropdownRepository dropdownRepository) {
         this.dropdownRepository = dropdownRepository;
     }
 
     @Override
     @Async
-    public CompletableFuture<Void> create(DropdownResponsePutReqDto response, FormResponse formResponse) {
+    public CompletableFuture<Void> create(DropdownResponsePutReqDto response, UUID formResponseId) {
         Dropdown dropdown = new Dropdown();
 
-        var qr = createQuestionResponse(response.getQuestionId(), formResponse);
+        var key = new AnyTypeQuestionResponse.PartitionKey();
+        key.setQuestionId(response.getQuestionId());
+        key.setFormResponseId(formResponseId);
 
-        dropdown.setKey(new AnyTypeQuestionResponse.PartitionKey(response.getQuestionId(), qr.getKey().getQuestionResponseId()));
+        dropdown.setKey(key);
         dropdown.setResponseOptionId(response.getResponseOptionId());
 
         dropdownRepository.save(dropdown);
@@ -40,18 +41,16 @@ public class DropdownManager extends ResponseManager<DropdownResponsePutReqDto> 
     }
 
     @Override
+    @Async
+    public CompletableFuture<Void> deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId) {
+        dropdownRepository.deleteAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
     public QuestionType getQuestionType() {
         return QuestionType.DROPDOWN;
-    }
-
-    @Override
-    public void deleteResponsesByQuestionId(Long questionId) {
-        dropdownRepository.deleteAllByQuestionId(questionId);
-    }
-
-    @Override
-    public void deleteResponsesByQuestionIdAndQuestionResponseId(Long questionId, Long questionResponseId) {
-        dropdownRepository.deleteAllByQuestionIdAndQuestionResponseId(questionId, questionResponseId);
     }
 
 }

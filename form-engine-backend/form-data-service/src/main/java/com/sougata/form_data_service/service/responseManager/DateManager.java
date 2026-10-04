@@ -2,15 +2,15 @@ package com.sougata.form_data_service.service.responseManager;
 
 import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.Date;
-import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.repository.DateRepository;
-import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.DateResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service("DATE_RESPONSE_MANAGER")
@@ -19,18 +19,20 @@ public class DateManager extends ResponseManager<DateResponsePutReqDto> {
     private final DateRepository dateRepository;
 
     @Autowired
-    public DateManager(DateRepository dateRepository, QuestionResponseRepository questionResponseRepository) {
-        super(questionResponseRepository);
+    public DateManager(DateRepository dateRepository) {
         this.dateRepository = dateRepository;
     }
 
     @Override
     @Async
-    public CompletableFuture<Void> create(DateResponsePutReqDto response, FormResponse formResponse) {
+    public CompletableFuture<Void> create(DateResponsePutReqDto response, UUID formResponseId) {
         Date date = new Date();
-        var qr = createQuestionResponse(response.getQuestionId(), formResponse);
 
-        date.setKey(new AnyTypeQuestionResponse.PartitionKey(response.getQuestionId(), qr.getKey().getQuestionResponseId()));
+        var key = new AnyTypeQuestionResponse.PartitionKey();
+        key.setQuestionId(response.getQuestionId());
+        key.setFormResponseId(formResponseId);
+
+        date.setKey(key);
         date.setDate(response.getDate());
 
         dateRepository.save(date);
@@ -39,18 +41,16 @@ public class DateManager extends ResponseManager<DateResponsePutReqDto> {
     }
 
     @Override
+    @Async
+    public CompletableFuture<Void> deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId) {
+        dateRepository.deleteAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
     public QuestionType getQuestionType() {
         return QuestionType.DATE;
-    }
-
-    @Override
-    public void deleteResponsesByQuestionId(Long questionId) {
-        dateRepository.deleteAllByQuestionId(questionId);
-    }
-
-    @Override
-    public void deleteResponsesByQuestionIdAndQuestionResponseId(Long questionId, Long questionResponseId) {
-        dateRepository.deleteAllByQuestionIdAndQuestionResponseId(questionId, questionResponseId);
     }
 
 }

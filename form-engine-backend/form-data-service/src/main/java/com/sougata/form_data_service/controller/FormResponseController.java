@@ -30,13 +30,12 @@ public class FormResponseController {
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
-    @DeleteMapping(path = "{formId}/responders/{responderId}/responses/{formResponseId}")
+    @DeleteMapping(path = "{formId}/responses/{formResponseId}")
     public SuccessMessageDto deleteFormResponse(
             @PathVariable("formId") UUID formId,
-            @PathVariable("responderId") UUID responderId,
-            @PathVariable("formResponseId") Long formResponseId
+            @PathVariable("formResponseId") UUID formResponseId
     ) {
-        return formResponseService.deleteFormResponse(formId, responderId, formResponseId);
+        return formResponseService.deleteFormResponse(formId, formResponseId);
     }
 
 }

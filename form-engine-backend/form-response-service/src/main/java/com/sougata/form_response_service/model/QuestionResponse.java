@@ -1,5 +1,6 @@
 package com.sougata.form_response_service.model;
 
+import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,8 +21,7 @@ import java.util.List;
 public class QuestionResponse {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "question_response_sequence")
-    @SequenceGenerator(name = "question_response_sequence", sequenceName = "question_response_sequence", allocationSize = 1)
+    @Tsid
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER)

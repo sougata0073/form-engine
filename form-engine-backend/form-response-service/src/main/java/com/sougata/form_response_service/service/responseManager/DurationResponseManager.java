@@ -4,11 +4,10 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.formResponse.individual.DurationResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.question.DurationResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.DurationResponseSummaryDto;
-import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
+import com.sougata.form_engine.dto.pgfunctionparameter.QuestionResponseBatches;
 import com.sougata.form_engine.dto.question.details.DurationDetailsDto;
-import com.sougata.form_engine.dto.question.responseputreqbatch.DropdownResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.DurationResponseBatch;
-import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
+import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
 import com.sougata.form_engine.dto.question.responseputrequest.DurationResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.repository.DurationResponseRepository;
@@ -37,13 +36,14 @@ public class DurationResponseManager extends ResponseManager<
     }
 
     @Override
-    public void onResponseSave(UUID formId, UUID formResponseId, List<DurationResponsePutReqDto> questionResponsePutRequests) {
-        var responseData = new ResponseIncrementOrCreate<>(questionResponsePutRequests);
-        var responseDataJson = JsonUtil.toJson(responseData);
+    public void saveBatched(List<DurationResponseBatch> durationResponseBatches) {
+        var responseBatches = new QuestionResponseBatches<>(durationResponseBatches);
+        var responseBatchesJson = JsonUtil.toJson(responseBatches);
 
         durationRepository.createOrIncrement(
-                responseDataJson, formResponseId, 1L
+                responseBatchesJson
         );
+
     }
 
     @Override
@@ -222,7 +222,7 @@ public class DurationResponseManager extends ResponseManager<
     }
 
     @Override
-    public DurationResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<DurationResponsePutReqDto>> questionResponsePutReqs) {
+    public DurationResponseBatch mapToBatchResponse(List<FormResponseInfoQuestionResponse<DurationResponsePutReqDto>> questionResponsePutReqs) {
         var batch = new DurationResponseBatch();
 
         var responseMap = new HashMap<String, ArrayList<UUID>>();
@@ -240,10 +240,6 @@ public class DurationResponseManager extends ResponseManager<
                 }
         );
 
-        batch.setQuestionId(questionId);
-        batch.setQuestionType(getQuestionType());
-        batch.setResponseCount((long) questionResponsePutReqs.size());
-
         var responses = responseMap.entrySet()
                 .stream()
                 .map(entry -> {
@@ -256,6 +252,7 @@ public class DurationResponseManager extends ResponseManager<
                     res.setMinutes(Integer.parseInt(durationArray[1]));
                     res.setSeconds(Integer.parseInt(durationArray[2]));
                     res.setFormResponseIds(entry.getValue());
+                    res.setResponseCount((long) entry.getValue().size());
 
                     return res;
                 }).toList();

@@ -67,14 +67,13 @@ public class FormResponseServiceImpl implements FormResponseService {
 
         var formResponsePartitionKey = new FormResponse.PartitionKey();
         formResponsePartitionKey.setFormId(formId);
-        formResponsePartitionKey.setUserId(responderId);
 
         formResponse.setKey(formResponsePartitionKey);
-        formResponse.setRespondedQuestionIds(
+        formResponse.setUserId(responderId);
+        formResponse.setRespondedQuestionMap(
                 req.getResponses()
                         .stream()
-                        .map(QuestionResponsePutReqDto::getQuestionId)
-                        .collect(Collectors.toSet())
+                        .collect(Collectors.toMap(QuestionResponsePutReqDto::getQuestionId, QuestionResponsePutReqDto::getQuestionType))
         );
 
         var savedFormResponse = formResponseRepository.save(formResponse);
@@ -85,7 +84,7 @@ public class FormResponseServiceImpl implements FormResponseService {
             var responseManager = responseManagerFactory.get(
                     response.getQuestionType()
             );
-            var future = responseManager.create(response, savedFormResponse);
+            var future = responseManager.create(response, savedFormResponse.getKey().getFormResponseId());
 
             questionResponseFutures.add(future);
         });
@@ -107,12 +106,34 @@ public class FormResponseServiceImpl implements FormResponseService {
     }
 
     @Override
-    public SuccessMessageDto deleteFormResponse(UUID formId, UUID responderId, Long formResponseId) {
-        formResponseRepository.deleteByFormResponseId(formResponseId);
+    public SuccessMessageDto deleteFormResponse(UUID formId, UUID formResponseId) {
+        var formResponse = formResponseRepository.findById(new FormResponse.PartitionKey(formId, formResponseId))
+                .orElseThrow(
+                        () -> new RuntimeException("Form response not found with form ID: " + formId + " and form response ID: " + formResponseId)
+                );
+
+        formResponseRepository.delete(formResponse);
+
+        var questionResponseDeleteFutures = new ArrayList<CompletableFuture<Void>>();
+
+        formResponse.getRespondedQuestionMap()
+                .entrySet()
+                .stream()
+                .collect(Collectors.groupingBy(Map.Entry::getValue))
+                .forEach(((questionType, entries) -> {
+                    var questionIds = entries.stream().map(Map.Entry::getKey).toList();
+                    var manager = responseManagerFactory.get(questionType);
+
+                    var future = manager.deleteAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+
+                    questionResponseDeleteFutures.add(future);
+                }));
+
+        CompletableFuture.allOf(questionResponseDeleteFutures.toArray(new CompletableFuture[0])).join();
 
         redisTemplate.convertAndSend(
                 MessagingChannelNames.FORM_RESPONSE_DELETED,
-                new FormResponseDeleteMessage(formId, formResponseId, responderId)
+                new FormResponseDeleteMessage(formId, formResponseId, formResponse.getUserId())
         );
 
         return SuccessMessageDto.create("Response deleted successfully. Form id: " + formId + " Form response ID: " + formResponseId);

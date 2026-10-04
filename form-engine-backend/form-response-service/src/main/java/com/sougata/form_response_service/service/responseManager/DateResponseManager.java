@@ -4,18 +4,16 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.formResponse.individual.DateResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.question.DateResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.DateResponseSummaryDto;
-import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
+import com.sougata.form_engine.dto.pgfunctionparameter.QuestionResponseBatches;
 import com.sougata.form_engine.dto.question.details.DateDetailsDto;
-import com.sougata.form_engine.dto.question.responseputreqbatch.CheckboxResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.DateResponseBatch;
-import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
+import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
 import com.sougata.form_engine.dto.question.responseputrequest.DateResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.repository.DateResponseRepository;
 import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.*;
@@ -39,14 +37,12 @@ public class DateResponseManager extends ResponseManager<
     }
 
     @Override
-    @Transactional
-    public void onResponseSave(UUID formId, UUID formResponseId, List<DateResponsePutReqDto> questionResponsePutRequests) {
-
-        var responseData = new ResponseIncrementOrCreate<>(questionResponsePutRequests);
-        var responseDataJson = JsonUtil.toJson(responseData);
+    public void saveBatched(List<DateResponseBatch> dateResponseBatches) {
+        var responseBatches = new QuestionResponseBatches<>(dateResponseBatches);
+        var responseBatchesJson = JsonUtil.toJson(responseBatches);
 
         dateRepository.createOrIncrement(
-                responseDataJson, formResponseId, 1L
+                responseBatchesJson
         );
 
     }
@@ -207,7 +203,7 @@ public class DateResponseManager extends ResponseManager<
     }
 
     @Override
-    public DateResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<DateResponsePutReqDto>> questionResponsePutReqs) {
+    public DateResponseBatch mapToBatchResponse(List<FormResponseInfoQuestionResponse<DateResponsePutReqDto>> questionResponsePutReqs) {
         var batch = new DateResponseBatch();
 
         var responseMap = new HashMap<Instant, ArrayList<UUID>>();
@@ -218,10 +214,6 @@ public class DateResponseManager extends ResponseManager<
                         .add(q.getFormResponseId())
         );
 
-        batch.setQuestionId(questionId);
-        batch.setQuestionType(getQuestionType());
-        batch.setResponseCount((long) questionResponsePutReqs.size());
-
         var responses = responseMap.entrySet()
                 .stream()
                 .map(entry -> {
@@ -229,6 +221,7 @@ public class DateResponseManager extends ResponseManager<
 
                     res.setDate(entry.getKey());
                     res.setFormResponseIds(entry.getValue());
+                    res.setResponseCount((long) entry.getValue().size());
 
                     return res;
                 }).toList();

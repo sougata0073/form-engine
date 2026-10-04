@@ -6,8 +6,8 @@ import com.sougata.form_engine.dto.formResponse.question.ResponseByQuestionRespo
 import com.sougata.form_engine.dto.formResponse.question.ResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.ResponseSummaryDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
+import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
 import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseBatch;
-import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.QuestionResponsePutReqDto;
 import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Pageable;
@@ -27,7 +27,7 @@ public abstract class ResponseManager<
         QResBatchResponse extends QuestionResponseBatch.Response
         > {
 
-    public abstract void onResponseSave(UUID formId, UUID formResponseId, List<TQuestionResponsePutReq> questionResponsePutRequests);
+    public abstract void saveBatched(List<QResBatch> batches);
 
     public abstract List<TResponseSummary> getResponseSummaries(UUID formId, List<TQuestionDetails> questionDetailsList);
 
@@ -39,7 +39,7 @@ public abstract class ResponseManager<
 
     public abstract List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable);
 
-    public abstract QResBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<TQuestionResponsePutReq>> questionResponsePutReqs);
+    public abstract QResBatch mapToBatchResponse(List<FormResponseInfoQuestionResponse<TQuestionResponsePutReq>> questionResponsePutReqs);
 
     public abstract QuestionType getQuestionType();
 

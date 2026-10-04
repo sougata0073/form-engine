@@ -4,10 +4,9 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.formResponse.individual.TimeResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.question.TimeResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.TimeResponseSummaryDto;
-import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
+import com.sougata.form_engine.dto.pgfunctionparameter.QuestionResponseBatches;
 import com.sougata.form_engine.dto.question.details.TimeDetailsDto;
-import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
-import com.sougata.form_engine.dto.question.responseputreqbatch.ShortAnswerResponseBatch;
+import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
 import com.sougata.form_engine.dto.question.responseputreqbatch.TimeResponseBatch;
 import com.sougata.form_engine.dto.question.responseputrequest.TimeResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
@@ -38,13 +37,14 @@ public class TimeResponseManager extends ResponseManager<
     }
 
     @Override
-    public void onResponseSave(UUID formId, UUID formResponseId, List<TimeResponsePutReqDto> questionResponsePutRequests) {
-        var responseData = new ResponseIncrementOrCreate<>(questionResponsePutRequests);
-        var responseDataJson = JsonUtil.toJson(responseData);
+    public void saveBatched(List<TimeResponseBatch> timeResponseBatches) {
+        var responseBatches = new QuestionResponseBatches<>(timeResponseBatches);
+        var responseBatchesJson = JsonUtil.toJson(responseBatches);
 
         timeRepository.createOrIncrement(
-                responseDataJson, formResponseId, 1L
+                responseBatchesJson
         );
+
     }
 
     @Override
@@ -200,7 +200,7 @@ public class TimeResponseManager extends ResponseManager<
     }
 
     @Override
-    public TimeResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<TimeResponsePutReqDto>> questionResponsePutReqs) {
+    public TimeResponseBatch mapToBatchResponse(List<FormResponseInfoQuestionResponse<TimeResponsePutReqDto>> questionResponsePutReqs) {
         var batch = new TimeResponseBatch();
 
         var responseMap = new HashMap<Instant, ArrayList<UUID>>();
@@ -211,10 +211,6 @@ public class TimeResponseManager extends ResponseManager<
                         .add(q.getFormResponseId())
         );
 
-        batch.setQuestionId(questionId);
-        batch.setQuestionType(getQuestionType());
-        batch.setResponseCount((long) questionResponsePutReqs.size());
-
         var responses = responseMap.entrySet()
                 .stream()
                 .map(entry -> {
@@ -222,6 +218,7 @@ public class TimeResponseManager extends ResponseManager<
 
                     res.setTime(entry.getKey());
                     res.setFormResponseIds(entry.getValue());
+                    res.setResponseCount((long) entry.getValue().size());
 
                     return res;
                 }).toList();

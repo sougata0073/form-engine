@@ -15,7 +15,18 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "form_response_individuals")
+@Table(
+        name = "form_response_individuals",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_form_id_user_id",
+                        columnNames = {
+                                "form_id",
+                                "user_id"
+                        }
+                )
+        }
+)
 @Getter
 @Setter
 @AllArgsConstructor
@@ -24,6 +35,12 @@ public class FormResponseIndividual implements Persistable<UUID> {
 
     @Id
     private UUID formResponseId;
+
+    @Column(nullable = false)
+    private UUID formId;
+
+    @Column(nullable = false)
+    private UUID userId;
 
     @ManyToMany(mappedBy = "formResponseIndividuals")
     @OnDelete(action = OnDeleteAction.CASCADE)

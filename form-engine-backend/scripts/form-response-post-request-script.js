@@ -101,7 +101,7 @@ function randomSubset(arr) {
 }
 
 function randomDate() {
-    const start = new Date("2000-01-01");
+    const start = new Date("2030-01-01");
     const end = new Date("2030-12-31");
 
     return new Date(
@@ -115,10 +115,7 @@ function isoDate(date) {
         Date.UTC(
             date.getUTCFullYear(),
             date.getUTCMonth(),
-            date.getUTCDate(),
-            18,
-            30,
-            0
+            date.getUTCDate()
         )
     ).toISOString();
 }
@@ -128,9 +125,7 @@ function isoTime() {
 
     d.setUTCHours(
         Math.floor(Math.random() * 24),
-        Math.floor(Math.random() * 60),
-        0,
-        0
+        Math.floor(Math.random() * 60)
     );
 
     return d.toISOString();

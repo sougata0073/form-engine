@@ -4,11 +4,10 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.formResponse.individual.MultipleChoiceResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.question.MultipleChoiceResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.MultipleChoiceResponseSummaryDto;
-import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
+import com.sougata.form_engine.dto.pgfunctionparameter.QuestionResponseBatches;
 import com.sougata.form_engine.dto.question.details.MultipleChoiceDetailsDto;
-import com.sougata.form_engine.dto.question.responseputreqbatch.DropdownResponseBatch;
+import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
 import com.sougata.form_engine.dto.question.responseputreqbatch.MultipleChoiceResponseBatch;
-import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.MultipleChoiceResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.repository.MultipleChoiceResponseRepository;
@@ -37,13 +36,14 @@ public class MultipleChoiceResponseManager extends ResponseManager<
     }
 
     @Override
-    public void onResponseSave(UUID formId, UUID formResponseId, List<MultipleChoiceResponsePutReqDto> questionResponsePutRequests) {
-        var responseData = new ResponseIncrementOrCreate<>(questionResponsePutRequests);
-        var responseDataJson = JsonUtil.toJson(responseData);
+    public void saveBatched(List<MultipleChoiceResponseBatch> multipleChoiceResponseBatches) {
+        var responseBatches = new QuestionResponseBatches<>(multipleChoiceResponseBatches);
+        var responseBatchesJson = JsonUtil.toJson(responseBatches);
 
         multipleChoiceRepository.createOrIncrement(
-                responseDataJson, formResponseId, 1L
+                responseBatchesJson
         );
+
     }
 
     @Override
@@ -194,7 +194,7 @@ public class MultipleChoiceResponseManager extends ResponseManager<
     }
 
     @Override
-    public MultipleChoiceResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<MultipleChoiceResponsePutReqDto>> questionResponsePutReqs) {
+    public MultipleChoiceResponseBatch mapToBatchResponse(List<FormResponseInfoQuestionResponse<MultipleChoiceResponsePutReqDto>> questionResponsePutReqs) {
         var batch = new MultipleChoiceResponseBatch();
 
         var responseMap = new HashMap<Long, ArrayList<UUID>>();
@@ -205,10 +205,6 @@ public class MultipleChoiceResponseManager extends ResponseManager<
                         .add(q.getFormResponseId())
         );
 
-        batch.setQuestionId(questionId);
-        batch.setQuestionType(getQuestionType());
-        batch.setResponseCount((long) questionResponsePutReqs.size());
-
         var responses = responseMap.entrySet()
                 .stream()
                 .map(entry -> {
@@ -216,6 +212,7 @@ public class MultipleChoiceResponseManager extends ResponseManager<
 
                     res.setOptionId(entry.getKey());
                     res.setFormResponseIds(entry.getValue());
+                    res.setResponseCount((long) entry.getValue().size());
 
                     return res;
                 }).toList();

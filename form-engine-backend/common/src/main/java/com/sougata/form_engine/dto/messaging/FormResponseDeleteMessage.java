@@ -13,6 +13,6 @@ import java.util.UUID;
 @NoArgsConstructor
 public class FormResponseDeleteMessage {
     private UUID formId;
-    private Long formResponseId;
+    private UUID formResponseId;
     private UUID userId;
 }

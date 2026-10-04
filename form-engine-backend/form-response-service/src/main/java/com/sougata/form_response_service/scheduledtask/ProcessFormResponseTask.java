@@ -3,19 +3,23 @@ package com.sougata.form_response_service.scheduledtask;
 import com.sougata.form_engine.constant.RedisConsumerGroupNames;
 import com.sougata.form_engine.constant.RedisStreamKeys;
 import com.sougata.form_engine.constant.RedisStreamNames;
-import com.sougata.form_engine.dto.form.FormResponseBatch;
 import com.sougata.form_engine.dto.messaging.FormResponseSavedMessage;
-import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
+import com.sougata.form_engine.dto.pgfunctionparameter.FormResponseCounts;
+import com.sougata.form_engine.dto.pgfunctionparameter.FormResponseInfos;
+import com.sougata.form_engine.dto.pgfunctionparameter.QuestionResponseCounts;
+import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
+import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseBatch;
 import com.sougata.form_engine.util.JsonUtil;
+import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.service.responseManager.ResponseManagerFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.connection.stream.*;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -25,8 +29,10 @@ public class ProcessFormResponseTask {
 
     private final ResponseManagerFactory responseManagerFactory;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final FormResponseSummaryRepository formResponseSummaryRepository;
 
     @SuppressWarnings("unchecked")
+    @Transactional
     @Scheduled(fixedDelay = 1, initialDelay = 2, timeUnit = TimeUnit.SECONDS)
     public void processFormResponses() {
         var messages = redisTemplate.opsForStream().read(
@@ -40,52 +46,66 @@ public class ProcessFormResponseTask {
         }
 
         var messageIdsToAcknowledge = new ArrayList<RecordId>();
-        var formResponses = new ArrayList<FormResponseSavedMessage>();
+        var formResponseSavedMessages = new ArrayList<FormResponseSavedMessage>();
 
         messages.forEach(message -> {
             var messageId = message.getId();
 
             if (message.getValue().get(RedisStreamKeys.FORM_RESPONSE) instanceof FormResponseSavedMessage formResponseSavedMessage) {
-                formResponses.add(formResponseSavedMessage);
+                formResponseSavedMessages.add(formResponseSavedMessage);
             }
 
             messageIdsToAcknowledge.add(messageId);
 
         });
 
-        var formResponseBatched = getBatchedFormResponses(formResponses);
+        var formResponseCounts = new FormResponseCounts();
+        var formResponseCountList = new ArrayList<FormResponseCounts.FormIdResponseCount>();
 
-        System.out.println(JsonUtil.toJson(formResponseBatched));
+        var questionResponseCounts = new QuestionResponseCounts();
+        var questionResponseCountList = new ArrayList<QuestionResponseCounts.QuestionResponseCount>();
 
-        redisTemplate.opsForStream().acknowledge(
-                RedisStreamNames.FORM_RESPONSE_STREAM,
-                RedisConsumerGroupNames.FORM_RESPONSE_CONSUMER,
-                messageIdsToAcknowledge.toArray(new RecordId[0])
-        );
-    }
+        var formResponseInfos = new FormResponseInfos();
+        var formResponseInfoList = new ArrayList<FormResponseInfos.FormResponseInfo>();
 
-    // So many streams
-    private FormResponseBatch getBatchedFormResponses(List<FormResponseSavedMessage> formResponses) {
+        var questionResponseBatchList = new ArrayList<QuestionResponseBatch<QuestionResponseBatch.Response>>();
 
-        var formResponseBatch = new FormResponseBatch();
-
-        var requests = formResponses
+        formResponseSavedMessages
                 .stream()
                 .collect(Collectors.groupingBy(FormResponseSavedMessage::getFormId))
-                .entrySet()
-                .stream()
-                .map(entryFormResponse -> {
-                    var reqPerForm = new FormResponseBatch.RequestPerForm();
+                .forEach((formId, formResponses) -> {
 
-                    reqPerForm.setFormId(entryFormResponse.getKey());
+                    formResponseCountList.add(
+                            new FormResponseCounts.FormIdResponseCount(
+                                    formId,
+                                    (long) formResponses.size()
+                            )
+                    );
 
-                    var responses = entryFormResponse.getValue()
+                    formResponseInfoList.addAll(
+                            formResponses
+                                    .stream()
+                                    .map(formResponse ->
+                                            new FormResponseInfos.FormResponseInfo(
+                                                    formResponse.getFormResponseId(),
+                                                    formId,
+                                                    formResponse.getResponderId()
+                                            )
+                                    )
+                                    .toList()
+                    );
+
+                    formResponses
                             .stream()
                             .flatMap(formResponse ->
                                     formResponse.getResponses()
                                             .stream()
                                             .map(qr ->
-                                                    new QuestionResponseManagerBatchInput<>(formResponse.getFormResponseId(), qr)
+                                                    new FormResponseInfoQuestionResponse<>(
+                                                            formResponse.getFormResponseId(),
+                                                            formResponse.getResponderId(),
+                                                            qr
+                                                    )
                                             )
                             )
                             .collect(
@@ -93,43 +113,71 @@ public class ProcessFormResponseTask {
                                             questionResponseManagerBatchInput.getQuestionResponsePutReq().getQuestionId()
                                     )
                             )
-                            .entrySet()
-                            .stream()
-                            .map(entryQResPutReq -> {
-                                var firstQuestionType = entryQResPutReq
-                                        .getValue()
+                            .forEach((questionId, questionResponseManagerBatchInputs) -> {
+
+                                var firstQuestionType = questionResponseManagerBatchInputs
                                         .stream()
                                         .findFirst()
                                         .orElseThrow(() -> new RuntimeException(
-                                                "Found empty question response put request list found for question ID: " + entryQResPutReq.getKey()
+                                                "Found empty question response put request list found for question ID: " + questionId
                                         ))
                                         .getQuestionResponsePutReq()
                                         .getQuestionType();
 
-                                var areAllQuestionTypeSame = entryQResPutReq
-                                        .getValue()
+                                var areAllQuestionTypeSame = questionResponseManagerBatchInputs
                                         .stream()
                                         .allMatch(q ->
                                                 firstQuestionType == q.getQuestionResponsePutReq().getQuestionType()
                                         );
 
                                 if (!areAllQuestionTypeSame) {
-                                    throw new RuntimeException("All question types are not same for question ID: " + entryQResPutReq.getKey());
+                                    throw new RuntimeException("All question types are not same for question ID: " + questionId);
                                 }
 
                                 var manager = responseManagerFactory.get(firstQuestionType);
 
-                                return manager.mapToBatchResponse(entryQResPutReq.getKey(), entryQResPutReq.getValue());
-                            }).toList();
+                                var questionResponseBatch = manager.mapToBatchResponse(questionResponseManagerBatchInputs);
 
-                    reqPerForm.setResponses(responses);
+                                questionResponseBatch.setQuestionId(questionId);
+                                questionResponseBatch.setQuestionType(firstQuestionType);
 
-                    return reqPerForm;
-                }).toList();
+                                questionResponseCountList.add(
+                                        new QuestionResponseCounts.QuestionResponseCount(
+                                                questionResponseBatch.getQuestionId(),
+                                                (long) questionResponseManagerBatchInputs.size(),
+                                                formId
+                                        )
+                                );
 
-        formResponseBatch.setRequests(requests);
+                                questionResponseBatchList.add(questionResponseBatch);
 
-        return formResponseBatch;
+                            });
+                });
+
+        formResponseCounts.setCounts(formResponseCountList);
+        questionResponseCounts.setCounts(questionResponseCountList);
+        formResponseInfos.setFormResponseInfos(formResponseInfoList);
+
+        formResponseSummaryRepository.saveFormResponseSummary(
+                JsonUtil.toJson(formResponseCounts),
+                JsonUtil.toJson(questionResponseCounts),
+                JsonUtil.toJson(formResponseInfos)
+        );
+
+        questionResponseBatchList
+                .stream()
+                .collect(Collectors.groupingBy(QuestionResponseBatch::getQuestionType))
+                .forEach((questionType, questionResponseBatches) -> {
+                    var manager = responseManagerFactory.get(questionType);
+
+                    manager.saveBatched(questionResponseBatches);
+                });
+
+        redisTemplate.opsForStream().acknowledge(
+                RedisStreamNames.FORM_RESPONSE_STREAM,
+                RedisConsumerGroupNames.FORM_RESPONSE_CONSUMER,
+                messageIdsToAcknowledge.toArray(new RecordId[0])
+        );
     }
 
 }

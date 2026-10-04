@@ -18,7 +18,4 @@ public interface FormResponseRepository extends CassandraRepository<FormResponse
             """)
     Long getFormResponseCount(UUID formId);
 
-    @Query("delete from FormResponse fr where fr.id = :formResponseId")
-    void deleteByFormResponseId(Long formResponseId);
-
 }

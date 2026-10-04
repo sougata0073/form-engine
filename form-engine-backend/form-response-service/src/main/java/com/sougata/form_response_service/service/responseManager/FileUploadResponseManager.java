@@ -4,11 +4,10 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.formResponse.individual.FileUploadResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.question.FileUploadResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.FileUploadResponseSummaryDto;
-import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
+import com.sougata.form_engine.dto.pgfunctionparameter.QuestionResponseBatches;
 import com.sougata.form_engine.dto.question.details.FileUploadDetailsDto;
-import com.sougata.form_engine.dto.question.responseputreqbatch.DurationResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.FileUploadResponseBatch;
-import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
+import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
 import com.sougata.form_engine.dto.question.responseputrequest.FileUploadResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.repository.FileUploadResponseRepository;
@@ -37,13 +36,14 @@ public class FileUploadResponseManager extends ResponseManager<
     }
 
     @Override
-    public void onResponseSave(UUID formId, UUID formResponseId, List<FileUploadResponsePutReqDto> questionResponsePutRequests) {
-        var responseData = new ResponseIncrementOrCreate<>(questionResponsePutRequests);
-        var responseDataJson = JsonUtil.toJson(responseData);
+    public void saveBatched(List<FileUploadResponseBatch> fileUploadResponseBatches) {
+        var responseBatches = new QuestionResponseBatches<>(fileUploadResponseBatches);
+        var responseBatchesJson = JsonUtil.toJson(responseBatches);
 
         fileUploadRepository.createOrIncrement(
-                responseDataJson, formResponseId, 1L
+                responseBatchesJson
         );
+
     }
 
     @Override
@@ -196,7 +196,7 @@ public class FileUploadResponseManager extends ResponseManager<
     }
 
     @Override
-    public FileUploadResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<FileUploadResponsePutReqDto>> questionResponsePutReqs) {
+    public FileUploadResponseBatch mapToBatchResponse(List<FormResponseInfoQuestionResponse<FileUploadResponsePutReqDto>> questionResponsePutReqs) {
         var batch = new FileUploadResponseBatch();
 
         var responseMap = new HashMap<String, ArrayList<UUID>>();
@@ -214,10 +214,6 @@ public class FileUploadResponseManager extends ResponseManager<
                 }
         );
 
-        batch.setQuestionId(questionId);
-        batch.setQuestionType(getQuestionType());
-        batch.setResponseCount((long) questionResponsePutReqs.size());
-
         var responses = responseMap.entrySet()
                 .stream()
                 .map(entry -> {
@@ -230,6 +226,7 @@ public class FileUploadResponseManager extends ResponseManager<
                     res.setFileName(fileArray[1]);
                     res.setFileMimeType(fileArray[2]);
                     res.setFormResponseIds(entry.getValue());
+                    res.setResponseCount((long) entry.getValue().size());
 
                     return res;
                 }).toList();

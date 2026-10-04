@@ -9,6 +9,8 @@ import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 
+import java.util.UUID;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -28,8 +30,8 @@ public class AnyTypeQuestionResponse {
         @PrimaryKeyColumn(name = "question_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
         private Long questionId;
 
-        @PrimaryKeyColumn(name = "question_response_id", ordinal = 1, type = PrimaryKeyType.CLUSTERED)
-        private Long questionResponseId;
+        @PrimaryKeyColumn(name = "form_response_id", ordinal = 1, type = PrimaryKeyType.CLUSTERED)
+        private UUID formResponseId;
 
     }
 

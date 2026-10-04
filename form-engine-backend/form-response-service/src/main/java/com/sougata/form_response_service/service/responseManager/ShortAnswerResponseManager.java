@@ -4,10 +4,9 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.formResponse.individual.ShortAnswerResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.question.ShortAnswerResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.ShortAnswerResponseSummaryDto;
-import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
+import com.sougata.form_engine.dto.pgfunctionparameter.QuestionResponseBatches;
 import com.sougata.form_engine.dto.question.details.ShortAnswerDetailsDto;
-import com.sougata.form_engine.dto.question.responseputreqbatch.ParagraphResponseBatch;
-import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
+import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
 import com.sougata.form_engine.dto.question.responseputreqbatch.ShortAnswerResponseBatch;
 import com.sougata.form_engine.dto.question.responseputrequest.ShortAnswerResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
@@ -37,13 +36,14 @@ public class ShortAnswerResponseManager extends ResponseManager<
     }
 
     @Override
-    public void onResponseSave(UUID formId, UUID formResponseId, List<ShortAnswerResponsePutReqDto> questionResponsePutRequests) {
-        var responseData = new ResponseIncrementOrCreate<>(questionResponsePutRequests);
-        var responseDataJson = JsonUtil.toJson(responseData);
+    public void saveBatched(List<ShortAnswerResponseBatch> shortAnswerResponseBatches) {
+        var responseBatches = new QuestionResponseBatches<>(shortAnswerResponseBatches);
+        var responseBatchesJson = JsonUtil.toJson(responseBatches);
 
         shortAnswerRepository.createOrIncrement(
-                responseDataJson, formResponseId, 1L
+                responseBatchesJson
         );
+
     }
 
     @Override
@@ -177,7 +177,7 @@ public class ShortAnswerResponseManager extends ResponseManager<
     }
 
     @Override
-    public ShortAnswerResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<ShortAnswerResponsePutReqDto>> questionResponsePutReqs) {
+    public ShortAnswerResponseBatch mapToBatchResponse(List<FormResponseInfoQuestionResponse<ShortAnswerResponsePutReqDto>> questionResponsePutReqs) {
         var batch = new ShortAnswerResponseBatch();
 
         var responseMap = new HashMap<String, ArrayList<UUID>>();
@@ -188,10 +188,6 @@ public class ShortAnswerResponseManager extends ResponseManager<
                         .add(q.getFormResponseId())
         );
 
-        batch.setQuestionId(questionId);
-        batch.setQuestionType(getQuestionType());
-        batch.setResponseCount((long) questionResponsePutReqs.size());
-
         var responses = responseMap.entrySet()
                 .stream()
                 .map(entry -> {
@@ -199,6 +195,7 @@ public class ShortAnswerResponseManager extends ResponseManager<
 
                     res.setText(entry.getKey());
                     res.setFormResponseIds(entry.getValue());
+                    res.setResponseCount((long) entry.getValue().size());
 
                     return res;
                 }).toList();

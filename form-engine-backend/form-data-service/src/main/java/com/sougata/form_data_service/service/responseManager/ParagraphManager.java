@@ -1,16 +1,16 @@
 package com.sougata.form_data_service.service.responseManager;
 
 import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
-import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.model.Paragraph;
 import com.sougata.form_data_service.repository.ParagraphRepository;
-import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.ParagraphResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service("PARAGRAPH_RESPONSE_MANAGER")
@@ -19,19 +19,20 @@ public class ParagraphManager extends ResponseManager<ParagraphResponsePutReqDto
     private final ParagraphRepository paragraphRepository;
 
     @Autowired
-    public ParagraphManager(ParagraphRepository paragraphRepository, QuestionResponseRepository questionResponseRepositor) {
-        super(questionResponseRepositor);
+    public ParagraphManager(ParagraphRepository paragraphRepository) {
         this.paragraphRepository = paragraphRepository;
     }
 
     @Override
     @Async
-    public CompletableFuture<Void> create(ParagraphResponsePutReqDto response, FormResponse formResponse) {
+    public CompletableFuture<Void> create(ParagraphResponsePutReqDto response, UUID formResponseId) {
         Paragraph paragraph = new Paragraph();
 
-        var qr = createQuestionResponse(response.getQuestionId(), formResponse);
+        var key = new AnyTypeQuestionResponse.PartitionKey();
+        key.setQuestionId(response.getQuestionId());
+        key.setFormResponseId(formResponseId);
 
-        paragraph.setKey(new AnyTypeQuestionResponse.PartitionKey(response.getQuestionId(), qr.getKey().getQuestionResponseId()));
+        paragraph.setKey(key);
         paragraph.setText(response.getText());
 
         paragraphRepository.save(paragraph);
@@ -40,18 +41,16 @@ public class ParagraphManager extends ResponseManager<ParagraphResponsePutReqDto
     }
 
     @Override
+    @Async
+    public CompletableFuture<Void> deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId) {
+        paragraphRepository.deleteAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
     public QuestionType getQuestionType() {
         return QuestionType.PARAGRAPH;
-    }
-
-    @Override
-    public void deleteResponsesByQuestionId(Long questionId) {
-        paragraphRepository.deleteAllByQuestionId(questionId);
-    }
-
-    @Override
-    public void deleteResponsesByQuestionIdAndQuestionResponseId(Long questionId, Long questionResponseId) {
-        paragraphRepository.deleteAllByQuestionIdAndQuestionResponseId(questionId, questionResponseId);
     }
 
 }

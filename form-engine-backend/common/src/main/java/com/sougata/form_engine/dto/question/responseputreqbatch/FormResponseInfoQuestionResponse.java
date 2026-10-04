@@ -10,7 +10,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @Getter
 @Setter
-public class QuestionResponseManagerBatchInput<TQuestionResponsePutReq extends QuestionResponsePutReqDto> {
+public class FormResponseInfoQuestionResponse<TQuestionResponsePutReq extends QuestionResponsePutReqDto> {
     private UUID formResponseId;
+    private UUID userId;
     private TQuestionResponsePutReq questionResponsePutReq;
 }

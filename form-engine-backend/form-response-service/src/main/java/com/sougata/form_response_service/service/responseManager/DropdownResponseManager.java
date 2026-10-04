@@ -4,11 +4,10 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.formResponse.individual.DropdownResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.question.DropdownResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.DropdownResponseSummaryDto;
-import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
+import com.sougata.form_engine.dto.pgfunctionparameter.QuestionResponseBatches;
 import com.sougata.form_engine.dto.question.details.DropdownDetailsDto;
-import com.sougata.form_engine.dto.question.responseputreqbatch.DateTimeResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.DropdownResponseBatch;
-import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
+import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
 import com.sougata.form_engine.dto.question.responseputrequest.DropdownResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.repository.DropdownResponseRepository;
@@ -16,7 +15,6 @@ import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.*;
 
 @Service("DROPDOWN_RESPONSE_MANAGER")
@@ -38,13 +36,14 @@ public class DropdownResponseManager extends ResponseManager<
     }
 
     @Override
-    public void onResponseSave(UUID formId, UUID formResponseId, List<DropdownResponsePutReqDto> questionResponsePutRequests) {
-        var responseData = new ResponseIncrementOrCreate<>(questionResponsePutRequests);
-        var responseDataJson = JsonUtil.toJson(responseData);
+    public void saveBatched(List<DropdownResponseBatch> dropdownResponseBatches) {
+        var responseBatches = new QuestionResponseBatches<>(dropdownResponseBatches);
+        var responseBatchesJson = JsonUtil.toJson(responseBatches);
 
         dropdownRepository.createOrIncrement(
-                responseDataJson, formResponseId, 1L
+                responseBatchesJson
         );
+
     }
 
     @Override
@@ -194,7 +193,7 @@ public class DropdownResponseManager extends ResponseManager<
     }
 
     @Override
-    public DropdownResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<DropdownResponsePutReqDto>> questionResponsePutReqs) {
+    public DropdownResponseBatch mapToBatchResponse(List<FormResponseInfoQuestionResponse<DropdownResponsePutReqDto>> questionResponsePutReqs) {
         var batch = new DropdownResponseBatch();
 
         var responseMap = new HashMap<Long, ArrayList<UUID>>();
@@ -205,10 +204,6 @@ public class DropdownResponseManager extends ResponseManager<
                         .add(q.getFormResponseId())
         );
 
-        batch.setQuestionId(questionId);
-        batch.setQuestionType(getQuestionType());
-        batch.setResponseCount((long) questionResponsePutReqs.size());
-
         var responses = responseMap.entrySet()
                 .stream()
                 .map(entry -> {
@@ -216,6 +211,7 @@ public class DropdownResponseManager extends ResponseManager<
 
                     res.setOptionId(entry.getKey());
                     res.setFormResponseIds(entry.getValue());
+                    res.setResponseCount((long) entry.getValue().size());
 
                     return res;
                 }).toList();

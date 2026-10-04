@@ -4,10 +4,9 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.formResponse.individual.RatingResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.question.RatingResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.RatingResponseSummaryDto;
-import com.sougata.form_engine.dto.pgfunctionparameter.ResponseIncrementOrCreate;
+import com.sougata.form_engine.dto.pgfunctionparameter.QuestionResponseBatches;
 import com.sougata.form_engine.dto.question.details.RatingDetailsDto;
-import com.sougata.form_engine.dto.question.responseputreqbatch.ParagraphResponseBatch;
-import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
+import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
 import com.sougata.form_engine.dto.question.responseputreqbatch.RatingResponseBatch;
 import com.sougata.form_engine.dto.question.responseputrequest.RatingResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
@@ -37,13 +36,14 @@ public class RatingResponseManager extends ResponseManager<
     }
 
     @Override
-    public void onResponseSave(UUID formId, UUID formResponseId, List<RatingResponsePutReqDto> questionResponsePutRequests) {
-        var responseData = new ResponseIncrementOrCreate<>(questionResponsePutRequests);
-        var responseDataJson = JsonUtil.toJson(responseData);
+    public void saveBatched(List<RatingResponseBatch> ratingResponseBatches) {
+        var responseBatches = new QuestionResponseBatches<>(ratingResponseBatches);
+        var responseBatchesJson = JsonUtil.toJson(responseBatches);
 
         ratingRepository.createOrIncrement(
-                responseDataJson, formResponseId, 1L
+                responseBatchesJson
         );
+
     }
 
     @Override
@@ -203,7 +203,7 @@ public class RatingResponseManager extends ResponseManager<
     }
 
     @Override
-    public RatingResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<RatingResponsePutReqDto>> questionResponsePutReqs) {
+    public RatingResponseBatch mapToBatchResponse(List<FormResponseInfoQuestionResponse<RatingResponsePutReqDto>> questionResponsePutReqs) {
         var batch = new RatingResponseBatch();
 
         var responseMap = new HashMap<Integer, ArrayList<UUID>>();
@@ -214,10 +214,6 @@ public class RatingResponseManager extends ResponseManager<
                         .add(q.getFormResponseId())
         );
 
-        batch.setQuestionId(questionId);
-        batch.setQuestionType(getQuestionType());
-        batch.setResponseCount((long) questionResponsePutReqs.size());
-
         var responses = responseMap.entrySet()
                 .stream()
                 .map(entry -> {
@@ -225,6 +221,7 @@ public class RatingResponseManager extends ResponseManager<
 
                     res.setRating(entry.getKey());
                     res.setFormResponseIds(entry.getValue());
+                    res.setResponseCount((long) entry.getValue().size());
 
                     return res;
                 }).toList();

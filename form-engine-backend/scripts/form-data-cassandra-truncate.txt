@@ -12,5 +12,4 @@ TRUNCATE paragraphs;
 TRUNCATE tick_box_grids;
 TRUNCATE dropdowns;
 TRUNCATE linear_scales;
-TRUNCATE question_responses;
 TRUNCATE times;

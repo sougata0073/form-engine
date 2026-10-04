@@ -3,6 +3,7 @@ package com.sougata.form_engine.dto.question.responseputreqbatch;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.github.f4b6a3.tsid.TsidCreator;
 import com.sougata.form_engine.constant.QuestionType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -43,8 +44,6 @@ public class QuestionResponseBatch<TResponse extends QuestionResponseBatch.Respo
 
     private QuestionType questionType;
 
-    private Long responseCount;
-
     private List<TResponse> responses;
 
     @JsonProperty(value = "@class")
@@ -55,6 +54,9 @@ public class QuestionResponseBatch<TResponse extends QuestionResponseBatch.Respo
     @Getter
     @Setter
     public static class Response {
+        private Long responseCount;
+        private Long questionResponseId = TsidCreator.getTsid().toLong();
         private List<UUID> formResponseIds;
     }
+
 }

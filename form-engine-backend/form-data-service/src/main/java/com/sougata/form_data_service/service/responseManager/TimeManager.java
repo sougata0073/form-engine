@@ -1,9 +1,7 @@
 package com.sougata.form_data_service.service.responseManager;
 
 import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
-import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.model.Time;
-import com.sougata.form_data_service.repository.QuestionResponseRepository;
 import com.sougata.form_data_service.repository.TimeRepository;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.question.responseputrequest.TimeResponsePutReqDto;
@@ -11,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service("TIME_RESPONSE_MANAGER")
@@ -19,19 +19,20 @@ public class TimeManager extends ResponseManager<TimeResponsePutReqDto> {
     private final TimeRepository timeRepository;
 
     @Autowired
-    public TimeManager(TimeRepository timeRepository, QuestionResponseRepository questionResponseRepository) {
-        super(questionResponseRepository);
+    public TimeManager(TimeRepository timeRepository) {
         this.timeRepository = timeRepository;
     }
 
     @Override
     @Async
-    public CompletableFuture<Void> create(TimeResponsePutReqDto response, FormResponse formResponse) {
+    public CompletableFuture<Void> create(TimeResponsePutReqDto response, UUID formResponseId) {
         Time time = new Time();
 
-        var qr = createQuestionResponse(response.getQuestionId(), formResponse);
+        var key = new AnyTypeQuestionResponse.PartitionKey();
+        key.setQuestionId(response.getQuestionId());
+        key.setFormResponseId(formResponseId);
 
-        time.setKey(new AnyTypeQuestionResponse.PartitionKey(response.getQuestionId(), qr.getKey().getQuestionResponseId()));
+        time.setKey(key);
         time.setTime(response.getTime());
 
         timeRepository.save(time);
@@ -40,18 +41,16 @@ public class TimeManager extends ResponseManager<TimeResponsePutReqDto> {
     }
 
     @Override
+    @Async
+    public CompletableFuture<Void> deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId) {
+        timeRepository.deleteAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
     public QuestionType getQuestionType() {
         return QuestionType.TIME;
-    }
-
-    @Override
-    public void deleteResponsesByQuestionId(Long questionId) {
-        timeRepository.deleteAllByQuestionId(questionId);
-    }
-
-    @Override
-    public void deleteResponsesByQuestionIdAndQuestionResponseId(Long questionId, Long questionResponseId) {
-        timeRepository.deleteAllByQuestionIdAndQuestionResponseId(questionId, questionResponseId);
     }
 
 }

@@ -4,12 +4,12 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.formResponse.individual.MultipleChoiceGridResponseIndividualDto;
 import com.sougata.form_engine.dto.formResponse.question.MultipleChoiceGridResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.MultipleChoiceGridResponseSummaryDto;
+import com.sougata.form_engine.dto.pgfunctionparameter.QuestionResponseBatches;
 import com.sougata.form_engine.dto.question.details.MultipleChoiceGridDetailsDto;
-import com.sougata.form_engine.dto.question.responseputreqbatch.DurationResponseBatch;
+import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
 import com.sougata.form_engine.dto.question.responseputreqbatch.MultipleChoiceGridResponseBatch;
-import com.sougata.form_engine.dto.question.responseputreqbatch.MultipleChoiceResponseBatch;
-import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponseManagerBatchInput;
 import com.sougata.form_engine.dto.question.responseputrequest.MultipleChoiceGridResponsePutReqDto;
+import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.repository.MultipleChoiceGridResponseRepository;
 import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Pageable;
@@ -36,7 +36,13 @@ public class MultipleChoiceGridResponseManager extends ResponseManager<
     }
 
     @Override
-    public void onResponseSave(UUID formId, UUID formResponseId, List<MultipleChoiceGridResponsePutReqDto> questionResponsePutRequests) {
+    public void saveBatched(List<MultipleChoiceGridResponseBatch> multipleChoiceGridResponseBatches) {
+        var responseBatches = new QuestionResponseBatches<>(multipleChoiceGridResponseBatches);
+        var responseBatchesJson = JsonUtil.toJson(responseBatches);
+
+        multipleChoiceGridRepository.createOrIncrement(
+                responseBatchesJson
+        );
 
     }
 
@@ -238,7 +244,7 @@ public class MultipleChoiceGridResponseManager extends ResponseManager<
     }
 
     @Override
-    public MultipleChoiceGridResponseBatch mapToBatchResponse(Long questionId, List<QuestionResponseManagerBatchInput<MultipleChoiceGridResponsePutReqDto>> questionResponsePutReqs) {
+    public MultipleChoiceGridResponseBatch mapToBatchResponse(List<FormResponseInfoQuestionResponse<MultipleChoiceGridResponsePutReqDto>> questionResponsePutReqs) {
         var batch = new MultipleChoiceGridResponseBatch();
 
         var responseMap = new HashMap<String, ArrayList<UUID>>();
@@ -257,10 +263,6 @@ public class MultipleChoiceGridResponseManager extends ResponseManager<
                 )
         );
 
-        batch.setQuestionId(questionId);
-        batch.setQuestionType(getQuestionType());
-        batch.setResponseCount((long) questionResponsePutReqs.size());
-
         var responses = responseMap.entrySet()
                 .stream()
                 .map(entry -> {
@@ -272,6 +274,7 @@ public class MultipleChoiceGridResponseManager extends ResponseManager<
                     res.setRowId(Long.parseLong(rowColumnArray[0]));
                     res.setColumnId(Long.parseLong(rowColumnArray[1]));
                     res.setFormResponseIds(entry.getValue());
+                    res.setResponseCount((long) entry.getValue().size());
 
                     return res;
                 }).toList();

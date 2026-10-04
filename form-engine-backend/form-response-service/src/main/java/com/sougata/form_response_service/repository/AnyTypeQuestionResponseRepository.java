@@ -14,6 +14,4 @@ public interface AnyTypeQuestionResponseRepository<Q extends AnyTypeQuestionResp
     @Query("select qr from #{#entityName} qr where qr.questionResponse.questionResponseSummary.formResponseSummary.formId = :formId")
     List<Q> findAllByFormId(UUID formId);
 
-    @Query("select qr from #{#entityName} qr where qr.questionResponse.questionResponseSummary.questionId = :questionId")
-    List<Q> findAllByQuestionId(Long questionId);
 }
