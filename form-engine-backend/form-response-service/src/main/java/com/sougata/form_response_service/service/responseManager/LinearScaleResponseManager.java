@@ -9,15 +9,24 @@ import com.sougata.form_engine.dto.question.details.LinearScaleDetailsDto;
 import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
 import com.sougata.form_engine.dto.question.responseputreqbatch.LinearScaleResponseBatch;
 import com.sougata.form_engine.dto.question.responseputrequest.LinearScaleResponsePutReqDto;
+import com.sougata.form_engine.util.IdUtil;
 import com.sougata.form_engine.util.JsonUtil;
+import com.sougata.form_response_service.model.AnyTypeQuestionResponse;
+import com.sougata.form_response_service.model.LinearScaleResponse;
+import com.sougata.form_response_service.model.QuestionResponseSummary;
 import com.sougata.form_response_service.repository.LinearScaleResponseRepository;
+import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service("LINEAR_SCALE_RESPONSE_MANAGER")
+@RequiredArgsConstructor
 public class LinearScaleResponseManager extends ResponseManager<
         LinearScaleDetailsDto,
         LinearScaleResponsePutReqDto,
@@ -30,10 +39,7 @@ public class LinearScaleResponseManager extends ResponseManager<
         > {
 
     private final LinearScaleResponseRepository linearScaleRepository;
-
-    public LinearScaleResponseManager(LinearScaleResponseRepository linearScaleRepository) {
-        this.linearScaleRepository = linearScaleRepository;
-    }
+    private final QuestionResponseSummaryRepository questionResponseSummaryRepository;
 
     @Override
     public void saveBatched(List<LinearScaleResponseBatch> linearScaleResponseBatches) {
@@ -47,114 +53,98 @@ public class LinearScaleResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<LinearScaleResponseSummaryDto> getResponseSummaries(UUID formId, List<LinearScaleDetailsDto> questionResponses) {
-//        var responseSummaries = linearScaleRepository.getResponseSummaries(formId);
-//        var result = new ArrayList<LinearScaleResponseSummaryDto>();
-//
-//        var responseOptionCountMap = linearScaleRepository.getResponseScaleCount(formId)
-//                .stream().collect(Collectors.groupingBy(e -> e.get("questionId", Long.class)));
-//
-//        questionResponses.forEach(qr ->
-//                result.add(
-//                        responseSummaries.stream()
-//                                .filter(rs -> Objects.equals(rs.questionId(), qr.getId()))
-//                                .map(rs -> {
-//                                    var ls = new LinearScaleResponseSummaryDto();
-//
-//                                    ls.setQuestionId(qr.getId());
-//                                    ls.setQuestion(qr.getQuestion());
-//                                    ls.setOrderIndex(qr.getOrderIndex());
-//                                    ls.setNumberOfResponses(rs.numberOfResponses());
-//                                    ls.setQuestionType(QuestionType.LINEAR_SCALE);
-//
-//                                    var countMap = new HashMap<Integer, Long>();
-//
-//                                    responseOptionCountMap.get(qr.getId()).forEach(cm ->
-//                                            countMap.put(cm.get("scale", Integer.class), cm.get("responseCount", Long.class))
-//                                    );
-//
-//                                    var scales = IntStream.rangeClosed(qr.getFromNumber(), qr.getToNumber()).boxed();
-//
-//                                    var responses = scales.map(sc ->
-//                                            new LinearScaleResponseSummaryDto.Response(
-//                                                    sc,
-//                                                    countMap.getOrDefault(sc, 0L)
-//
-//                                            )).toList();
-//
-//                                    ls.setResponses(responses);
-//
-//                                    return ls;
-//                                })
-//                                .findFirst()
-//                                .orElseGet(() -> {
-//                                    var ls = new LinearScaleResponseSummaryDto();
-//
-//                                    ls.setQuestionId(qr.getId());
-//                                    ls.setQuestion(qr.getQuestion());
-//                                    ls.setOrderIndex(qr.getOrderIndex());
-//                                    ls.setNumberOfResponses(0L);
-//                                    ls.setQuestionType(QuestionType.LINEAR_SCALE);
-//                                    ls.setResponses(List.of());
-//
-//                                    return ls;
-//                                })
-//                )
-//        );
-//
-//        return result;
+    public List<LinearScaleResponseSummaryDto> getResponseSummaries(UUID formId, List<LinearScaleDetailsDto> questionDetailsList) {
+        var questionResponseSummaries = questionResponseSummaryRepository.findAllByFormId(formId);
+        var linearScaleResponses = linearScaleRepository.findAllByFormId(formId, Pageable.unpaged());
 
-        return null;
+        var questionResponseSummariesMapByQuestionId = questionResponseSummaries
+                .stream()
+                .collect(Collectors.toMap(QuestionResponseSummary::getQuestionId, Function.identity()));
+
+        var linearScaleResponsesMapByQuestionId = linearScaleResponses
+                .stream()
+                .collect(Collectors.groupingBy(AnyTypeQuestionResponse::getQuestionId));
+
+        return questionDetailsList.stream().map(qd -> {
+            var questionResponseSummary = questionResponseSummariesMapByQuestionId.get(qd.getId());
+
+            var lsSummary = new LinearScaleResponseSummaryDto();
+
+            lsSummary.setQuestionId(qd.getId());
+            lsSummary.setQuestion(qd.getQuestion());
+            lsSummary.setOrderIndex(qd.getOrderIndex());
+            lsSummary.setQuestionType(qd.getQuestionType());
+            lsSummary.setNumberOfResponses(
+                    questionResponseSummary == null ? 0L : questionResponseSummary.getResponseCount()
+            );
+
+            var linearScaleResponsesForThisQuestion = linearScaleResponsesMapByQuestionId.get(qd.getId());
+
+            Map<Integer, LinearScaleResponse> linearScaleResponsesMapByScale = linearScaleResponsesForThisQuestion == null
+                    ? Map.of()
+                    : linearScaleResponsesForThisQuestion
+                    .stream()
+                    .collect(Collectors.toMap(LinearScaleResponse::getScale, Function.identity()));
+
+            var responses = new ArrayList<LinearScaleResponseSummaryDto.Response>();
+
+            for (int i = qd.getFromNumber(); i <= qd.getToNumber(); i++) {
+                var lsResponse = linearScaleResponsesMapByScale.get(i);
+
+                responses.add(
+                        new LinearScaleResponseSummaryDto.Response(
+                                i,
+                                lsResponse == null ? 0L : lsResponse.getResponseCount()
+                        )
+                );
+            }
+
+            lsSummary.setResponses(responses);
+
+            return lsSummary;
+        }).toList();
     }
 
     @Override
     public LinearScaleResponseSummaryDto getResponseSummary(Long questionId, LinearScaleDetailsDto questionRes, Pageable pageable) {
-//        var responseSummary = linearScaleRepository.getResponseSummary(formId, questionId);
-//        var res = new LinearScaleResponseSummaryDto();
-//
-//        res.setQuestionId(questionRes.getId());
-//        res.setQuestion(questionRes.getQuestion());
-//        res.setQuestionType(getQuestionType());
-//        res.setOrderIndex(questionRes.getOrderIndex());
-//        res.setNumberOfResponses(responseSummary.numberOfResponses());
-//        res.setResponses(List.of());
-//
-//        return res;
+        var questionResponseSummaryOptional = questionResponseSummaryRepository.findByQuestionId(questionId);
+        var res = new LinearScaleResponseSummaryDto();
 
-        return null;
+        res.setNumberOfResponses(
+                questionResponseSummaryOptional.isEmpty()
+                        ? 0L : questionResponseSummaryOptional.get().getResponseCount()
+        );
+        res.setResponses(List.of());
+
+        return res;
     }
 
     @Override
     public LinearScaleResponseQuestionDto getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
-//        var grouped = linearScaleRepository.groupedByResponseScale(formId, questionId, pageable);
-//
-//        var ls = new LinearScaleResponseQuestionDto();
-//
-//        var responses = grouped.stream().map(g -> {
-//            var res = new LinearScaleResponseQuestionDto.Response();
-//
-//            res.setQuestionId(questionId);
-//            res.setQuestionType(getQuestionType());
-//            res.setScale(g.get("scale", Integer.class));
-//            res.setResponseCount(g.get("responseCount", Long.class));
-//
-//            var map = new HashMap<String, List<String>>();
-//
-//            map.put("scale", List.of(res.getScale() == null ? "" : res.getScale().toString()));
-//
-//            res.setFormResponsesIdentifier(IdUtil.generateCompressedEncodedId(map));
-//
-//            return res;
-//        }).toList();
-//
-//
-//        ls.setQuestionId(questionId);
-//        ls.setQuestionType(getQuestionType());
-//        ls.setResponses(responses);
-//
-//        return ls;
+        var grouped = linearScaleRepository.groupedByScale(questionId, pageable);
 
-        return null;
+        var ls = new LinearScaleResponseQuestionDto();
+
+        var responses = grouped.stream().map(g -> {
+            var res = new LinearScaleResponseQuestionDto.Response();
+
+            res.setQuestionId(questionId);
+            res.setQuestionType(getQuestionType());
+            res.setScale(g.get("scale", Integer.class));
+            res.setResponseCount(g.get("responseCount", Long.class));
+
+            var map = new HashMap<String, List<String>>();
+
+            map.put("scale", List.of(res.getScale() == null ? "" : res.getScale().toString()));
+
+            res.setFormResponsesIdentifier(IdUtil.generateCompressedEncodedId(map));
+
+            return res;
+        }).toList();
+
+        ls.setResponses(responses);
+
+        return ls;
     }
 
     @Override

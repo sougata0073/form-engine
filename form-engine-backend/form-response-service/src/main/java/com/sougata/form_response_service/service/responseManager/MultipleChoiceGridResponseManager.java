@@ -10,14 +10,22 @@ import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfo
 import com.sougata.form_engine.dto.question.responseputreqbatch.MultipleChoiceGridResponseBatch;
 import com.sougata.form_engine.dto.question.responseputrequest.MultipleChoiceGridResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
+import com.sougata.form_response_service.model.AnyTypeQuestionResponse;
+import com.sougata.form_response_service.model.MultipleChoiceGridResponse;
+import com.sougata.form_response_service.model.QuestionResponseSummary;
 import com.sougata.form_response_service.repository.MultipleChoiceGridResponseRepository;
+import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service("MULTIPLE_CHOICE_GRID_RESPONSE_MANAGER")
+@RequiredArgsConstructor
 public class MultipleChoiceGridResponseManager extends ResponseManager<
         MultipleChoiceGridDetailsDto,
         MultipleChoiceGridResponsePutReqDto,
@@ -30,10 +38,7 @@ public class MultipleChoiceGridResponseManager extends ResponseManager<
         > {
 
     private final MultipleChoiceGridResponseRepository multipleChoiceGridRepository;
-
-    public MultipleChoiceGridResponseManager(MultipleChoiceGridResponseRepository multipleChoiceGridRepository) {
-        this.multipleChoiceGridRepository = multipleChoiceGridRepository;
-    }
+    private final QuestionResponseSummaryRepository questionResponseSummaryRepository;
 
     @Override
     public void saveBatched(List<MultipleChoiceGridResponseBatch> multipleChoiceGridResponseBatches) {
@@ -47,95 +52,92 @@ public class MultipleChoiceGridResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<MultipleChoiceGridResponseSummaryDto> getResponseSummaries(UUID formId, List<MultipleChoiceGridDetailsDto> questionResponses) {
+    public List<MultipleChoiceGridResponseSummaryDto> getResponseSummaries(UUID formId, List<MultipleChoiceGridDetailsDto> questionDetailsList) {
 
-//        var responseSummaries = multipleChoiceGridRepository.getResponseSummaries(formId);
-//
-//        var summaryMap = responseSummaries.stream()
-//                .collect(Collectors.toMap(
-//                        CommonResponseSummaryProjection::questionId,
-//                        Function.identity()
-//                ));
-//
-//        var groupedResponses = multipleChoiceGridRepository.getResponseOptionCount(formId)
-//                .stream()
-//                .collect(Collectors.groupingBy(
-//                        t -> t.get("questionId", Long.class),
-//                        Collectors.groupingBy(
-//                                t -> t.get("rowId", Long.class)
-//                        )
-//                ));
-//
-//        var result = new ArrayList<MultipleChoiceGridResponseSummaryDto>();
-//
-//        for (var qr : questionResponses) {
-//
-//            var dto = new MultipleChoiceGridResponseSummaryDto();
-//
-//            dto.setQuestionId(qr.getId());
-//            dto.setQuestion(qr.getQuestion());
-//            dto.setOrderIndex(qr.getOrderIndex());
-//            dto.setQuestionType(getQuestionType());
-//
-//            var summary = summaryMap.get(qr.getId());
-//            dto.setNumberOfResponses(summary == null ? 0L : summary.numberOfResponses());
-//
-//            var rowResponses = qr.getRows().stream()
-//                    .map(row -> {
-//
-//                        var rowTuples = groupedResponses
-//                                .getOrDefault(qr.getId(), Collections.emptyMap())
-//                                .getOrDefault(row.getId(), Collections.emptyList());
-//
-//                        Map<Long, Long> columnCountMap = rowTuples.stream()
-//                                .collect(Collectors.toMap(
-//                                        t -> t.get("responseColumnId", Long.class),
-//                                        t -> t.get("responseCount", Long.class)
-//                                ));
-//
-//                        var columnResponses = qr.getColumns().stream()
-//                                .map(column ->
-//                                        new MultipleChoiceGridResponseSummaryDto.ColumnResponse(
-//                                                column.getId(),
-//                                                column.getColumn(),
-//                                                columnCountMap.getOrDefault(column.getId(), 0L)
-//                                        )
-//                                )
-//                                .toList();
-//
-//                        return new MultipleChoiceGridResponseSummaryDto.RowResponse(
-//                                row.getId(),
-//                                row.getRow(),
-//                                columnResponses
-//                        );
-//                    })
-//                    .toList();
-//
-//            dto.setResponses(rowResponses);
-//
-//            result.add(dto);
-//        }
-//
-//        return result;
+        var questionResponseSummaries = questionResponseSummaryRepository.findAllByFormId(formId);
+        var multipleChoiceGridResponses = multipleChoiceGridRepository.findAllByFormId(formId, Pageable.unpaged());
 
-        return null;
+        var questionResponseSummariesMapByQuestionId = questionResponseSummaries
+                .stream()
+                .collect(Collectors.toMap(QuestionResponseSummary::getQuestionId, Function.identity()));
+
+        var multipleChoiceGridResponsesMapByQuestionId = multipleChoiceGridResponses
+                .stream()
+                .collect(Collectors.groupingBy(AnyTypeQuestionResponse::getQuestionId));
+
+        return questionDetailsList.stream().map(qd -> {
+            var questionResponseSummary = questionResponseSummariesMapByQuestionId.get(qd.getId());
+
+            var mcgSummary = new MultipleChoiceGridResponseSummaryDto();
+
+            mcgSummary.setQuestionId(qd.getId());
+            mcgSummary.setQuestion(qd.getQuestion());
+            mcgSummary.setOrderIndex(qd.getOrderIndex());
+            mcgSummary.setQuestionType(qd.getQuestionType());
+            mcgSummary.setNumberOfResponses(
+                    questionResponseSummary == null ? 0L : questionResponseSummary.getResponseCount()
+            );
+
+            var multipleChoiceGridResponsesForThisQuestion = multipleChoiceGridResponsesMapByQuestionId.get(qd.getId());
+
+            Map<Long, List<MultipleChoiceGridResponse>> multipleChoiceGridResponsesGroupedByRowId = multipleChoiceGridResponsesForThisQuestion == null
+                    ? Map.of()
+                    : multipleChoiceGridResponsesForThisQuestion
+                    .stream()
+                    .collect(Collectors.groupingBy(MultipleChoiceGridResponse::getRowId));
+
+            var responses = qd.getRows().stream().map(row -> {
+
+                var multipleChoiceGridResponsesForThisRow = multipleChoiceGridResponsesGroupedByRowId.get(row.getId());
+
+                Map<Long, MultipleChoiceGridResponse> multipleChoiceGridResponseMapByColumnId = multipleChoiceGridResponsesForThisRow == null
+                        ? Map.of()
+                        : multipleChoiceGridResponsesForThisRow
+                        .stream()
+                        .collect(Collectors.toMap(MultipleChoiceGridResponse::getColumnId, Function.identity()));
+
+                var rowResponse = new MultipleChoiceGridResponseSummaryDto.RowResponse();
+
+                var columnResponses = qd.getColumns().stream().map(column -> {
+
+                    var mcgResponseByColumn = multipleChoiceGridResponseMapByColumnId.get(column.getId());
+
+                    return new MultipleChoiceGridResponseSummaryDto.ColumnResponse(
+                            column.getId(),
+                            column.getColumn(),
+                            mcgResponseByColumn == null ? 0L : mcgResponseByColumn.getResponseCount()
+                    );
+
+                }).toList();
+
+                rowResponse.setRowId(row.getId());
+                rowResponse.setRow(row.getRow());
+                rowResponse.setResponses(columnResponses);
+
+                return rowResponse;
+
+            }).toList();
+
+            mcgSummary.setResponses(responses);
+
+            return mcgSummary;
+
+        }).toList();
     }
 
     @Override
     public MultipleChoiceGridResponseSummaryDto getResponseSummary(Long questionId, MultipleChoiceGridDetailsDto questionRes, Pageable pageable) {
-//        var responseSummary = multipleChoiceGridRepository.getResponseSummary(formId, questionId);
-//        var res = new MultipleChoiceGridResponseSummaryDto();
-//
-//        res.setQuestionId(questionRes.getId());
-//        res.setQuestion(questionRes.getQuestion());
-//        res.setQuestionType(getQuestionType());
-//        res.setOrderIndex(questionRes.getOrderIndex());
-//        res.setNumberOfResponses(responseSummary.numberOfResponses());
-//        res.setResponses(List.of());
-//
-//        return res;
+        var questionResponseSummaryOptional = questionResponseSummaryRepository.findByQuestionId(questionId);
+        var res = new MultipleChoiceGridResponseSummaryDto();
 
-        return null;
+        res.setNumberOfResponses(
+                questionResponseSummaryOptional.isEmpty()
+                        ? 0L : questionResponseSummaryOptional.get().getResponseCount()
+        );
+        res.setResponses(List.of());
+
+        return res;
+
     }
 
     @Override

@@ -9,15 +9,23 @@ import com.sougata.form_engine.dto.question.details.ShortAnswerDetailsDto;
 import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
 import com.sougata.form_engine.dto.question.responseputreqbatch.ShortAnswerResponseBatch;
 import com.sougata.form_engine.dto.question.responseputrequest.ShortAnswerResponsePutReqDto;
+import com.sougata.form_engine.util.IdUtil;
 import com.sougata.form_engine.util.JsonUtil;
+import com.sougata.form_engine.util.StringUtil;
+import com.sougata.form_response_service.model.QuestionResponseSummary;
+import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import com.sougata.form_response_service.repository.ShortAnswerResponseRepository;
 import jakarta.persistence.Tuple;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service("SHORT_ANSWER_RESPONSE_MANAGER")
+@RequiredArgsConstructor
 public class ShortAnswerResponseManager extends ResponseManager<
         ShortAnswerDetailsDto,
         ShortAnswerResponsePutReqDto,
@@ -30,10 +38,7 @@ public class ShortAnswerResponseManager extends ResponseManager<
         > {
 
     private final ShortAnswerResponseRepository shortAnswerRepository;
-
-    public ShortAnswerResponseManager(ShortAnswerResponseRepository shortAnswerRepository) {
-        this.shortAnswerRepository = shortAnswerRepository;
-    }
+    private final QuestionResponseSummaryRepository questionResponseSummaryRepository;
 
     @Override
     public void saveBatched(List<ShortAnswerResponseBatch> shortAnswerResponseBatches) {
@@ -47,96 +52,73 @@ public class ShortAnswerResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<ShortAnswerResponseSummaryDto> getResponseSummaries(UUID formId, List<ShortAnswerDetailsDto> questionResponses) {
-//        var responseSummaries = shortAnswerRepository.getResponseSummaries(formId);
-//        var result = new ArrayList<ShortAnswerResponseSummaryDto>();
-//
-//        questionResponses.forEach(qr ->
-//                result.add(
-//                        responseSummaries.stream()
-//                                .filter(rs -> Objects.equals(rs.questionId(), qr.getId()))
-//                                .map(rs -> {
-//                                    var sa = new ShortAnswerResponseSummaryDto();
-//
-//                                    sa.setQuestionId(qr.getId());
-//                                    sa.setQuestion(qr.getQuestion());
-//                                    sa.setOrderIndex(qr.getOrderIndex());
-//                                    sa.setNumberOfResponses(rs.numberOfResponses());
-//                                    sa.setQuestionType(getQuestionType());
-//                                    sa.setResponses(List.of());
-//
-//                                    return sa;
-//                                })
-//                                .findFirst()
-//                                .orElseGet(() -> {
-//                                    var sa = new ShortAnswerResponseSummaryDto();
-//
-//                                    sa.setQuestionId(qr.getId());
-//                                    sa.setQuestion(qr.getQuestion());
-//                                    sa.setOrderIndex(qr.getOrderIndex());
-//                                    sa.setNumberOfResponses(0L);
-//                                    sa.setQuestionType(getQuestionType());
-//                                    sa.setResponses(List.of());
-//
-//                                    return sa;
-//                                })
-//                ));
-//
-//        return result;
+    public List<ShortAnswerResponseSummaryDto> getResponseSummaries(UUID formId, List<ShortAnswerDetailsDto> questionDetailsList) {
+        var questionResponseSummaries = questionResponseSummaryRepository.findAllByFormId(formId);
 
-        return null;
+        var questionResponseSummariesMapByQuestionId = questionResponseSummaries
+                .stream()
+                .collect(Collectors.toMap(QuestionResponseSummary::getQuestionId, Function.identity()));
+
+        return questionDetailsList.stream().map(qd -> {
+            var questionResponseSummary = questionResponseSummariesMapByQuestionId.get(qd.getId());
+
+            var sa = new ShortAnswerResponseSummaryDto();
+
+            sa.setQuestionId(qd.getId());
+            sa.setQuestion(qd.getQuestion());
+            sa.setOrderIndex(qd.getOrderIndex());
+            sa.setNumberOfResponses(
+                    questionResponseSummary == null ? 0L : questionResponseSummary.getResponseCount()
+            );
+            sa.setQuestionType(qd.getQuestionType());
+            sa.setResponses(List.of());
+
+            return sa;
+
+        }).toList();
     }
 
     @Override
     public ShortAnswerResponseSummaryDto getResponseSummary(Long questionId, ShortAnswerDetailsDto questionRes, Pageable pageable) {
-//        var responseSummary = shortAnswerRepository.getResponseSummary(formId, questionId);
-//        var texts = shortAnswerRepository.getResponseTexts(questionId, pageable);
-//
-//        var sa = new ShortAnswerResponseSummaryDto();
-//
-//        sa.setQuestionId(questionRes.getId());
-//        sa.setQuestion(questionRes.getQuestion());
-//        sa.setOrderIndex(questionRes.getOrderIndex());
-//        sa.setNumberOfResponses(responseSummary.numberOfResponses());
-//        sa.setQuestionType(getQuestionType());
-//        sa.setResponses(texts);
-//
-//        return sa;
+        var questionResponseSummaryOptional = questionResponseSummaryRepository.findByQuestionId(questionId);
+        var texts = shortAnswerRepository.getResponseTexts(questionId, pageable);
 
-        return null;
+        var sa = new ShortAnswerResponseSummaryDto();
+
+        sa.setNumberOfResponses(
+                questionResponseSummaryOptional.isEmpty()
+                        ? 0L : questionResponseSummaryOptional.get().getResponseCount()
+        );
+        sa.setResponses(texts);
+
+        return sa;
     }
 
     @Override
     public ShortAnswerResponseQuestionDto getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
 
-//        var grouped = shortAnswerRepository.groupedByText(formId, questionId, pageable);
-//
-//        var sa = new ShortAnswerResponseQuestionDto();
-//
-//        var responses = grouped.stream().map(g -> {
-//            var res = new ShortAnswerResponseQuestionDto.Response();
-//
-//            res.setQuestionId(questionId);
-//            res.setQuestionType(getQuestionType());
-//            res.setText(g.get("text", String.class));
-//            res.setResponseCount(g.get("responseCount", Long.class));
-//
-//            var map = new HashMap<String, List<String>>();
-//
-//            map.put("text", List.of(StringUtil.emptyIfNull(res.getText())));
-//
-//            res.setFormResponsesIdentifier(IdUtil.generateCompressedEncodedId(map));
-//
-//            return res;
-//        }).toList();
-//
-//        sa.setQuestionId(questionId);
-//        sa.setQuestionType(getQuestionType());
-//        sa.setResponses(responses);
-//
-//        return sa;
+        var grouped = shortAnswerRepository.groupedByText(questionId, pageable);
 
-        return null;
+        var sa = new ShortAnswerResponseQuestionDto();
+
+        var responses = grouped.stream().map(g -> {
+            var res = new ShortAnswerResponseQuestionDto.Response();
+
+            res.setText(g.get("text", String.class));
+            res.setResponseCount(g.get("responseCount", Long.class));
+
+            var map = new HashMap<String, List<String>>();
+
+            map.put("text", List.of(StringUtil.emptyIfNull(res.getText())));
+
+            res.setFormResponsesIdentifier(IdUtil.generateCompressedEncodedId(map));
+
+            return res;
+        }).toList();
+
+        sa.setResponses(responses);
+
+        return sa;
     }
 
     @Override

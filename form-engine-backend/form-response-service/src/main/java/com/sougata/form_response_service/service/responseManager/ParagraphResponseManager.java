@@ -9,15 +9,23 @@ import com.sougata.form_engine.dto.question.details.ParagraphDetailsDto;
 import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
 import com.sougata.form_engine.dto.question.responseputreqbatch.ParagraphResponseBatch;
 import com.sougata.form_engine.dto.question.responseputrequest.ParagraphResponsePutReqDto;
+import com.sougata.form_engine.util.IdUtil;
 import com.sougata.form_engine.util.JsonUtil;
+import com.sougata.form_engine.util.StringUtil;
+import com.sougata.form_response_service.model.QuestionResponseSummary;
 import com.sougata.form_response_service.repository.ParagraphResponseRepository;
+import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service("PARAGRAPH_RESPONSE_MANAGER")
+@RequiredArgsConstructor
 public class ParagraphResponseManager extends ResponseManager<
         ParagraphDetailsDto,
         ParagraphResponsePutReqDto,
@@ -30,10 +38,7 @@ public class ParagraphResponseManager extends ResponseManager<
         > {
 
     private final ParagraphResponseRepository paragraphRepository;
-
-    public ParagraphResponseManager(ParagraphResponseRepository paragraphRepository) {
-        this.paragraphRepository = paragraphRepository;
-    }
+    private final QuestionResponseSummaryRepository questionResponseSummaryRepository;
 
     @Override
     public void saveBatched(List<ParagraphResponseBatch> paragraphResponseBatches) {
@@ -47,95 +52,72 @@ public class ParagraphResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<ParagraphResponseSummaryDto> getResponseSummaries(UUID formId, List<ParagraphDetailsDto> questionResponses) {
-//        var responseSummaries = paragraphRepository.getResponseSummaries(formId);
-//        var result = new ArrayList<ParagraphResponseSummaryDto>();
-//
-//        questionResponses.forEach(qr ->
-//                result.add(
-//                        responseSummaries.stream()
-//                                .filter(rs -> Objects.equals(rs.questionId(), qr.getId()))
-//                                .map(rs -> {
-//                                    var p = new ParagraphResponseSummaryDto();
-//
-//                                    p.setQuestionId(qr.getId());
-//                                    p.setQuestion(qr.getQuestion());
-//                                    p.setOrderIndex(qr.getOrderIndex());
-//                                    p.setNumberOfResponses(rs.numberOfResponses());
-//                                    p.setQuestionType(getQuestionType());
-//                                    p.setResponses(List.of());
-//
-//                                    return p;
-//                                })
-//                                .findFirst()
-//                                .orElseGet(() -> {
-//                                    var p = new ParagraphResponseSummaryDto();
-//
-//                                    p.setQuestionId(qr.getId());
-//                                    p.setQuestion(qr.getQuestion());
-//                                    p.setOrderIndex(qr.getOrderIndex());
-//                                    p.setNumberOfResponses(0L);
-//                                    p.setQuestionType(getQuestionType());
-//                                    p.setResponses(List.of());
-//
-//                                    return p;
-//                                })
-//                ));
-//
-//        return result;
+    public List<ParagraphResponseSummaryDto> getResponseSummaries(UUID formId, List<ParagraphDetailsDto> questionDetailsList) {
+        var questionResponseSummaries = questionResponseSummaryRepository.findAllByFormId(formId);
 
-        return null;
+        var questionResponseSummariesMapByQuestionId = questionResponseSummaries
+                .stream()
+                .collect(Collectors.toMap(QuestionResponseSummary::getQuestionId, Function.identity()));
+
+        return questionDetailsList.stream().map(qd -> {
+            var questionResponseSummary = questionResponseSummariesMapByQuestionId.get(qd.getId());
+
+            var p = new ParagraphResponseSummaryDto();
+
+            p.setQuestionId(qd.getId());
+            p.setQuestion(qd.getQuestion());
+            p.setOrderIndex(qd.getOrderIndex());
+            p.setNumberOfResponses(
+                    questionResponseSummary == null ? 0L : questionResponseSummary.getResponseCount()
+            );
+            p.setQuestionType(qd.getQuestionType());
+            p.setResponses(List.of());
+
+            return p;
+
+        }).toList();
     }
 
     @Override
     public ParagraphResponseSummaryDto getResponseSummary(Long questionId, ParagraphDetailsDto questionRes, Pageable pageable) {
-//        var responseSummary = paragraphRepository.getResponseSummary(formId, questionId);
-//        var texts = paragraphRepository.getResponseTexts(questionId, pageable);
-//
-//        var p = new ParagraphResponseSummaryDto();
-//
-//        p.setQuestionId(questionRes.getId());
-//        p.setQuestion(questionRes.getQuestion());
-//        p.setOrderIndex(questionRes.getOrderIndex());
-//        p.setNumberOfResponses(responseSummary.numberOfResponses());
-//        p.setQuestionType(getQuestionType());
-//        p.setResponses(texts);
-//
-//        return p;
+        var questionResponseSummaryOptional = questionResponseSummaryRepository.findByQuestionId(questionId);
+        var texts = paragraphRepository.getResponseTexts(questionId, pageable);
 
-        return null;
+        var p = new ParagraphResponseSummaryDto();
+
+        p.setNumberOfResponses(
+                questionResponseSummaryOptional.isEmpty()
+                        ? 0L : questionResponseSummaryOptional.get().getResponseCount()
+        );
+        p.setResponses(texts);
+
+        return p;
     }
 
     @Override
     public ParagraphResponseQuestionDto getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
-//        var grouped = paragraphRepository.groupedByText(formId, questionId, pageable);
-//
-//        var p = new ParagraphResponseQuestionDto();
-//
-//        var responses = grouped.stream().map(g -> {
-//            var res = new ParagraphResponseQuestionDto.Response();
-//
-//            res.setQuestionId(questionId);
-//            res.setQuestionType(getQuestionType());
-//            res.setText(g.get("text", String.class));
-//            res.setResponseCount(g.get("responseCount", Long.class));
-//
-//            var map = new HashMap<String, List<String>>();
-//
-//            map.put("text", List.of(StringUtil.emptyIfNull(res.getText())));
-//
-//            res.setFormResponsesIdentifier(IdUtil.generateCompressedEncodedId(map));
-//
-//            return res;
-//        }).toList();
-//
-//        p.setQuestionId(questionId);
-//        p.setQuestionType(getQuestionType());
-//        p.setResponses(responses);
-//
-//        return p;
+        var grouped = paragraphRepository.groupedByText(questionId, pageable);
 
-        return null;
+        var p = new ParagraphResponseQuestionDto();
+
+        var responses = grouped.stream().map(g -> {
+            var res = new ParagraphResponseQuestionDto.Response();
+
+            res.setText(g.get("text", String.class));
+            res.setResponseCount(g.get("responseCount", Long.class));
+
+            var map = new HashMap<String, List<String>>();
+
+            map.put("text", List.of(StringUtil.emptyIfNull(res.getText())));
+
+            res.setFormResponsesIdentifier(IdUtil.generateCompressedEncodedId(map));
+
+            return res;
+        }).toList();
+
+        p.setResponses(responses);
+
+        return p;
     }
 
     @Override

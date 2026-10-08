@@ -3,36 +3,48 @@
 // ============================================================
 
 const FORM_IDS = [
-    "d962ea10-f3c8-4d69-81b0-6aaf8d35f736",
-    "b91cb39f-a944-4c89-b47d-43da924cef6f",
-    "f2f78c70-83bf-4127-822f-889d60bdd3a7",
-    "eab292f7-695d-4896-a0bf-08159731042f",
-    "d2a43247-04c6-4ee6-9c0b-6fa46452e657",
-    "956fc4a2-45ee-4ef3-988a-e5157fb16036",
-    "e1dde034-4055-4446-9e6a-46ebb6ce9470",
-    "a45aea97-5e39-4162-b1df-2e3dd49a2a68",
-    "574e74c2-3cd0-47ba-92c2-fb05ce85d057",
-    "0110bed7-7a54-4fa0-8681-31408f1b86c0"
+    "b91cb39f-a944-4c89-b47d-43da924cef6f"
 ];
 
 const VIEW_URL = "http://localhost:9092/api/v1/forms";
 const RESPONSE_URL = "http://localhost:9093/api/v1/forms";
 
-
 // TOTAL number of response requests across ALL forms
-const NUMBER_OF_REQUESTS = 10000;
+const NUMBER_OF_REQUESTS = 2000;
 
 // Maximum requests PER FORM in each batch
-//
-// Example:
-// 2 forms + concurrency 10
-//
-// Form 1 -> 10
-// Form 2 -> 10
-//
-// Total simultaneous requests = 20
-//
 const CONCURRENCY = 1000;
+
+
+// ============================================================
+// QUESTION RESPONSE CONFIGURATION
+// ============================================================
+//
+// true:
+//     Send response for ALL questions.
+//     required flag is completely ignored.
+//
+// false:
+//     required = true
+//         -> ALWAYS send response
+//
+//     required = false
+//         -> Randomly send response according to
+//            OPTIONAL_RESPONSE_PROBABILITY
+//
+// ============================================================
+
+const RESPOND_TO_ALL_QUESTIONS = true;
+
+
+// Used only when RESPOND_TO_ALL_QUESTIONS = false.
+//
+// 1.0 = always respond to optional questions
+// 0.5 = 50% chance of responding
+// 0.0 = never respond to optional questions
+//
+const OPTIONAL_RESPONSE_PROBABILITY = 0.5;
+
 
 const HEADERS = {
     "Content-Type": "application/json"
@@ -151,12 +163,10 @@ async function fetchFormSchema(
     const url =
         `${VIEW_URL}/${formId}/view`;
 
-
     const response =
         await fetch(
             url,
             {
-
                 method: "GET",
 
                 headers: {
@@ -203,6 +213,53 @@ async function fetchFormSchema(
 
 
 // ============================================================
+// SHOULD RESPOND TO QUESTION?
+// ============================================================
+
+function shouldRespondToQuestion(
+    question
+) {
+
+    // ========================================================
+    // MODE 1:
+    // Respond to EVERY question
+    // ========================================================
+
+    if (
+        RESPOND_TO_ALL_QUESTIONS === true
+    ) {
+
+        return true;
+    }
+
+
+    // ========================================================
+    // MODE 2:
+    // Respect required flag
+    // ========================================================
+
+    // Required question
+    // -> ALWAYS respond
+
+    if (
+        question.required === true
+    ) {
+
+        return true;
+    }
+
+
+    // Optional question
+    // -> Random decision
+
+    return (
+        Math.random() <
+        OPTIONAL_RESPONSE_PROBABILITY
+    );
+}
+
+
+// ============================================================
 // PAYLOAD GENERATOR
 // ============================================================
 
@@ -221,6 +278,20 @@ function generatePayload(
         const question
         of form.questions
     ) {
+
+        // ====================================================
+        // QUESTION RESPONSE DECISION
+        // ====================================================
+
+        if (
+            !shouldRespondToQuestion(
+                question
+            )
+        ) {
+
+            continue;
+        }
+
 
         const questionId =
             question.id;
@@ -416,7 +487,6 @@ function generatePayload(
                 question.toNumber ??
                 5;
 
-
             response = {
 
                 scale:
@@ -449,7 +519,6 @@ function generatePayload(
                 question.maxRatingNumber ??
                 10;
 
-
             response = {
 
                 rating:
@@ -481,7 +550,6 @@ function generatePayload(
             const rows =
                 question.rows ||
                 [];
-
 
             response = {
 
@@ -524,7 +592,6 @@ function generatePayload(
             const rows =
                 question.rows ||
                 [];
-
 
             response = {
 
@@ -729,13 +796,12 @@ async function submitOneResponse(
             await fetch(
                 postUrl,
                 {
-
                     method: "POST",
 
                     headers: {
+
                         ...HEADERS,
 
-                        // SAME userId AS GET
                         "auth-jwt":
                             userId
                     },
@@ -751,7 +817,6 @@ async function submitOneResponse(
         if (!response.ok) {
 
             let message;
-
 
             try {
 
@@ -834,29 +899,129 @@ async function submitOneResponse(
 
 
 // ============================================================
-// MAIN LOAD TEST
+// RANDOM REQUEST DISTRIBUTION
 //
-// TOTAL REQUESTS ARE DISTRIBUTED ACROSS ALL FORMS.
+// NUMBER_OF_REQUESTS is randomly distributed across FORM_IDS.
 //
 // Example:
 //
-// NUMBER_OF_REQUESTS = 100
-// FORM_IDS.length    = 2
-// CONCURRENCY        = 10
+// NUMBER_OF_REQUESTS = 10
+// FORM_IDS = [A, B]
 //
-// Form 1 -> 50 requests
-// Form 2 -> 50 requests
+// Possible:
 //
-// Batch 1:
-// Form 1 -> 10
-// Form 2 -> 10
+// A -> 6
+// B -> 4
 //
-// Batch 2:
-// Form 1 -> 10
-// Form 2 -> 10
+// Or:
 //
-// ...
+// A -> 3
+// B -> 7
 //
+// If NUMBER_OF_REQUESTS >= FORM_IDS.length,
+// every form gets at least 1 request.
+// ============================================================
+
+function distributeRequests(
+    formIds,
+    totalRequests
+) {
+
+    const numberOfForms =
+        formIds.length;
+
+
+    if (
+        numberOfForms === 0
+    ) {
+
+        return [];
+    }
+
+
+    // --------------------------------------------------------
+    // Not enough requests to give every form one request.
+    // --------------------------------------------------------
+
+    if (
+        totalRequests <
+        numberOfForms
+    ) {
+
+        const shuffled =
+            [...formIds].sort(
+                () => Math.random() - 0.5
+            );
+
+
+        return formIds.map(
+            formId => ({
+
+                formId,
+
+                count:
+                    shuffled
+                        .slice(
+                            0,
+                            totalRequests
+                        )
+                        .includes(
+                            formId
+                        )
+                        ? 1
+                        : 0
+            })
+        );
+    }
+
+
+    // --------------------------------------------------------
+    // Give every form one request first.
+    // --------------------------------------------------------
+
+    const counts =
+        formIds.map(
+            formId => ({
+
+                formId,
+                count: 1
+            })
+        );
+
+
+    let remaining =
+        totalRequests -
+        numberOfForms;
+
+
+    // --------------------------------------------------------
+    // Randomly distribute remaining requests.
+    // --------------------------------------------------------
+
+    while (
+        remaining > 0
+    ) {
+
+        const randomIndex =
+            Math.floor(
+                Math.random() *
+                numberOfForms
+            );
+
+        counts[
+            randomIndex
+        ].count++;
+
+        remaining--;
+    }
+
+
+    return counts;
+}
+
+
+// ============================================================
+// MAIN LOAD TEST
 // ============================================================
 
 async function main() {
@@ -890,51 +1055,66 @@ async function main() {
     }
 
 
-    console.log(
-        `Forms             : ${numberOfForms}`
-    );
+    if (
+        NUMBER_OF_REQUESTS <= 0
+    ) {
 
-    console.log(
-        `Total Requests    : ${NUMBER_OF_REQUESTS}`
-    );
-
-    console.log(
-        `Concurrency/Form  : ${CONCURRENCY}`
-    );
-
-
-    // ========================================================
-    // DISTRIBUTE REQUESTS ACROSS FORMS
-    // ========================================================
-
-    const baseRequestsPerForm =
-        Math.floor(
-            NUMBER_OF_REQUESTS /
-            numberOfForms
+        console.error(
+            "NUMBER_OF_REQUESTS must be greater than 0."
         );
 
+        return;
+    }
 
-    const remainder =
-        NUMBER_OF_REQUESTS %
-        numberOfForms;
 
+    if (
+        OPTIONAL_RESPONSE_PROBABILITY < 0 ||
+        OPTIONAL_RESPONSE_PROBABILITY > 1
+    ) {
+
+        console.error(
+            "OPTIONAL_RESPONSE_PROBABILITY must be between 0 and 1."
+        );
+
+        return;
+    }
+
+
+    console.log(
+        `Forms                  : ${numberOfForms}`
+    );
+
+    console.log(
+        `Total Requests         : ${NUMBER_OF_REQUESTS}`
+    );
+
+    console.log(
+        `Concurrency/Form       : ${CONCURRENCY}`
+    );
+
+    console.log(
+        `Respond To All         : ${RESPOND_TO_ALL_QUESTIONS}`
+    );
+
+    if (
+        RESPOND_TO_ALL_QUESTIONS === false
+    ) {
+
+        console.log(
+            `Optional Response Rate : ` +
+            `${OPTIONAL_RESPONSE_PROBABILITY * 100}%`
+        );
+    }
+
+
+    // ========================================================
+    // RANDOMLY DISTRIBUTE REQUESTS ACROSS FORMS
+    // ========================================================
 
     const formRequestCounts =
-        FORM_IDS.map(
-            (formId, index) => {
-
-                return {
-                    formId,
-
-                    count:
-                        baseRequestsPerForm +
-                        (
-                            index < remainder
-                                ? 1
-                                : 0
-                        )
-                };
-            }
+        distributeRequests(
+            FORM_IDS,
+            NUMBER_OF_REQUESTS
         );
 
 
@@ -960,6 +1140,24 @@ async function main() {
 
     console.log(
         "----------------------------------------------"
+    );
+
+
+    const distributedTotal =
+        formRequestCounts.reduce(
+            (
+                total,
+                item
+            ) =>
+                total +
+                item.count,
+
+            0
+        );
+
+
+    console.log(
+        `Distributed Total    : ${distributedTotal}`
     );
 
 
@@ -994,25 +1192,18 @@ async function main() {
 
     // ========================================================
     // PROCESS BATCHES
-    //
-    // IMPORTANT:
-    //
-    // Each form gets up to CONCURRENCY requests.
-    //
-    // ALL forms execute their batch simultaneously.
-    // ========================================================
-
-    // ========================================================
-    // PROCESS BATCHES
     // ========================================================
 
     let batchNumber = 1;
+
 
     while (
         formRequestCounts.some(
             item =>
                 currentIndexes[
-                FORM_IDS.indexOf(item.formId)
+                    FORM_IDS.indexOf(
+                        item.formId
+                    )
                 ] <= item.count
         )
     ) {
@@ -1021,7 +1212,9 @@ async function main() {
             `\nBATCH ${batchNumber}`
         );
 
-        const batchPromises = [];
+
+        const batchPromises =
+            [];
 
 
         // ====================================================
@@ -1030,24 +1223,34 @@ async function main() {
 
         for (
             let formIndex = 0;
-            formIndex < numberOfForms;
+
+            formIndex <
+            numberOfForms;
+
             formIndex++
         ) {
 
             const formId =
-                FORM_IDS[formIndex];
+                FORM_IDS[
+                    formIndex
+                ];
 
             const totalForThisForm =
-                formRequestCounts[formIndex].count;
+                formRequestCounts[
+                    formIndex
+                ].count;
 
             const startIndex =
-                currentIndexes[formIndex];
+                currentIndexes[
+                    formIndex
+                ];
 
 
             if (
                 startIndex >
                 totalForThisForm
             ) {
+
                 continue;
             }
 
@@ -1062,7 +1265,9 @@ async function main() {
                 );
 
 
-            currentIndexes[formIndex] =
+            currentIndexes[
+                formIndex
+            ] =
                 endIndex + 1;
 
 
@@ -1071,9 +1276,11 @@ async function main() {
             // =================================================
 
             for (
-                let requestIndex = startIndex;
+                let requestIndex =
+                    startIndex;
 
-                requestIndex <= endIndex;
+                requestIndex <=
+                endIndex;
 
                 requestIndex++
             ) {
@@ -1083,41 +1290,45 @@ async function main() {
                         formId,
                         requestIndex
                     )
-                        .then(result => {
+                        .then(
+                            result => {
 
-                            totalCompleted++;
+                                totalCompleted++;
 
 
-                            if (result.success) {
+                                if (
+                                    result.success
+                                ) {
 
-                                totalSuccessful++;
+                                    totalSuccessful++;
 
-                                // NO NEW LINE
+                                    process.stdout
+                                        ?.write?.(
+                                            "✅ "
+                                        );
+
+                                } else {
+
+                                    failedRequests.push(
+                                        result
+                                    );
+
+                                    process.stdout
+                                        ?.write?.(
+                                            "❌ "
+                                        );
+                                }
+
+
                                 process.stdout
-                                    ?.write?.("✅ ");
+                                    ?.write?.(
+                                        `${totalCompleted}/${NUMBER_OF_REQUESTS} `
+                                    );
 
-                            } else {
 
-                                failedRequests.push(
-                                    result
-                                );
-
-                                // NO NEW LINE
-                                process.stdout
-                                    ?.write?.("❌ ");
+                                return result;
                             }
-
-
-                            // Keep the progress counter on
-                            // the SAME LINE
-                            process.stdout
-                                ?.write?.(
-                                    `${totalCompleted}/${NUMBER_OF_REQUESTS} `
-                                );
-
-
-                            return result;
-                        });
+                        );
 
 
                 batchPromises.push(
@@ -1137,11 +1348,13 @@ async function main() {
 
 
         // ====================================================
-        // ONLY NOW MOVE TO NEXT LINE
+        // MOVE TO NEXT LINE
         // ====================================================
 
         process.stdout
-            ?.write?.("\n");
+            ?.write?.(
+                "\n"
+            );
 
 
         batchNumber++;
@@ -1157,7 +1370,9 @@ async function main() {
     // SUMMARY
     // ========================================================
 
-    console.log("\n");
+    console.log(
+        "\n"
+    );
 
     console.log(
         "══════════════════════════════════════════════"
@@ -1185,11 +1400,13 @@ async function main() {
 
     console.log(
         `Success Rate   : ` +
-        `${(
-            totalSuccessful /
-            NUMBER_OF_REQUESTS *
-            100
-        ).toFixed(2)}%`
+        `${
+            (
+                totalSuccessful /
+                NUMBER_OF_REQUESTS *
+                100
+            ).toFixed(2)
+        }%`
     );
 
     console.log(

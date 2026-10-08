@@ -21,7 +21,7 @@ import java.util.UUID;
                 @UniqueConstraint(
                         name = "uk_form_id_user_id",
                         columnNames = {
-                                "form_id",
+                                "form_response_summary_form_id",
                                 "user_id"
                         }
                 )
@@ -36,8 +36,10 @@ public class FormResponseIndividual implements Persistable<UUID> {
     @Id
     private UUID formResponseId;
 
-    @Column(nullable = false)
-    private UUID formId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private FormResponseSummary formResponseSummary;
 
     @Column(nullable = false)
     private UUID userId;

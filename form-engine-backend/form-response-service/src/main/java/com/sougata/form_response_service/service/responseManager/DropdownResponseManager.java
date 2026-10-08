@@ -2,6 +2,7 @@ package com.sougata.form_response_service.service.responseManager;
 
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.formResponse.individual.DropdownResponseIndividualDto;
+import com.sougata.form_engine.dto.formResponse.question.DateTimeResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.question.DropdownResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.DropdownResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.QuestionResponseBatches;
@@ -9,15 +10,25 @@ import com.sougata.form_engine.dto.question.details.DropdownDetailsDto;
 import com.sougata.form_engine.dto.question.responseputreqbatch.DropdownResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
 import com.sougata.form_engine.dto.question.responseputrequest.DropdownResponsePutReqDto;
+import com.sougata.form_engine.util.IdUtil;
 import com.sougata.form_engine.util.JsonUtil;
+import com.sougata.form_response_service.model.AnyTypeQuestionResponse;
+import com.sougata.form_response_service.model.DropdownResponse;
+import com.sougata.form_response_service.model.QuestionResponseSummary;
 import com.sougata.form_response_service.repository.DropdownResponseRepository;
+import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service("DROPDOWN_RESPONSE_MANAGER")
+@RequiredArgsConstructor
 public class DropdownResponseManager extends ResponseManager<
         DropdownDetailsDto,
         DropdownResponsePutReqDto,
@@ -30,10 +41,7 @@ public class DropdownResponseManager extends ResponseManager<
         > {
 
     private final DropdownResponseRepository dropdownRepository;
-
-    public DropdownResponseManager(DropdownResponseRepository dropdownRepository) {
-        this.dropdownRepository = dropdownRepository;
-    }
+    private final QuestionResponseSummaryRepository questionResponseSummaryRepository;
 
     @Override
     public void saveBatched(List<DropdownResponseBatch> dropdownResponseBatches) {
@@ -47,112 +55,99 @@ public class DropdownResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<DropdownResponseSummaryDto> getResponseSummaries(UUID formId, List<DropdownDetailsDto> questionResponses) {
-//        var responseSummaries = dropdownRepository.getResponseSummaries(formId);
-//        var result = new ArrayList<DropdownResponseSummaryDto>();
-//
-//        var responseOptionCountMap = dropdownRepository.getResponseOptionCount(formId)
-//                .stream().collect(Collectors.groupingBy(e -> e.get("questionId", Long.class)));
-//
-//        questionResponses.forEach(qr ->
-//                result.add(
-//                        responseSummaries.stream()
-//                                .filter(rs -> Objects.equals(rs.questionId(), qr.getId()))
-//                                .map(rs -> {
-//                                    var dd = new DropdownResponseSummaryDto();
-//
-//                                    dd.setQuestionId(qr.getId());
-//                                    dd.setQuestion(qr.getQuestion());
-//                                    dd.setOrderIndex(qr.getOrderIndex());
-//                                    dd.setNumberOfResponses(rs.numberOfResponses());
-//                                    dd.setQuestionType(getQuestionType());
-//
-//                                    var countMap = new HashMap<Long, Long>();
-//
-//                                    responseOptionCountMap.get(qr.getId()).forEach(cm ->
-//                                            countMap.put(cm.get("responseOptionId", Long.class), cm.get("responseCount", Long.class))
-//                                    );
-//
-//                                    var responses = qr.getOptions().stream().map(op ->
-//                                            new DropdownResponseSummaryDto.Response(
-//                                                    op.getId(),
-//                                                    op.getOption(),
-//                                                    countMap.getOrDefault(op.getId(), 0L)
-//
-//                                            )).toList();
-//
-//                                    dd.setResponses(responses);
-//
-//                                    return dd;
-//                                })
-//                                .findFirst()
-//                                .orElseGet(() -> {
-//                                    var dd = new DropdownResponseSummaryDto();
-//
-//                                    dd.setQuestionId(qr.getId());
-//                                    dd.setQuestion(qr.getQuestion());
-//                                    dd.setOrderIndex(qr.getOrderIndex());
-//                                    dd.setNumberOfResponses(0L);
-//                                    dd.setQuestionType(QuestionType.DROPDOWN);
-//                                    dd.setResponses(List.of());
-//
-//                                    return dd;
-//                                })
-//                )
-//        );
-//
-//        return result;
+    public List<DropdownResponseSummaryDto> getResponseSummaries(UUID formId, List<DropdownDetailsDto> questionDetailsList) {
+        var questionResponseSummaries = questionResponseSummaryRepository.findAllByFormId(formId);
+        var dropdownResponses = dropdownRepository.findAllByFormId(formId, Pageable.unpaged());
 
-        return null;
+        var questionResponseSummariesMapByQuestionId = questionResponseSummaries
+                .stream()
+                .collect(Collectors.toMap(QuestionResponseSummary::getQuestionId, Function.identity()));
+
+        var dropdownResponsesMapByQuestionId = dropdownResponses
+                .stream()
+                .collect(Collectors.groupingBy(AnyTypeQuestionResponse::getQuestionId));
+
+        return questionDetailsList.stream().map(qd -> {
+            var questionResponseSummary = questionResponseSummariesMapByQuestionId.get(qd.getId());
+
+            var ddSummary = new DropdownResponseSummaryDto();
+
+            ddSummary.setQuestionId(qd.getId());
+            ddSummary.setQuestion(qd.getQuestion());
+            ddSummary.setOrderIndex(qd.getOrderIndex());
+            ddSummary.setQuestionType(qd.getQuestionType());
+            ddSummary.setNumberOfResponses(
+                    questionResponseSummary == null ? 0L : questionResponseSummary.getResponseCount()
+            );
+
+            var dropdownResponsesForThisQuestion = dropdownResponsesMapByQuestionId.get(qd.getId());
+
+            Map<Long, DropdownResponse> dropdownResponsesMapByOptionId = dropdownResponsesForThisQuestion == null
+                    ? Map.of()
+                    : dropdownResponsesForThisQuestion
+                    .stream()
+                    .collect(Collectors.toMap(DropdownResponse::getOptionId, Function.identity()));
+
+            var responses = qd.getOptions().stream().map(option -> {
+
+                var cbResponse = dropdownResponsesMapByOptionId.get(option.getId());
+
+                return new DropdownResponseSummaryDto.Response(
+                        option.getId(),
+                        option.getOption(),
+                        cbResponse == null ? 0L : cbResponse.getResponseCount()
+                );
+
+            }).toList();
+
+            ddSummary.setResponses(responses);
+
+            return ddSummary;
+        }).toList();
     }
 
     @Override
-    public DropdownResponseSummaryDto getResponseSummary(Long questionId, DropdownDetailsDto questionRes, Pageable pageable) {
-//        var responseSummary = dropdownRepository.getResponseSummary(formId, questionId);
-//        var res = new DropdownResponseSummaryDto();
-//
-//        res.setQuestionId(questionRes.getId());
-//        res.setQuestion(questionRes.getQuestion());
-//        res.setQuestionType(getQuestionType());
-//        res.setOrderIndex(questionRes.getOrderIndex());
-//        res.setNumberOfResponses(responseSummary.numberOfResponses());
-//        res.setResponses(List.of());
-//
-//        return res;
+    public DropdownResponseSummaryDto getResponseSummary(Long questionId, DropdownDetailsDto questionDetails, Pageable pageable) {
+        var questionResponseSummaryOptional = questionResponseSummaryRepository.findByQuestionId(questionId);
 
-        return null;
+        var ddSummary = new DropdownResponseSummaryDto();
+
+        ddSummary.setNumberOfResponses(
+                questionResponseSummaryOptional.isEmpty()
+                        ? 0L : questionResponseSummaryOptional.get().getResponseCount()
+        );
+        ddSummary.setResponses(List.of());
+
+        return ddSummary;
     }
 
     @Override
     public DropdownResponseQuestionDto getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
-//        var grouped = dropdownRepository.groupedByResponseOption(formId, questionId, pageable);
-//
-//        var d = new DropdownResponseQuestionDto();
-//
-//        var responses = grouped.stream().map(g -> {
-//            var res = new DropdownResponseQuestionDto.Response();
-//
-//            res.setQuestionId(questionId);
-//            res.setQuestionType(getQuestionType());
-//            res.setOptionId(g.get("optionId", Long.class));
-//            res.setResponseCount(g.get("responseCount", Long.class));
-//
-//            var map = new HashMap<String, List<String>>();
-//
-//            map.put("optionId", List.of(res.getOptionId() == null ? "" : res.getOptionId().toString()));
-//
-//            res.setFormResponsesIdentifier(IdUtil.generateCompressedEncodedId(map));
-//
-//            return res;
-//        }).toList();
-//
-//        d.setQuestionId(questionId);
-//        d.setQuestionType(getQuestionType());
-//        d.setResponses(responses);
-//
-//        return d;
+        var dropdownResponseQuestion = new DropdownResponseQuestionDto();
 
-        return null;
+        var groupedByOptionIds = dropdownRepository.groupedByOptionIds(questionId, pageable);
+
+        var responses = groupedByOptionIds.stream().map(tuple -> {
+            var res = new DropdownResponseQuestionDto.Response();
+
+            res.setResponseCount(tuple.get("responseCount", Long.class));
+            res.setOptionId(tuple.get("optionId", Long.class));
+
+            var formResponseIdentifierMap = new HashMap<String, List<String>>();
+            formResponseIdentifierMap.put(
+                    "optionId",
+                    List.of(res.getOptionId() == null ? "" : res.getOptionId().toString())
+            );
+
+            res.setFormResponsesIdentifier(IdUtil.generateCompressedEncodedId(formResponseIdentifierMap));
+
+            return res;
+
+        }).toList();
+
+        dropdownResponseQuestion.setResponses(responses);
+
+        return dropdownResponseQuestion;
     }
 
     @Override

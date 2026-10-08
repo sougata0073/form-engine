@@ -3,6 +3,7 @@ package com.sougata.form_response_service.scheduledtask;
 import com.sougata.form_engine.constant.RedisConsumerGroupNames;
 import com.sougata.form_engine.constant.RedisStreamKeys;
 import com.sougata.form_engine.constant.RedisStreamNames;
+import com.sougata.form_engine.constant.cache.FormResponseCacheNames;
 import com.sougata.form_engine.dto.messaging.FormResponseSavedMessage;
 import com.sougata.form_engine.dto.pgfunctionparameter.FormResponseCounts;
 import com.sougata.form_engine.dto.pgfunctionparameter.FormResponseInfos;
@@ -12,7 +13,9 @@ import com.sougata.form_engine.dto.question.responseputreqbatch.QuestionResponse
 import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.service.responseManager.ResponseManagerFactory;
+import com.sougata.form_response_service.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.connection.stream.*;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -30,6 +34,7 @@ public class ProcessFormResponseTask {
     private final ResponseManagerFactory responseManagerFactory;
     private final RedisTemplate<String, Object> redisTemplate;
     private final FormResponseSummaryRepository formResponseSummaryRepository;
+    private final RedissonClient redissonClient;
 
     @SuppressWarnings("unchecked")
     @Transactional
@@ -178,6 +183,35 @@ public class ProcessFormResponseTask {
                 RedisConsumerGroupNames.FORM_RESPONSE_CONSUMER,
                 messageIdsToAcknowledge.toArray(new RecordId[0])
         );
+
+        evictCache(formResponseSavedMessages);
+    }
+
+    private void evictCache(List<FormResponseSavedMessage> formResponseSavedMessages) {
+
+        var cacheKeys = new ArrayList<String>();
+        var cacheKeyPatterns = new ArrayList<String>();
+
+        formResponseSavedMessages.forEach(formResponseSavedMessage -> {
+            cacheKeys.addAll(
+                    List.of(
+                            CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_COUNT, formResponseSavedMessage.getFormId()),
+                            CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_SUMMARIES, formResponseSavedMessage.getFormId())
+                    )
+            );
+            cacheKeyPatterns.addAll(
+                    List.of(
+                            CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_BY_QUESTION, "formId=" + formResponseSavedMessage.getFormId()) + "::*",
+                            CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_SUMMARIES, "formId=" + formResponseSavedMessage.getFormId()) + "::*",
+                            CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_SUMMARY, "formId=" + formResponseSavedMessage.getFormId()) + "::*"
+                    )
+            );
+        });
+
+        var rKeys = redissonClient.getKeys();
+
+        rKeys.deleteAsync(cacheKeys.toArray(new String[0]));
+        cacheKeyPatterns.forEach(rKeys::deleteByPatternAsync);
     }
 
 }

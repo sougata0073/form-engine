@@ -9,16 +9,23 @@ import com.sougata.form_engine.dto.question.details.TimeDetailsDto;
 import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
 import com.sougata.form_engine.dto.question.responseputreqbatch.TimeResponseBatch;
 import com.sougata.form_engine.dto.question.responseputrequest.TimeResponsePutReqDto;
+import com.sougata.form_engine.util.IdUtil;
 import com.sougata.form_engine.util.JsonUtil;
+import com.sougata.form_response_service.model.QuestionResponseSummary;
+import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import com.sougata.form_response_service.repository.TimeResponseRepository;
 import jakarta.persistence.Tuple;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service("TIME_RESPONSE_MANAGER")
+@RequiredArgsConstructor
 public class TimeResponseManager extends ResponseManager<
         TimeDetailsDto,
         TimeResponsePutReqDto,
@@ -31,10 +38,7 @@ public class TimeResponseManager extends ResponseManager<
         > {
 
     private final TimeResponseRepository timeRepository;
-
-    public TimeResponseManager(TimeResponseRepository timeRepository) {
-        this.timeRepository = timeRepository;
-    }
+    private final QuestionResponseSummaryRepository questionResponseSummaryRepository;
 
     @Override
     public void saveBatched(List<TimeResponseBatch> timeResponseBatches) {
@@ -48,118 +52,101 @@ public class TimeResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<TimeResponseSummaryDto> getResponseSummaries(UUID formId, List<TimeDetailsDto> questionResponses) {
-//        var responseSummaries = timeRepository.getResponseSummaries(formId);
-//        var result = new ArrayList<TimeResponseSummaryDto>();
-//
-//        questionResponses.forEach(qr ->
-//                result.add(
-//                        responseSummaries.stream()
-//                                .filter(rs -> Objects.equals(rs.questionId(), qr.getId()))
-//                                .map(rs -> {
-//                                    var t = new TimeResponseSummaryDto();
-//
-//                                    t.setQuestionId(qr.getId());
-//                                    t.setQuestion(qr.getQuestion());
-//                                    t.setOrderIndex(qr.getOrderIndex());
-//                                    t.setNumberOfResponses(rs.numberOfResponses());
-//                                    t.setQuestionType(getQuestionType());
-//                                    t.setResponses(List.of());
-//
-//                                    return t;
-//                                })
-//                                .findFirst()
-//                                .orElseGet(() -> {
-//                                    var t = new TimeResponseSummaryDto();
-//
-//                                    t.setQuestionId(qr.getId());
-//                                    t.setQuestion(qr.getQuestion());
-//                                    t.setOrderIndex(qr.getOrderIndex());
-//                                    t.setNumberOfResponses(0L);
-//                                    t.setQuestionType(getQuestionType());
-//                                    t.setResponses(List.of());
-//
-//                                    return t;
-//                                })
-//                ));
-//
-//        return result;
+    public List<TimeResponseSummaryDto> getResponseSummaries(UUID formId, List<TimeDetailsDto> questionDetailsList) {
+        var questionResponseSummaries = questionResponseSummaryRepository.findAllByFormId(formId);
 
-        return null;
+        var questionResponseSummariesMapByQuestionId = questionResponseSummaries
+                .stream()
+                .collect(Collectors.toMap(QuestionResponseSummary::getQuestionId, Function.identity()));
+
+        return questionDetailsList.stream().map(qd -> {
+            var questionResponseSummary = questionResponseSummariesMapByQuestionId.get(qd.getId());
+
+            var t = new TimeResponseSummaryDto();
+
+            t.setQuestionId(qd.getId());
+            t.setQuestion(qd.getQuestion());
+            t.setOrderIndex(qd.getOrderIndex());
+            t.setNumberOfResponses(
+                    questionResponseSummary == null ? 0L : questionResponseSummary.getResponseCount()
+            );
+            t.setQuestionType(qd.getQuestionType());
+            t.setResponses(List.of());
+
+            return t;
+
+        }).toList();
     }
 
     @Override
     public TimeResponseSummaryDto getResponseSummary(Long questionId, TimeDetailsDto questionRes, Pageable pageable) {
-//        var responseSummary = timeRepository.getResponseSummary(formId, questionId);
-//        var timeResponses = timeRepository.getResponseTimes(questionId, pageable);
-//
-//        var t = new TimeResponseSummaryDto();
-//
-//        t.setQuestionId(questionRes.getId());
-//        t.setQuestion(questionRes.getQuestion());
-//        t.setOrderIndex(questionRes.getOrderIndex());
-//        t.setNumberOfResponses(responseSummary.numberOfResponses());
-//        t.setQuestionType(getQuestionType());
-//
-//        var responses = timeResponses.stream()
-//                .map(tuple -> {
-//                    var res = new TimeResponseSummaryDto.Response();
-//
-//                    var times = Arrays.asList(tuple.get("times", String[].class));
-//                    var timeCounts = Arrays.asList(tuple.get("timeCounts", Long[].class));
-//
-//                    var timeCountPairs = new ArrayList<TimeResponseSummaryDto.TimeCountPair>();
-//
-//                    for (int i = 0; i < times.size(); i++) {
-//                        timeCountPairs.add(
-//                                new TimeResponseSummaryDto.TimeCountPair(Instant.parse(times.get(i)), timeCounts.get(i))
-//                        );
-//                    }
-//
-//                    res.setHour(tuple.get("hour", Integer.class));
-//                    res.setTimes(timeCountPairs);
-//
-//                    return res;
-//                }).toList();
-//
-//        t.setResponses(responses);
-//
-//        return t;
+        var questionResponseSummaryOptional = questionResponseSummaryRepository.findByQuestionId(questionId);
+        var groupedByHour = timeRepository.groupedByHour(questionId, pageable);
 
-        return null;
+        var t = new TimeResponseSummaryDto();
+
+        t.setNumberOfResponses(
+                questionResponseSummaryOptional.isEmpty()
+                        ? 0L : questionResponseSummaryOptional.get().getResponseCount()
+        );
+
+        var responses = groupedByHour.stream()
+                .map(tuple -> {
+                    var res = new TimeResponseSummaryDto.Response();
+
+                    var times = tuple.get("times", String[].class);
+                    var timeCounts = tuple.get("timeCounts", Long[].class);
+
+                    if (times.length != timeCounts.length) {
+                        throw new RuntimeException("Time and time count array length mismatch. Time array length: " + times.length + ". Time count array length: " + timeCounts.length);
+                    }
+
+                    var timeCountPairs = new ArrayList<TimeResponseSummaryDto.TimeCountPair>();
+
+                    for (int i = 0; i < times.length; i++) {
+                        timeCountPairs.add(
+                                new TimeResponseSummaryDto.TimeCountPair(
+                                        Instant.parse(times[i]), timeCounts[i]
+                                )
+                        );
+                    }
+
+                    res.setHour(tuple.get("hour", Integer.class));
+                    res.setTimes(timeCountPairs);
+
+                    return res;
+                }).toList();
+
+        t.setResponses(responses);
+
+        return t;
     }
 
     @Override
     public TimeResponseQuestionDto getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
-//        var grouped = timeRepository.groupedByTime(formId, questionId, pageable);
-//
-//        var t = new TimeResponseQuestionDto();
-//
-//        var responses = grouped.stream().map(g -> {
-//            var res = new TimeResponseQuestionDto.Response();
-//
-//            res.setQuestionId(questionId);
-//            res.setQuestionType(getQuestionType());
-//            res.setTime(g.get("time", Instant.class));
-//            res.setResponseCount(g.get("responseCount", Long.class));
-//
-//            var map = new HashMap<String, List<String>>();
-//
-//            map.put("time", List.of(res.getTime() == null ? "" : res.getTime().toString()));
-//
-//            res.setFormResponsesIdentifier(IdUtil.generateCompressedEncodedId(map));
-//
-//            return res;
-//
-//        }).toList();
-//
-//        t.setQuestionId(questionId);
-//        t.setQuestionType(getQuestionType());
-//        t.setResponses(responses);
-//
-//        return t;
+        var grouped = timeRepository.groupedByTime(formId, questionId, pageable);
 
-        return null;
+        var t = new TimeResponseQuestionDto();
+
+        var responses = grouped.stream().map(g -> {
+            var res = new TimeResponseQuestionDto.Response();
+
+            res.setTime(g.get("time", Instant.class));
+            res.setResponseCount(g.get("responseCount", Long.class));
+
+            var map = new HashMap<String, List<String>>();
+
+            map.put("time", List.of(res.getTime() == null ? "" : res.getTime().toString()));
+
+            res.setFormResponsesIdentifier(IdUtil.generateCompressedEncodedId(map));
+
+            return res;
+
+        }).toList();
+
+        t.setResponses(responses);
+
+        return t;
     }
 
     @Override

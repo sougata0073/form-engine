@@ -2,8 +2,10 @@ package com.sougata.form_response_service.repository;
 
 import com.sougata.form_response_service.model.FormResponseSummary;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -26,5 +28,10 @@ public interface FormResponseSummaryRepository extends JpaRepository<FormRespons
             String questionResponseCountsJson,
             String formResponseIdsJson
     );
+
+    @Modifying
+    @Transactional
+    @Query("delete from FormResponseSummary frs where frs.formId = :formId")
+    void deleteByFormId(UUID formId);
 
 }

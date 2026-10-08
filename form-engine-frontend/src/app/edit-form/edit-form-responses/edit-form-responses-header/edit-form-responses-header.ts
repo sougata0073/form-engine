@@ -31,8 +31,6 @@ type TabLink = 'summary' | 'question' | 'individual'
 })
 export class EditFormResponsesHeader implements OnInit {
 
-  formId = input.required<string>()
-
   protected tabs = signal<{ label: string, link: TabLink }[]>([])
   protected activatedLink = signal<TabLink>('summary')
 

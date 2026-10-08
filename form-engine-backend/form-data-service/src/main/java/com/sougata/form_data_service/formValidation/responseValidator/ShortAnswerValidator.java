@@ -2,10 +2,10 @@ package com.sougata.form_data_service.formValidation.responseValidator;
 
 import com.sougata.form_data_service.constant.ValidationMessages;
 import com.sougata.form_data_service.formValidation.exception.ResponseValidationException;
+import com.sougata.form_engine.dto.question.responseputrequest.ShortAnswerResponsePutReqDto;
 import com.sougata.form_engine.dto.validation.config.NoneValidationConfig;
 import com.sougata.form_engine.dto.validation.config.ShortAnswerValidationConfig;
 import com.sougata.form_engine.util.StringUtil;
-import com.sougata.form_engine.dto.question.responseputrequest.ShortAnswerResponsePutReqDto;
 
 public class ShortAnswerValidator {
 

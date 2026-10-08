@@ -9,16 +9,23 @@ import com.sougata.form_engine.dto.question.details.DateDetailsDto;
 import com.sougata.form_engine.dto.question.responseputreqbatch.DateResponseBatch;
 import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
 import com.sougata.form_engine.dto.question.responseputrequest.DateResponsePutReqDto;
+import com.sougata.form_engine.util.IdUtil;
 import com.sougata.form_engine.util.JsonUtil;
+import com.sougata.form_response_service.model.QuestionResponseSummary;
 import com.sougata.form_response_service.repository.DateResponseRepository;
+import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service("DATE_RESPONSE_MANAGER")
+@RequiredArgsConstructor
 public class DateResponseManager extends ResponseManager<
         DateDetailsDto,
         DateResponsePutReqDto,
@@ -31,10 +38,7 @@ public class DateResponseManager extends ResponseManager<
         > {
 
     private final DateResponseRepository dateRepository;
-
-    public DateResponseManager(DateResponseRepository dateRepository) {
-        this.dateRepository = dateRepository;
-    }
+    private final QuestionResponseSummaryRepository questionResponseSummaryRepository;
 
     @Override
     public void saveBatched(List<DateResponseBatch> dateResponseBatches) {
@@ -48,121 +52,104 @@ public class DateResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<DateResponseSummaryDto> getResponseSummaries(UUID formId, List<DateDetailsDto> questionResponses) {
-//        var responseSummaries = dateRepository.getResponseSummaries(formId);
-//        var result = new ArrayList<DateResponseSummaryDto>();
-//
-//        questionResponses.forEach(qr ->
-//                result.add(
-//                        responseSummaries.stream()
-//                                .filter(rs -> Objects.equals(rs.questionId(), qr.getId()))
-//                                .map(rs -> {
-//                                    var d = new DateResponseSummaryDto();
-//
-//                                    d.setQuestionId(qr.getId());
-//                                    d.setQuestion(qr.getQuestion());
-//                                    d.setOrderIndex(qr.getOrderIndex());
-//                                    d.setNumberOfResponses(rs.numberOfResponses());
-//                                    d.setQuestionType(QuestionType.DATE);
-//                                    d.setResponses(List.of());
-//
-//                                    return d;
-//                                })
-//                                .findFirst()
-//                                .orElseGet(() -> {
-//                                    var d = new DateResponseSummaryDto();
-//
-//                                    d.setQuestionId(qr.getId());
-//                                    d.setQuestion(qr.getQuestion());
-//                                    d.setOrderIndex(qr.getOrderIndex());
-//                                    d.setNumberOfResponses(0L);
-//                                    d.setQuestionType(QuestionType.DATE);
-//                                    d.setResponses(List.of());
-//
-//                                    return d;
-//                                })
-//                ));
-//
-//        return result;
+    public List<DateResponseSummaryDto> getResponseSummaries(UUID formId, List<DateDetailsDto> questionDetailsList) {
+        var questionResponseSummaries = questionResponseSummaryRepository.findAllByFormId(formId);
 
-        return null;
+        var questionResponseSummariesMapByQuestionId = questionResponseSummaries
+                .stream()
+                .collect(Collectors.toMap(QuestionResponseSummary::getQuestionId, Function.identity()));
+
+        return questionDetailsList.stream().map(qd -> {
+            var questionResponseSummary = questionResponseSummariesMapByQuestionId.get(qd.getId());
+
+            var d = new DateResponseSummaryDto();
+
+            d.setQuestionId(qd.getId());
+            d.setQuestion(qd.getQuestion());
+            d.setOrderIndex(qd.getOrderIndex());
+            d.setNumberOfResponses(
+                    questionResponseSummary == null ? 0L : questionResponseSummary.getResponseCount()
+            );
+            d.setQuestionType(qd.getQuestionType());
+            d.setResponses(List.of());
+
+            return d;
+
+        }).toList();
     }
 
     @Override
     public DateResponseSummaryDto getResponseSummary(Long questionId, DateDetailsDto questionRes, Pageable pageable) {
-//        var responseSummary = dateRepository.getResponseSummary(formId, questionId);
-//        var dateResponses = dateRepository.getResponseDates(questionId, pageable);
-//
-//        var d = new DateResponseSummaryDto();
-//
-//        d.setQuestionId(questionRes.getId());
-//        d.setQuestion(questionRes.getQuestion());
-//        d.setOrderIndex(questionRes.getOrderIndex());
-//        d.setNumberOfResponses(responseSummary.numberOfResponses());
-//        d.setQuestionType(getQuestionType());
-//
-//        var responses = dateResponses.stream().map(tuple -> {
-//            var res = new DateResponseSummaryDto.Response();
-//
-//            res.setYear(tuple.get("year", Integer.class));
-//            res.setMonth(tuple.get("month", Integer.class));
-//
-//            var dates = tuple.get("dates", String[].class);
-//            var dateCounts = tuple.get("dateCounts", Long[].class);
-//
-//            var dateCountPairs = new ArrayList<DateResponseSummaryDto.DateCountPair>();
-//
-//            for (int i = 0; i < dates.length; i++) {
-//                dateCountPairs.add(
-//                        new DateResponseSummaryDto.DateCountPair(
-//                                Instant.parse(dates[i]), dateCounts[i]
-//                        )
-//                );
-//            }
-//
-//            res.setDates(dateCountPairs);
-//
-//            return res;
-//        }).toList();
-//
-//        d.setResponses(responses);
-//
-//        return d;
+        var questionResponseSummaryOptional = questionResponseSummaryRepository.findByQuestionId(questionId);
+        var groupedByYearMonth = dateRepository.groupedByYearMonth(questionId, pageable);
 
-        return null;
+        var d = new DateResponseSummaryDto();
+
+        d.setNumberOfResponses(
+                questionResponseSummaryOptional.isEmpty()
+                        ? 0L : questionResponseSummaryOptional.get().getResponseCount()
+        );
+
+        var responses = groupedByYearMonth.stream().map(tuple -> {
+            var res = new DateResponseSummaryDto.Response();
+
+            res.setYear(tuple.get("year", Integer.class));
+            res.setMonth(tuple.get("month", Integer.class));
+
+            var dates = tuple.get("dates", String[].class);
+            var dateCounts = tuple.get("dateCounts", Long[].class);
+
+            if (dates.length != dateCounts.length) {
+                throw new RuntimeException("Date and date count array length mismatch. Date array length: " + dates.length + ". Date count array length: " + dateCounts.length);
+            }
+
+            var dateCountPairs = new ArrayList<DateResponseSummaryDto.DateCountPair>();
+
+            for (int i = 0; i < dates.length; i++) {
+                dateCountPairs.add(
+                        new DateResponseSummaryDto.DateCountPair(
+                                Instant.parse(dates[i]), dateCounts[i]
+                        )
+                );
+            }
+
+            res.setDates(dateCountPairs);
+
+            return res;
+        }).toList();
+
+        d.setResponses(responses);
+
+        return d;
     }
 
     @Override
     public DateResponseQuestionDto getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
-//        var grouped = dateRepository.groupedByDate(formId, questionId, pageable);
-//
-//        var d = new DateResponseQuestionDto();
-//
-//        var responses = grouped.stream().map(g -> {
-//            var res = new DateResponseQuestionDto.Response();
-//
-//            res.setQuestionId(questionId);
-//            res.setQuestionType(getQuestionType());
-//            res.setDate(g.get("date", Instant.class));
-//            res.setResponseCount(g.get("responseCount", Long.class));
-//
-//            var map = new HashMap<String, List<String>>();
-//
-//            map.put("date", List.of(res.getDate() == null ? "" : res.getDate().toString()));
-//
-//            res.setFormResponsesIdentifier(IdUtil.generateCompressedEncodedId(map));
-//
-//            return res;
-//
-//        }).toList();
-//
-//        d.setQuestionId(questionId);
-//        d.setQuestionType(getQuestionType());
-//        d.setResponses(responses);
-//
-//        return d;
+        var dateResponseQuestion = new DateResponseQuestionDto();
 
-        return null;
+        var groupedByDates = dateRepository.groupedByDates(questionId, pageable);
+
+        var responses = groupedByDates.stream().map(tuple -> {
+            var res = new DateResponseQuestionDto.Response();
+
+            res.setResponseCount(tuple.get("responseCount", Long.class));
+            res.setDate(tuple.get("date", Instant.class));
+
+            var formResponseIdentifierMap = new HashMap<String, List<String>>();
+            formResponseIdentifierMap.put(
+                    "date",
+                    List.of(res.getDate() == null ? "" : res.getDate().toString())
+            );
+
+            res.setFormResponsesIdentifier(IdUtil.generateCompressedEncodedId(formResponseIdentifierMap));
+
+            return res;
+
+        }).toList();
+
+        dateResponseQuestion.setResponses(responses);
+
+        return dateResponseQuestion;
     }
 
     @Override

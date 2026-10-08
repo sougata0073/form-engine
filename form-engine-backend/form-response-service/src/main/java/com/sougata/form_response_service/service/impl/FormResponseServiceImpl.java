@@ -22,7 +22,10 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -71,12 +74,17 @@ public class FormResponseServiceImpl implements FormResponseService {
 
     @Override
     public ResponseSummaryDto<?> getResponseSummary(UUID formId, Long questionId, Pageable pageable) {
-//        var question = formServiceFeignClient.getQuestion(formId, questionId);
-//        var manager = responseManagerFactory.get(question.getQuestionType());
-//
-//        return manager.getResponseSummary(formId, questionId, question, pageable);
+        var question = formServiceFeignClient.getQuestion(formId, questionId);
+        var manager = responseManagerFactory.get(question.getQuestionType());
 
-        return null;
+        var resSummary = manager.getResponseSummary(questionId, question, pageable);
+
+        resSummary.setQuestionId(question.getId());
+        resSummary.setQuestion(question.getQuestion());
+        resSummary.setOrderIndex(question.getOrderIndex());
+        resSummary.setQuestionType(question.getQuestionType());
+
+        return resSummary;
     }
 
     @Override

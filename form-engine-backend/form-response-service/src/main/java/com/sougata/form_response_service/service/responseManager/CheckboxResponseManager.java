@@ -17,6 +17,7 @@ import com.sougata.form_response_service.model.QuestionResponseSummary;
 import com.sougata.form_response_service.repository.CheckboxResponseRepository;
 import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import jakarta.persistence.Tuple;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service("CHECKBOX_RESPONSE_MANAGER")
+@RequiredArgsConstructor
 public class CheckboxResponseManager extends ResponseManager<
         CheckboxDetailsDto,
         CheckboxResponsePutReqDto,
@@ -38,11 +40,6 @@ public class CheckboxResponseManager extends ResponseManager<
 
     private final QuestionResponseSummaryRepository questionResponseSummaryRepository;
     private final CheckboxResponseRepository checkboxResponseRepository;
-
-    public CheckboxResponseManager(QuestionResponseSummaryRepository questionResponseSummaryRepository, CheckboxResponseRepository checkboxResponseRepository) {
-        this.questionResponseSummaryRepository = questionResponseSummaryRepository;
-        this.checkboxResponseRepository = checkboxResponseRepository;
-    }
 
     @Override
     public void saveBatched(List<CheckboxResponseBatch> checkboxResponseBatches) {
@@ -58,7 +55,7 @@ public class CheckboxResponseManager extends ResponseManager<
     @Override
     public List<CheckboxResponseSummaryDto> getResponseSummaries(UUID formId, List<CheckboxDetailsDto> questionDetailsList) {
         var questionResponseSummaries = questionResponseSummaryRepository.findAllByFormId(formId);
-        var checkboxResponses = checkboxResponseRepository.findAllByFormId(formId);
+        var checkboxResponses = checkboxResponseRepository.findAllByFormId(formId, Pageable.unpaged());
 
         var questionResponseSummariesMapByQuestionId = questionResponseSummaries
                 .stream()
@@ -68,9 +65,7 @@ public class CheckboxResponseManager extends ResponseManager<
                 .stream()
                 .collect(Collectors.groupingBy(AnyTypeQuestionResponse::getQuestionId));
 
-        var result = new ArrayList<CheckboxResponseSummaryDto>();
-
-        questionDetailsList.forEach(qd -> {
+        return questionDetailsList.stream().map(qd -> {
             var questionResponseSummary = questionResponseSummariesMapByQuestionId.get(qd.getId());
 
             var cbSummary = new CheckboxResponseSummaryDto();
@@ -105,10 +100,8 @@ public class CheckboxResponseManager extends ResponseManager<
 
             cbSummary.setResponses(responses);
 
-            result.add(cbSummary);
-        });
-
-        return result;
+            return cbSummary;
+        }).toList();
     }
 
     @Override
@@ -117,10 +110,6 @@ public class CheckboxResponseManager extends ResponseManager<
 
         var cbSummary = new CheckboxResponseSummaryDto();
 
-        cbSummary.setQuestionId(questionDetails.getId());
-        cbSummary.setQuestion(questionDetails.getQuestion());
-        cbSummary.setQuestionType(questionDetails.getQuestionType());
-        cbSummary.setOrderIndex(questionDetails.getOrderIndex());
         cbSummary.setNumberOfResponses(
                 questionResponseSummaryOptional.isEmpty()
                         ? 0L : questionResponseSummaryOptional.get().getResponseCount()

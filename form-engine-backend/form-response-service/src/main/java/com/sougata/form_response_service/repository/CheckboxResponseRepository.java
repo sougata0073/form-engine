@@ -32,7 +32,7 @@ public interface CheckboxResponseRepository extends AnyTypeQuestionResponseRepos
                 group by qrfri.form_response_individual_id
             ) x
             group by x.option_ids
-            order by responseCount desc
+            order by responseCount desc, optionIds
             """, nativeQuery = true
     )
     List<Tuple> groupedByOptionIds(Long questionId, Pageable pageable);

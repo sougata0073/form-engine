@@ -3,6 +3,7 @@ package com.sougata.form_response_service.messaging.handler;
 import com.sougata.form_engine.constant.messaging.CommonMessagingNames;
 import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.dto.messaging.FormDeletedMessage;
+import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.redis.connection.Message;
@@ -15,10 +16,12 @@ import org.springframework.stereotype.Component;
 public class FormDeletedMessageHandler implements MessageListener {
 
     private final GenericJacksonJsonRedisSerializer redisSerializer;
+    private final FormResponseSummaryRepository formResponseSummaryRepository;
 
     @Override
     public void onMessage(Message message, byte @Nullable [] pattern) {
         var messageData = redisSerializer.deserialize(message.getBody(), FormDeletedMessage.class);
 
+        formResponseSummaryRepository.deleteByFormId(messageData.getFormId());
     }
 }

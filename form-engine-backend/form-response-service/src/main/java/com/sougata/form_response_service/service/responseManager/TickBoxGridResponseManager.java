@@ -10,14 +10,22 @@ import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfo
 import com.sougata.form_engine.dto.question.responseputreqbatch.TickBoxGridResponseBatch;
 import com.sougata.form_engine.dto.question.responseputrequest.TickBoxGridResponsePutReqDto;
 import com.sougata.form_engine.util.JsonUtil;
+import com.sougata.form_response_service.model.AnyTypeQuestionResponse;
+import com.sougata.form_response_service.model.QuestionResponseSummary;
+import com.sougata.form_response_service.model.TickBoxGridResponse;
+import com.sougata.form_response_service.repository.QuestionResponseSummaryRepository;
 import com.sougata.form_response_service.repository.TickBoxGridResponseRepository;
 import jakarta.persistence.Tuple;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service("TICK_BOX_GRID_RESPONSE_MANAGER")
+@RequiredArgsConstructor
 public class TickBoxGridResponseManager extends ResponseManager<
         TickBoxGridDetailsDto,
         TickBoxGridResponsePutReqDto,
@@ -30,10 +38,7 @@ public class TickBoxGridResponseManager extends ResponseManager<
         > {
 
     private final TickBoxGridResponseRepository tickBoxGridRepository;
-
-    public TickBoxGridResponseManager(TickBoxGridResponseRepository tickBoxGridRepository) {
-        this.tickBoxGridRepository = tickBoxGridRepository;
-    }
+    private final QuestionResponseSummaryRepository questionResponseSummaryRepository;
 
     @Override
     public void saveBatched(List<TickBoxGridResponseBatch> tickBoxGridResponseBatches) {
@@ -47,95 +52,91 @@ public class TickBoxGridResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<TickBoxGridResponseSummaryDto> getResponseSummaries(UUID formId, List<TickBoxGridDetailsDto> questionResponses) {
+    public List<TickBoxGridResponseSummaryDto> getResponseSummaries(UUID formId, List<TickBoxGridDetailsDto> questionDetailsList) {
 
-//        var responseSummaries = tickBoxGridRepository.getResponseSummaries(formId);
-//
-//        var summaryMap = responseSummaries.stream()
-//                .collect(Collectors.toMap(
-//                        CommonResponseSummaryProjection::questionId,
-//                        Function.identity()
-//                ));
-//
-//        var groupedResponses = tickBoxGridRepository.getResponseOptionCount(formId)
-//                .stream()
-//                .collect(Collectors.groupingBy(
-//                        t -> t.get("questionId", Long.class),
-//                        Collectors.groupingBy(
-//                                t -> t.get("rowId", Long.class)
-//                        )
-//                ));
-//
-//        var result = new ArrayList<TickBoxGridResponseSummaryDto>();
-//
-//        for (var qr : questionResponses) {
-//
-//            var dto = new TickBoxGridResponseSummaryDto();
-//
-//            dto.setQuestionId(qr.getId());
-//            dto.setQuestion(qr.getQuestion());
-//            dto.setOrderIndex(qr.getOrderIndex());
-//            dto.setQuestionType(getQuestionType());
-//
-//            var summary = summaryMap.get(qr.getId());
-//            dto.setNumberOfResponses(summary == null ? 0L : summary.numberOfResponses());
-//
-//            var rowResponses = qr.getRows().stream()
-//                    .map(row -> {
-//
-//                        var rowTuples = groupedResponses
-//                                .getOrDefault(qr.getId(), Collections.emptyMap())
-//                                .getOrDefault(row.getId(), Collections.emptyList());
-//
-//                        Map<Long, Long> optionCountMap = rowTuples.stream()
-//                                .collect(Collectors.toMap(
-//                                        t -> t.get("responseOptionId", Long.class),
-//                                        t -> t.get("responseCount", Long.class)
-//                                ));
-//
-//                        var columnResponses = qr.getColumns().stream()
-//                                .map(column ->
-//                                        new TickBoxGridResponseSummaryDto.ColumnResponse(
-//                                                column.getId(),
-//                                                column.getColumn(),
-//                                                optionCountMap.getOrDefault(column.getId(), 0L)
-//                                        )
-//                                )
-//                                .toList();
-//
-//                        return new TickBoxGridResponseSummaryDto.RowResponse(
-//                                row.getId(),
-//                                row.getRow(),
-//                                columnResponses
-//                        );
-//                    })
-//                    .toList();
-//
-//            dto.setResponses(rowResponses);
-//
-//            result.add(dto);
-//        }
-//
-//        return result;
+        var questionResponseSummaries = questionResponseSummaryRepository.findAllByFormId(formId);
+        var tickBoxGridResponses = tickBoxGridRepository.findAllByFormId(formId, Pageable.unpaged());
 
-        return null;
+        var questionResponseSummariesMapByQuestionId = questionResponseSummaries
+                .stream()
+                .collect(Collectors.toMap(QuestionResponseSummary::getQuestionId, Function.identity()));
+
+        var tickBoxGridResponsesMapByQuestionId = tickBoxGridResponses
+                .stream()
+                .collect(Collectors.groupingBy(AnyTypeQuestionResponse::getQuestionId));
+
+        return questionDetailsList.stream().map(qd -> {
+            var questionResponseSummary = questionResponseSummariesMapByQuestionId.get(qd.getId());
+
+            var tbgSummary = new TickBoxGridResponseSummaryDto();
+
+            tbgSummary.setQuestionId(qd.getId());
+            tbgSummary.setQuestion(qd.getQuestion());
+            tbgSummary.setOrderIndex(qd.getOrderIndex());
+            tbgSummary.setQuestionType(qd.getQuestionType());
+            tbgSummary.setNumberOfResponses(
+                    questionResponseSummary == null ? 0L : questionResponseSummary.getResponseCount()
+            );
+
+            var tickBoxGridResponsesForThisQuestion = tickBoxGridResponsesMapByQuestionId.get(qd.getId());
+
+            Map<Long, List<TickBoxGridResponse>> tickBoxGridResponsesGroupedByRowId = tickBoxGridResponsesForThisQuestion == null
+                    ? Map.of()
+                    : tickBoxGridResponsesForThisQuestion
+                    .stream()
+                    .collect(Collectors.groupingBy(TickBoxGridResponse::getRowId));
+
+            var responses = qd.getRows().stream().map(row -> {
+
+                var tickBoxGridResponsesForThisRow = tickBoxGridResponsesGroupedByRowId.get(row.getId());
+
+                Map<Long, TickBoxGridResponse> tickBoxGridResponseMapByColumnId = tickBoxGridResponsesForThisRow == null
+                        ? Map.of()
+                        : tickBoxGridResponsesForThisRow
+                        .stream()
+                        .collect(Collectors.toMap(TickBoxGridResponse::getColumnId, Function.identity()));
+
+                var rowResponse = new TickBoxGridResponseSummaryDto.RowResponse();
+
+                var columnResponses = qd.getColumns().stream().map(column -> {
+
+                    var tbgResponseByColumn = tickBoxGridResponseMapByColumnId.get(column.getId());
+
+                    return new TickBoxGridResponseSummaryDto.ColumnResponse(
+                            column.getId(),
+                            column.getColumn(),
+                            tbgResponseByColumn == null ? 0L : tbgResponseByColumn.getResponseCount()
+                    );
+
+                }).toList();
+
+                rowResponse.setRowId(row.getId());
+                rowResponse.setRow(row.getRow());
+                rowResponse.setResponses(columnResponses);
+
+                return rowResponse;
+
+            }).toList();
+
+            tbgSummary.setResponses(responses);
+
+            return tbgSummary;
+
+        }).toList();
     }
 
     @Override
     public TickBoxGridResponseSummaryDto getResponseSummary(Long questionId, TickBoxGridDetailsDto questionRes, Pageable pageable) {
-//        var responseSummary = tickBoxGridRepository.getResponseSummary(formId, questionId);
-//        var res = new TickBoxGridResponseSummaryDto();
-//
-//        res.setQuestionId(questionRes.getId());
-//        res.setQuestion(questionRes.getQuestion());
-//        res.setQuestionType(getQuestionType());
-//        res.setOrderIndex(questionRes.getOrderIndex());
-//        res.setNumberOfResponses(responseSummary.numberOfResponses());
-//        res.setResponses(List.of());
-//
-//        return res;
+        var questionResponseSummaryOptional = questionResponseSummaryRepository.findByQuestionId(questionId);
+        var res = new TickBoxGridResponseSummaryDto();
 
-        return null;
+        res.setNumberOfResponses(
+                questionResponseSummaryOptional.isEmpty()
+                        ? 0L : questionResponseSummaryOptional.get().getResponseCount()
+        );
+        res.setResponses(List.of());
+
+        return res;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.sougata.form_response_service.repository;
 
 import com.sougata.form_response_service.model.AnyTypeQuestionResponse;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;
@@ -12,6 +13,6 @@ import java.util.UUID;
 public interface AnyTypeQuestionResponseRepository<Q extends AnyTypeQuestionResponse, ID> extends JpaRepository<Q, ID> {
 
     @Query("select qr from #{#entityName} qr where qr.questionResponse.questionResponseSummary.formResponseSummary.formId = :formId")
-    List<Q> findAllByFormId(UUID formId);
+    List<Q> findAllByFormId(UUID formId, Pageable pageable);
 
 }

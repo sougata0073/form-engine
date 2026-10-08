@@ -6,6 +6,7 @@ import com.sougata.form_engine.constant.cache.FormCacheNames;
 import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.dto.form.*;
 import com.sougata.form_engine.dto.messaging.FormCreatedMessage;
+import com.sougata.form_engine.dto.messaging.FormDeletedMessage;
 import com.sougata.form_engine.dto.others.SuccessMessageDto;
 import com.sougata.form_engine.dto.template.TemplateDetails;
 import com.sougata.form_service.configuration.AppConfiguration;
@@ -272,6 +273,11 @@ public class FormServiceImpl implements FormService {
         formRepo.deleteById(formId);
 
         deleteFormFromRecentForms(userId, formId);
+
+        redisTemplate.convertAndSend(
+                MessagingChannelNames.FORM_DELETED,
+                new FormDeletedMessage(formId)
+        );
 
         return new SuccessMessageDto("Form deleted successfully with ID: " + formId);
     }

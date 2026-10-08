@@ -701,7 +701,7 @@ begin
     on conflict (question_id) do update
         set response_count = public.question_response_summaries.response_count + excluded.response_count;
 
-    insert into public.form_response_individuals (form_response_id, form_id, user_id)
+    insert into public.form_response_individuals (form_response_id, form_response_summary_form_id, user_id)
     select (value ->> 'formResponseId')::uuid, (value ->> 'formId')::uuid, (value ->> 'userId')::uuid
     from jsonb_array_elements(p_form_response_infos -> 'formResponseInfos');
 
