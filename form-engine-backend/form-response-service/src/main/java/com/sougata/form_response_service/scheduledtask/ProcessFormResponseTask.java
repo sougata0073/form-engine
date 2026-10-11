@@ -1,6 +1,6 @@
 package com.sougata.form_response_service.scheduledtask;
 
-import com.sougata.form_engine.constant.RedisConsumerGroupNames;
+import com.sougata.form_engine.constant.RedisStreamsConsumerGroupNames;
 import com.sougata.form_engine.constant.RedisStreamKeys;
 import com.sougata.form_engine.constant.RedisStreamNames;
 import com.sougata.form_engine.constant.cache.FormResponseCacheNames;
@@ -16,6 +16,7 @@ import com.sougata.form_response_service.service.responseManager.ResponseManager
 import com.sougata.form_response_service.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RedissonClient;
+import org.springframework.data.redis.connection.RedisStreamCommands;
 import org.springframework.data.redis.connection.stream.*;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -41,7 +42,7 @@ public class ProcessFormResponseTask {
     @Scheduled(fixedDelay = 1, initialDelay = 2, timeUnit = TimeUnit.SECONDS)
     public void processFormResponses() {
         var messages = redisTemplate.opsForStream().read(
-                Consumer.from(RedisConsumerGroupNames.FORM_RESPONSE_CONSUMER, "worker-1"),
+                Consumer.from(RedisStreamsConsumerGroupNames.FORM_RESPONSE_CONSUMER, "worker-1"),
                 StreamReadOptions.empty().count(1000),
                 StreamOffset.create(RedisStreamNames.FORM_RESPONSE_STREAM, ReadOffset.lastConsumed())
         );
@@ -178,9 +179,10 @@ public class ProcessFormResponseTask {
                     manager.saveBatched(questionResponseBatches);
                 });
 
-        redisTemplate.opsForStream().acknowledge(
+        redisTemplate.opsForStream().acknowledgeAndDelete(
                 RedisStreamNames.FORM_RESPONSE_STREAM,
-                RedisConsumerGroupNames.FORM_RESPONSE_CONSUMER,
+                RedisStreamsConsumerGroupNames.FORM_RESPONSE_CONSUMER,
+                RedisStreamCommands.XDelOptions.deletionPolicy(RedisStreamCommands.StreamDeletionPolicy.ACKNOWLEDGED),
                 messageIdsToAcknowledge.toArray(new RecordId[0])
         );
 

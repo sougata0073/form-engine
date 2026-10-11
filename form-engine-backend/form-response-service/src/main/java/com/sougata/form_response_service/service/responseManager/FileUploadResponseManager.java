@@ -157,23 +157,21 @@ public class FileUploadResponseManager extends ResponseManager<
 
     @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
-//        var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
-//
-//        var fileName = map.get("fileName");
-//        var fileUrl = map.get("fileUrl");
-//        var fileMimeType = map.get("fileMimeType");
-//
-//        if (fileName.isEmpty() || fileUrl.isEmpty() || fileMimeType.isEmpty()) {
-//            throw new IllegalArgumentException("Invalid Form Responses Identifier. Identifier: " + formResponsesIdentifier);
-//        }
-//
-//        var fName = fileName.getFirst();
-//        var fUrl = fileUrl.getFirst();
-//        var fMimeType = fileMimeType.getFirst();
-//
-//        return fileUploadRepository.getResponseIdsByGroupedResponse(formId, questionId, fName, fUrl, fMimeType, pageable);
+        var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 
-        return null;
+        var fileName = map.get("fileName");
+        var fileUrl = map.get("fileUrl");
+        var fileMimeType = map.get("fileMimeType");
+
+        if (fileName.isEmpty() || fileUrl.isEmpty() || fileMimeType.isEmpty()) {
+            throw new IllegalArgumentException("Invalid Form Responses Identifier. Identifier: " + formResponsesIdentifier);
+        }
+
+        var fName = fileName.getFirst();
+        var fUrl = fileUrl.getFirst();
+        var fMimeType = fileMimeType.getFirst();
+
+        return fileUploadRepository.getResponseIdsByGroupedResponse(questionId, fName, fUrl, fMimeType, pageable);
     }
 
     @Override
@@ -190,7 +188,7 @@ public class FileUploadResponseManager extends ResponseManager<
                             q.getQuestionResponsePutReq().getFileMimeType()
                     );
                     responseMap
-                            .computeIfAbsent(fileString, _ -> new ArrayList<>())
+                            .computeIfAbsent(fileString, key -> new ArrayList<>())
                             .add(q.getFormResponseId());
                 }
         );

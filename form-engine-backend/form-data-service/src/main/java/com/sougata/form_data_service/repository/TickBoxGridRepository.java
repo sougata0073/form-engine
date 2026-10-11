@@ -13,4 +13,7 @@ public interface TickBoxGridRepository extends AnyTypeQuestionResponseRepository
 
     @Query("delete from tick_box_grids where question_id in :questionIds and form_response_id = :formResponseId")
     void deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
+
+    @Query("select * from tick_box_grids where question_id in :questionIds and form_response_id = :formResponseId")
+    List<TickBoxGrid> findAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
 }

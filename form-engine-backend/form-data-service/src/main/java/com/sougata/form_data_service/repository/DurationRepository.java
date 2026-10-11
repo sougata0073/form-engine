@@ -13,4 +13,7 @@ public interface DurationRepository extends AnyTypeQuestionResponseRepository<Du
 
     @Query("delete from durations where question_id in :questionIds and form_response_id = :formResponseId")
     void deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
+
+    @Query("select * from durations where question_id in :questionIds and form_response_id = :formResponseId")
+    List<Duration> findAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
 }

@@ -127,11 +127,10 @@ export class FormResponseService {
 
   deleteFormResponse(
     formId: string,
-    responderId: string,
     formResponseId: string,
     onComplete: () => void,
   ) {
-    const url = `http://localhost:9093/api/v1/forms/${formId}/responders/${responderId}/responses/${formResponseId}`;
+    const url = `http://localhost:9093/api/v1/forms/${formId}/responses/${formResponseId}`;
 
     this.http.delete<SuccessMessage>(url).subscribe((res) => {
       onComplete();

@@ -25,9 +25,7 @@ public class MultipleChoiceGridSchemaManager extends QuestionSchemaManager<Multi
             );
         }
 
-        if (mcg.getEachRowRequired() &&
-                (validationDto.getRows().size() != mcg.getRows().size()
-                        || validationDto.getRows().stream().anyMatch(r -> r.getResponseColumnId() == null))) {
+        if (mcg.getEachRowRequired() && validationDto.getRows().size() != mcg.getRows().size()) {
             throw new ResponseValidationException(
                     "A response is required for every row. Expected responses for "
                             + mcg.getRows().size()

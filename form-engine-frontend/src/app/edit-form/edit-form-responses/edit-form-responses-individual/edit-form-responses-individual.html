@@ -14,7 +14,7 @@
           <button matIconButton matTooltip="Print response" [disabled]="!individualResponse()" (click)="onPrintResponseClick()">
             <mat-icon fontIcon="print"/>
           </button>
-          <button matIconButton matTooltip="Delete response" [disabled]="!individualResponse()" (click)="onDeleteResponseClick()">
+          <button matIconButton matTooltip="Delete response" [disabled]="true || !individualResponse()" (click)="onDeleteResponseClick()">
             <mat-icon fontIcon="delete"/>
           </button>
         </div>

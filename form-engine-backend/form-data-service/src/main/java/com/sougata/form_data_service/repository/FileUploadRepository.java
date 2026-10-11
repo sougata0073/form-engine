@@ -13,4 +13,7 @@ public interface FileUploadRepository extends AnyTypeQuestionResponseRepository<
 
     @Query("delete from file_uploads where question_id in :questionIds and form_response_id = :formResponseId")
     void deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
+
+    @Query("select * from file_uploads where question_id in :questionIds and form_response_id = :formResponseId")
+    List<FileUpload> findAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
 }

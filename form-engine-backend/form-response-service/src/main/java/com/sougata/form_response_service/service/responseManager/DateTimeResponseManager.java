@@ -2,7 +2,6 @@ package com.sougata.form_response_service.service.responseManager;
 
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.formResponse.individual.DateTimeResponseIndividualDto;
-import com.sougata.form_engine.dto.formResponse.question.DateResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.question.DateTimeResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.DateTimeResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.QuestionResponseBatches;
@@ -159,19 +158,17 @@ public class DateTimeResponseManager extends ResponseManager<
 
     @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
-//        var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
-//
-//        var dateTime = map.get("dateTime");
-//
-//        if (dateTime.isEmpty()) {
-//            throw new IllegalArgumentException("Invalid Form Responses Identifier. Identifier: " + formResponsesIdentifier);
-//        }
-//
-//        var groupedResponse = dateTime.getFirst() == null ? null :  Instant.parse(dateTime.getFirst());
-//
-//        return dateTimeRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
+        var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 
-        return null;
+        var dateTime = map.get("dateTime");
+
+        if (dateTime.isEmpty()) {
+            throw new IllegalArgumentException("Invalid Form Responses Identifier. Identifier: " + formResponsesIdentifier);
+        }
+
+        var groupedResponse = dateTime.getFirst() == null ? null : Instant.parse(dateTime.getFirst());
+
+        return dateTimeRepository.getResponseIdsByGroupedResponse(questionId, groupedResponse, pageable);
     }
 
     @Override
@@ -182,7 +179,7 @@ public class DateTimeResponseManager extends ResponseManager<
 
         questionResponsePutReqs.forEach(q ->
                 responseMap
-                        .computeIfAbsent(q.getQuestionResponsePutReq().getDateTime(), _ -> new ArrayList<>())
+                        .computeIfAbsent(q.getQuestionResponsePutReq().getDateTime(), key -> new ArrayList<>())
                         .add(q.getFormResponseId())
         );
 

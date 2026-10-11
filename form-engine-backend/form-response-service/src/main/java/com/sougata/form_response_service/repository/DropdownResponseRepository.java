@@ -27,4 +27,18 @@ public interface DropdownResponseRepository extends AnyTypeQuestionResponseRepos
             order by dr.responseCount desc, dr.optionId
             """)
     List<Tuple> groupedByOptionIds(Long questionId, Pageable pageable);
+
+    @Query(value = """
+            select
+            fri.form_response_id responseId,
+            fri.user_id userId
+            from dropdown_responses dr
+            join question_response_form_response_individual qrfri
+            on dr.question_response_id = qrfri.question_response_id
+            and dr.question_id = :questionId and dr.option_id = :groupedResponse
+            join form_response_individuals fri
+            on fri.form_response_id = qrfri.form_response_individual_id
+            order by fri.form_response_id
+            """, nativeQuery = true)
+    List<Tuple> getResponseIdsByGroupedResponse(Long questionId, Long groupedResponse, Pageable pageable);
 }

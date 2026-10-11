@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Objects;
+
 public class CheckboxValidationConfig {
 
     @NoArgsConstructor
@@ -22,6 +24,14 @@ public class CheckboxValidationConfig {
         public boolean isSelectAtLeastNumberValid() {
             return (getValidationId() == ValidationId.CHECKBOX_NONE && number == null) ||
                     (getValidationId() != ValidationId.CHECKBOX_NONE && number != null);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            SelectAtLeast that = (SelectAtLeast) o;
+            return super.equals(that) && Objects.equals(number, that.number);
         }
     }
 
@@ -38,6 +48,14 @@ public class CheckboxValidationConfig {
             return (getValidationId() == ValidationId.CHECKBOX_NONE && number == null) ||
                     (getValidationId() != ValidationId.CHECKBOX_NONE && number != null);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            SelectAtMost that = (SelectAtMost) o;
+            return super.equals(that) && Objects.equals(number, that.number);
+        }
     }
 
     @NoArgsConstructor
@@ -52,6 +70,14 @@ public class CheckboxValidationConfig {
         public boolean isSelectExactlyNumberValid() {
             return (getValidationId() == ValidationId.CHECKBOX_NONE && number == null) ||
                     (getValidationId() != ValidationId.CHECKBOX_NONE && number != null);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            SelectExactly that = (SelectExactly) o;
+            return super.equals(that) && Objects.equals(number, that.number);
         }
     }
 

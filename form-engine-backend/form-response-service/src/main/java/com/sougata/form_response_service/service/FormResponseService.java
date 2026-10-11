@@ -20,7 +20,7 @@ public interface FormResponseService {
 
     FormResponseSummariesDto getFormResponseSummaries(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable);
 
-    FormResponseIndividualDto getIndividualFormResponse(UUID formId, Long formResponseId);
+    FormResponseIndividualDto getIndividualFormResponse(UUID formId, UUID formResponseId);
 
     FormResponseIndividualDto getIndividualFormResponseByPage(UUID formId, Long page);
 

@@ -4,6 +4,7 @@ import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.DateTime;
 import com.sougata.form_data_service.repository.DateTimeRepository;
 import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.formResponse.individual.DateTimeResponseIndividualDto;
 import com.sougata.form_engine.dto.question.responseputrequest.DateTimeResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -14,7 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service("DATE_TIME_RESPONSE_MANAGER")
-public class DateTimeManager extends ResponseManager<DateTimeResponsePutReqDto> {
+public class DateTimeManager extends ResponseManager<DateTimeResponsePutReqDto, DateTimeResponseIndividualDto> {
 
     private final DateTimeRepository dateTimeRepository;
 
@@ -38,6 +39,24 @@ public class DateTimeManager extends ResponseManager<DateTimeResponsePutReqDto> 
         dateTimeRepository.save(dateTime);
 
         return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<List<DateTimeResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+        var responses = dateTimeRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+
+        return CompletableFuture.completedFuture(
+                responses.stream().map(res -> {
+                    var dt = new DateTimeResponseIndividualDto();
+
+                    dt.setQuestionId(res.getKey().getQuestionId());
+                    dt.setQuestionType(getQuestionType());
+                    dt.setDateTime(res.getDateTime());
+
+                    return dt;
+                }).toList()
+        );
     }
 
     @Override

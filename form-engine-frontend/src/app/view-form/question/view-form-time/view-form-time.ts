@@ -1,11 +1,15 @@
-import {Component} from '@angular/core';
-import {ViewFormQuestionComponent} from '../../../type/view-form-question-component';
-import {TimeRes} from '../../../model/edit-form/question/response/time-res';
-import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {MatError, MatFormField, MatInput, MatLabel, MatSuffix} from "@angular/material/input";
-import {MatTimepicker, MatTimepickerInput, MatTimepickerToggle} from "@angular/material/timepicker";
-import {provideNativeDateAdapter} from '@angular/material/core';
-import {OnlyTimeResponsePutReq} from '../../../model/view-form/request/time-response-put-req';
+import { Component } from '@angular/core';
+import { ViewFormQuestionComponent } from '../../../type/view-form-question-component';
+import { TimeRes } from '../../../model/edit-form/question/response/time-res';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatError, MatFormField, MatInput, MatLabel, MatSuffix } from '@angular/material/input';
+import {
+  MatTimepicker,
+  MatTimepickerInput,
+  MatTimepickerToggle,
+} from '@angular/material/timepicker';
+import { provideNativeDateAdapter } from '@angular/material/core';
+import { OnlyTimeResponsePutReq } from '../../../model/view-form/request/time-response-put-req';
 
 @Component({
   selector: 'app-view-form-time',
@@ -18,20 +22,40 @@ import {OnlyTimeResponsePutReq} from '../../../model/view-form/request/time-resp
     MatTimepickerInput,
     MatTimepickerToggle,
     ReactiveFormsModule,
-    MatError
+    MatError,
   ],
   templateUrl: './view-form-time.html',
   styleUrl: './view-form-time.scss',
-  providers: [provideNativeDateAdapter()]
+  providers: [provideNativeDateAdapter()],
 })
 export class ViewFormTime extends ViewFormQuestionComponent<TimeRes, OnlyTimeResponsePutReq> {
-
   override formGroup = new FormGroup({
-    time: new FormControl<Date | null>(null)
-  })
+    time: new FormControl<Date | null>(null),
+  });
+
+  override ngOnInit(): void {
+    super.ngOnInit();
+
+    this.initialize();
+  }
+
+  override onQuestionInputChange(): void {
+    this.initialize();
+  }
 
   override getOnlyQuestionResponsePutReq(): OnlyTimeResponsePutReq | null {
-    const value = this.formGroup.value.time
-    return !value ? null : {time: value}
+    const value = this.formGroup.value.time;
+    return !value ? null : { time: value };
+  }
+
+  private initialize() {
+    if (this.question().required) {
+      this.formGroup.controls.time.addValidators(Validators.required);
+    } else {
+      if (this.formGroup.controls.time.hasValidator(Validators.required)) {
+        this.formGroup.controls.time.removeValidators(Validators.required);
+      }
+    }
+    this.formGroup.controls.time.updateValueAndValidity();
   }
 }

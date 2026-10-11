@@ -2,7 +2,6 @@ package com.sougata.form_response_service.service.responseManager;
 
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.formResponse.individual.DropdownResponseIndividualDto;
-import com.sougata.form_engine.dto.formResponse.question.DateTimeResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.question.DropdownResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.DropdownResponseSummaryDto;
 import com.sougata.form_engine.dto.pgfunctionparameter.QuestionResponseBatches;
@@ -22,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -172,19 +170,17 @@ public class DropdownResponseManager extends ResponseManager<
 
     @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
-//        var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
-//
-//        var optionId = map.get("optionId");
-//
-//        if (optionId.isEmpty()) {
-//            throw new IllegalArgumentException("Invalid Form Responses Identifier. Identifier: " + formResponsesIdentifier);
-//        }
-//
-//        var groupedResponse = optionId.getFirst() == null ? null : Long.parseLong(optionId.getFirst());
-//
-//        return dropdownRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
+        var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 
-        return null;
+        var optionId = map.get("optionId");
+
+        if (optionId.isEmpty()) {
+            throw new IllegalArgumentException("Invalid Form Responses Identifier. Identifier: " + formResponsesIdentifier);
+        }
+
+        var groupedResponse = optionId.getFirst() == null ? null : Long.parseLong(optionId.getFirst());
+
+        return dropdownRepository.getResponseIdsByGroupedResponse(questionId, groupedResponse, pageable);
     }
 
     @Override
@@ -195,7 +191,7 @@ public class DropdownResponseManager extends ResponseManager<
 
         questionResponsePutReqs.forEach(q ->
                 responseMap
-                        .computeIfAbsent(q.getQuestionResponsePutReq().getResponseOptionId(), _ -> new ArrayList<>())
+                        .computeIfAbsent(q.getQuestionResponsePutReq().getResponseOptionId(), key -> new ArrayList<>())
                         .add(q.getFormResponseId())
         );
 

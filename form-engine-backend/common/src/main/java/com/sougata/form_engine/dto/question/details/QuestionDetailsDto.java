@@ -11,6 +11,8 @@ import lombok.Setter;
 import tools.jackson.databind.annotation.JsonSerialize;
 import tools.jackson.databind.ser.std.ToStringSerializer;
 
+import java.util.Objects;
+
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.EXISTING_PROPERTY,
@@ -49,4 +51,16 @@ public class QuestionDetailsDto {
 
     @JsonProperty(value = "@class")
     private String cls = getClass().getName();
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof QuestionDetailsDto that)) return false;
+        return Objects.equals(id, that.id)
+                && Objects.equals(question, that.question)
+                && Objects.equals(description, that.description)
+                && Objects.equals(required, that.required)
+                && Objects.equals(orderIndex, that.orderIndex)
+                && questionType == that.questionType;
+    }
+
 }

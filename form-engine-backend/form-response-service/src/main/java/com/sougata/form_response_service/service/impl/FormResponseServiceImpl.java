@@ -12,13 +12,15 @@ import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
 import com.sougata.form_engine.dto.user.UserSummaryShortDto;
 import com.sougata.form_response_service.configuration.AppConfiguration;
 import com.sougata.form_response_service.feignClient.AuthServiceFeignClient;
+import com.sougata.form_response_service.feignClient.FormDataServiceFeignClient;
 import com.sougata.form_response_service.feignClient.FormServiceFeignClient;
+import com.sougata.form_response_service.repository.FormResponseIndividualRepository;
 import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.service.FormResponseService;
 import com.sougata.form_response_service.service.responseManager.ResponseManagerFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,13 +39,15 @@ public class FormResponseServiceImpl implements FormResponseService {
     private final FormServiceFeignClient formServiceFeignClient;
     private final AuthServiceFeignClient authServiceFeignClient;
     private final ResponseManagerFactory responseManagerFactory;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
     private final AppConfiguration appConfiguration;
+    private final FormDataServiceFeignClient formDataServiceFeignClient;
+    private final FormResponseIndividualRepository formResponseIndividualRepository;
 
     @Override
     public boolean getIsResponseAlreadySubmitted(UUID formId, UUID userId) {
+//        TODO
 //        return formResponseRepository.existsByFormIdAndUserId(formId, userId);
-
         return false;
     }
 
@@ -121,33 +125,39 @@ public class FormResponseServiceImpl implements FormResponseService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public FormResponseIndividualDto getIndividualFormResponse(UUID formId, Long formResponseId) {
-        return getIndividualFormResponseHelper(formId, formResponseId, null);
+    public FormResponseIndividualDto getIndividualFormResponse(UUID formId, UUID formResponseId) {
+        var formResponsePage = formResponseIndividualRepository.getFormResponsePageByFormResponseId(formId, formResponseId);
+
+        if (formResponsePage == null) {
+            throw new RuntimeException("Form response page not found for form ID: " + formId + " and form response ID: " + formResponseId);
+        }
+
+        var formResponseNoPage = formDataServiceFeignClient.getFormResponse(formId, formResponseId);
+
+        return new FormResponseIndividualDto(
+                formResponseNoPage.getFormResponseId(),
+                formResponsePage,
+                formResponseNoPage.getUserId(),
+                formResponseNoPage.getResponses()
+        );
     }
 
     @Override
-    @Transactional(readOnly = true)
     public FormResponseIndividualDto getIndividualFormResponseByPage(UUID formId, Long page) {
+        var formResponseId = formResponseIndividualRepository.getFormResponseIdByFormResponsePage(formId, page);
 
-//        var formResponseId = formResponseRepository.getFormResponseIdFromPage(formId, page)
-//                .orElseThrow(() -> new IllegalArgumentException("Form response not found for page: " + page));
-//
-//        var indiFormResponseCacheKey = CacheUtil.buildKey(FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE, "formId=" + formId, "formResponseId=" + formResponseId);
-//
-//        var indiFormResponseCached = (FormResponseIndividualDto) redisTemplate.opsForValue().get(indiFormResponseCacheKey);
-//
-//        if (indiFormResponseCached != null) {
-//            return indiFormResponseCached;
-//        }
-//
-//        var indiFormResponse = getIndividualFormResponseHelper(formId, formResponseId, page);
-//
-//        redisTemplate.opsForValue().set(indiFormResponseCacheKey, indiFormResponse, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
-//
-//        return indiFormResponse;
+        if (formResponseId == null) {
+            throw new RuntimeException("Form response page not found for form ID: " + formId + " and form response page: " + page);
+        }
 
-        return null;
+        var formResponseNoPage = formDataServiceFeignClient.getFormResponse(formId, formResponseId);
+
+        return new FormResponseIndividualDto(
+                formResponseNoPage.getFormResponseId(),
+                page,
+                formResponseNoPage.getUserId(),
+                formResponseNoPage.getResponses()
+        );
     }
 
     @Override
@@ -175,28 +185,4 @@ public class FormResponseServiceImpl implements FormResponseService {
         );
     }
 
-    private FormResponseIndividualDto getIndividualFormResponseHelper(UUID formId, Long formResponseId, Long formResponsePage) {
-
-//        var formResponse = formResponseRepository.findById(formResponseId)
-//                .orElseThrow(() -> new IllegalArgumentException("Form response not found with ID: " + formResponseId));
-//
-//        var formResponseQuestionTypes = questionResponseRepository.findDistinctQuestionTypesByFormResponseId(formResponseId);
-//
-//        var result = new ArrayList<QuestionResponseIndividualDto>();
-//
-//        formResponseQuestionTypes.forEach(qType -> {
-//            var manager = responseManagerFactory.get(qType);
-//
-//            var indiResponses = manager.getIndividualResponses(formId, formResponseId);
-//
-//            result.addAll(indiResponses);
-//        });
-//
-//        var finalFormResponsePage = formResponsePage == null ? formResponseRepository.getPageNumberOfFormResponse(formId, formResponseId)
-//                .orElseThrow(() -> new IllegalArgumentException("Form response not found with ID: " + formResponseId)) : formResponsePage;
-//
-//        return new FormResponseIndividualDto(formResponseId, finalFormResponsePage, formResponse.getUserId(), result);
-
-        return null;
-    }
 }

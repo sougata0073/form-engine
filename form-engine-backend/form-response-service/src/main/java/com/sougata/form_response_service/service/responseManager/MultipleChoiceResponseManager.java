@@ -167,19 +167,17 @@ public class MultipleChoiceResponseManager extends ResponseManager<
 
     @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
-//        var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
-//
-//        var optionId = map.get("optionId");
-//
-//        if (optionId.isEmpty()) {
-//            throw new IllegalArgumentException("Invalid Form Responses Identifier. Identifier: " + formResponsesIdentifier);
-//        }
-//
-//        var groupedResponse = optionId.getFirst() == null ? null : Long.parseLong(optionId.getFirst());
-//
-//        return multipleChoiceRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
+        var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 
-        return null;
+        var optionId = map.get("optionId");
+
+        if (optionId.isEmpty()) {
+            throw new IllegalArgumentException("Invalid Form Responses Identifier. Identifier: " + formResponsesIdentifier);
+        }
+
+        var groupedResponse = optionId.getFirst() == null ? null : Long.parseLong(optionId.getFirst());
+
+        return multipleChoiceRepository.getResponseIdsByGroupedResponse(questionId, groupedResponse, pageable);
     }
 
     @Override
@@ -190,7 +188,7 @@ public class MultipleChoiceResponseManager extends ResponseManager<
 
         questionResponsePutReqs.forEach(q ->
                 responseMap
-                        .computeIfAbsent(q.getQuestionResponsePutReq().getResponseOptionId(), _ -> new ArrayList<>())
+                        .computeIfAbsent(q.getQuestionResponsePutReq().getResponseOptionId(), key -> new ArrayList<>())
                         .add(q.getFormResponseId())
         );
 

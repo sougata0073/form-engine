@@ -4,6 +4,7 @@ import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.Checkbox;
 import com.sougata.form_data_service.repository.CheckboxRepository;
 import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.formResponse.individual.CheckboxResponseIndividualDto;
 import com.sougata.form_engine.dto.question.responseputrequest.CheckboxResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -14,7 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service("CHECKBOX_RESPONSE_MANAGER")
-public class CheckboxManager extends ResponseManager<CheckboxResponsePutReqDto> {
+public class CheckboxManager extends ResponseManager<CheckboxResponsePutReqDto, CheckboxResponseIndividualDto> {
 
     private final CheckboxRepository checkboxRepository;
 
@@ -38,6 +39,24 @@ public class CheckboxManager extends ResponseManager<CheckboxResponsePutReqDto> 
         checkboxRepository.save(cb);
 
         return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<List<CheckboxResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+        var responses = checkboxRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+
+        return CompletableFuture.completedFuture(
+                responses.stream().map(res -> {
+                    var cb = new CheckboxResponseIndividualDto();
+
+                    cb.setQuestionId(res.getKey().getQuestionId());
+                    cb.setQuestionType(getQuestionType());
+                    cb.setOptionIds(res.getResponseOptionIds().stream().map(Object::toString).toList());
+
+                    return cb;
+                }).toList()
+        );
     }
 
     @Override

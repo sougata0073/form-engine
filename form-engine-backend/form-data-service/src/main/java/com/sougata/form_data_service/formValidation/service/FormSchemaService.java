@@ -1,18 +1,20 @@
 package com.sougata.form_data_service.formValidation.service;
 
 import com.sougata.form_data_service.constant.ValidationMessages;
-import com.sougata.form_data_service.formValidation.exception.QuestionSchemaNotFoundException;
-import com.sougata.form_data_service.formValidation.exception.RequiredQuestionResponseNotFoundException;
 import com.sougata.form_data_service.formValidation.exception.ResponseValidationException;
 import com.sougata.form_data_service.formValidation.service.questionSchemaManager.QuestionSchemaManagerFactory;
 import com.sougata.form_engine.dto.form.FormDetailsDto;
 import com.sougata.form_engine.dto.others.SuccessMessageDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
+import com.sougata.form_engine.dto.question.responseputrequest.QuestionResponsePutReqDto;
 import com.sougata.form_engine.dto.validation.request.ResponseValidationRequestDto;
+import com.sougata.form_engine.exception.FormDetailsMayChangedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,36 +32,30 @@ public class FormSchemaService {
         var questionResList = formDetails.getQuestions();
 
         // Getting IDs of questions which are marked as required
-        List<Long> requiredQuestionIds = questionResList.stream().filter(QuestionDetailsDto::getRequired).map(QuestionDetailsDto::getId).toList();
-
-        Set<Long> responseQuestionIds = new HashSet<>();
+        Set<Long> requiredQuestionIds = questionResList.stream().filter(QuestionDetailsDto::getRequired).map(QuestionDetailsDto::getId).collect(Collectors.toSet());
 
         // Putting question IDs of all responses into a HashSet
-        dto.getResponses().forEach(vReq -> responseQuestionIds.add(vReq.getQuestionId()));
+        Set<Long> responseQuestionIds = dto.getResponses().stream().map(QuestionResponsePutReqDto::getQuestionId).collect(Collectors.toSet());
 
-        List<String> missingQuestionIds = new ArrayList<>();
-
-        // Checking if any ID is missing in the response question ID HashSet
-        // If true put it in the missing list
-        requiredQuestionIds.forEach(id -> {
-            if (!responseQuestionIds.contains(id)) {
-                missingQuestionIds.add(id.toString());
+        requiredQuestionIds.forEach(qId -> {
+            if (!responseQuestionIds.contains(qId)) {
+                throw new FormDetailsMayChangedException();
             }
         });
 
-        if (!missingQuestionIds.isEmpty()) {
-            throw new RequiredQuestionResponseNotFoundException(missingQuestionIds);
-        }
-
-        var questionResMap = questionResList.stream().collect(Collectors.groupingBy(QuestionDetailsDto::getId));
+        var questionDetailsMap = questionResList.stream().collect(Collectors.toMap(QuestionDetailsDto::getId, Function.identity()));
 
         // Now passing each response into validators
         dto.getResponses().forEach(vReq -> {
             var questionManager = questionSchemaManagerFactory.get(vReq.getQuestionType());
-            boolean isValid = questionManager.validateResponse(vReq,
-                    questionResMap.get(vReq.getQuestionId()).stream().findFirst()
-                            .orElseThrow(() -> new QuestionSchemaNotFoundException(vReq.getQuestionType(), vReq.getQuestionId()))
-            );
+            var questionDetails = questionDetailsMap.get(vReq.getQuestionId());
+
+            if (questionDetails == null) {
+                throw new FormDetailsMayChangedException();
+            }
+
+            boolean isValid = questionManager.validateResponse(vReq, questionDetailsMap.get(vReq.getQuestionId()));
+
             if (!isValid) {
                 throw new ResponseValidationException(
                         String.format(ValidationMessages.INVALID_RESPONSE, vReq.getQuestionType())

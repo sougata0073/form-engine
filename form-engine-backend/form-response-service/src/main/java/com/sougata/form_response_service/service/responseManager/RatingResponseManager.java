@@ -178,19 +178,17 @@ public class RatingResponseManager extends ResponseManager<
 
     @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
-//        var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
-//
-//        var rating = map.get("rating");
-//
-//        if (rating.isEmpty()) {
-//            throw new IllegalArgumentException("Invalid Form Responses Identifier. Identifier: " + formResponsesIdentifier);
-//        }
-//
-//        var groupedResponse = rating.getFirst() == null ? null : Integer.parseInt(rating.getFirst());
-//
-//        return ratingRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
+        var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 
-        return null;
+        var rating = map.get("rating");
+
+        if (rating.isEmpty()) {
+            throw new IllegalArgumentException("Invalid Form Responses Identifier. Identifier: " + formResponsesIdentifier);
+        }
+
+        var groupedResponse = rating.getFirst() == null ? null : Integer.parseInt(rating.getFirst());
+
+        return ratingRepository.getResponseIdsByGroupedResponse(questionId, groupedResponse, pageable);
     }
 
     @Override
@@ -201,7 +199,7 @@ public class RatingResponseManager extends ResponseManager<
 
         questionResponsePutReqs.forEach(q ->
                 responseMap
-                        .computeIfAbsent(q.getQuestionResponsePutReq().getRating(), _ -> new ArrayList<>())
+                        .computeIfAbsent(q.getQuestionResponsePutReq().getRating(), key -> new ArrayList<>())
                         .add(q.getFormResponseId())
         );
 

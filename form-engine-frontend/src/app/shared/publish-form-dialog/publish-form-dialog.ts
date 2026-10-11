@@ -44,8 +44,8 @@ export class PublishFormDialog {
       published: true,
       stopAcceptingResponseOn: null,
       stopAcceptingResponseAfterResponse: null
-    }, () => {
-      this.dialogRef.close()
+    }, res => {
+      this.dialogRef.close(res)
     })
   }
 

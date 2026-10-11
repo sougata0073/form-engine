@@ -169,19 +169,17 @@ public class LinearScaleResponseManager extends ResponseManager<
 
     @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
-//        var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
-//
-//        var scale = map.get("scale");
-//
-//        if (scale.isEmpty()) {
-//            throw new IllegalArgumentException("Invalid Form Responses Identifier. Identifier: " + formResponsesIdentifier);
-//        }
-//
-//        var groupedResponse = scale.getFirst() == null ? null : Integer.parseInt(scale.getFirst());
-//
-//        return linearScaleRepository.getResponseIdsByGroupedResponse(formId, questionId, groupedResponse, pageable);
+        var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 
-        return null;
+        var scale = map.get("scale");
+
+        if (scale.isEmpty()) {
+            throw new IllegalArgumentException("Invalid Form Responses Identifier. Identifier: " + formResponsesIdentifier);
+        }
+
+        var groupedResponse = scale.getFirst() == null ? null : Integer.parseInt(scale.getFirst());
+
+        return linearScaleRepository.getResponseIdsByGroupedResponse(questionId, groupedResponse, pageable);
     }
 
     @Override
@@ -192,7 +190,7 @@ public class LinearScaleResponseManager extends ResponseManager<
 
         questionResponsePutReqs.forEach(q ->
                 responseMap
-                        .computeIfAbsent(q.getQuestionResponsePutReq().getScale(), _ -> new ArrayList<>())
+                        .computeIfAbsent(q.getQuestionResponsePutReq().getScale(), key -> new ArrayList<>())
                         .add(q.getFormResponseId())
         );
 

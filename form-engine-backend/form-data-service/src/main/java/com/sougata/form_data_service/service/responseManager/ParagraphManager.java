@@ -4,6 +4,7 @@ import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.Paragraph;
 import com.sougata.form_data_service.repository.ParagraphRepository;
 import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.formResponse.individual.ParagraphResponseIndividualDto;
 import com.sougata.form_engine.dto.question.responseputrequest.ParagraphResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -14,7 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service("PARAGRAPH_RESPONSE_MANAGER")
-public class ParagraphManager extends ResponseManager<ParagraphResponsePutReqDto> {
+public class ParagraphManager extends ResponseManager<ParagraphResponsePutReqDto, ParagraphResponseIndividualDto> {
 
     private final ParagraphRepository paragraphRepository;
 
@@ -38,6 +39,24 @@ public class ParagraphManager extends ResponseManager<ParagraphResponsePutReqDto
         paragraphRepository.save(paragraph);
 
         return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<List<ParagraphResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+        var responses = paragraphRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+
+        return CompletableFuture.completedFuture(
+                responses.stream().map(res -> {
+                    var p = new ParagraphResponseIndividualDto();
+
+                    p.setQuestionId(res.getKey().getQuestionId());
+                    p.setQuestionType(getQuestionType());
+                    p.setText(res.getText());
+
+                    return p;
+                }).toList()
+        );
     }
 
     @Override

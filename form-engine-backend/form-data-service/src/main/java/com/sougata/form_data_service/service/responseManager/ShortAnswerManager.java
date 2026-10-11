@@ -4,6 +4,7 @@ import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.ShortAnswer;
 import com.sougata.form_data_service.repository.ShortAnswerRepository;
 import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.formResponse.individual.ShortAnswerResponseIndividualDto;
 import com.sougata.form_engine.dto.question.responseputrequest.ShortAnswerResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -14,7 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service("SHORT_ANSWER_RESPONSE_MANAGER")
-public class ShortAnswerManager extends ResponseManager<ShortAnswerResponsePutReqDto> {
+public class ShortAnswerManager extends ResponseManager<ShortAnswerResponsePutReqDto, ShortAnswerResponseIndividualDto> {
 
     private final ShortAnswerRepository shortAnswerRepository;
 
@@ -38,6 +39,24 @@ public class ShortAnswerManager extends ResponseManager<ShortAnswerResponsePutRe
         shortAnswerRepository.save(shortAnswer);
 
         return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<List<ShortAnswerResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+        var responses = shortAnswerRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+
+        return CompletableFuture.completedFuture(
+                responses.stream().map(res -> {
+                    var sa = new ShortAnswerResponseIndividualDto();
+
+                    sa.setQuestionId(res.getKey().getQuestionId());
+                    sa.setQuestionType(getQuestionType());
+                    sa.setText(res.getText());
+
+                    return sa;
+                }).toList()
+        );
     }
 
     @Override

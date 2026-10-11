@@ -116,14 +116,12 @@ export class EditFormResponsesIndividual implements OnInit {
           () => {
             dialogRef.close()
 
-            const responderId = this.individualResponse()!.userId
             const formResponseId = this.individualResponse()!.formResponseId
 
             this.individualResponse.set(null)
 
             this.formResponseService.deleteFormResponse(
               this.formId()!,
-              responderId,
               formResponseId,
               () => {
                 this.formResponseServiceShared.getFormResponseCount(this.formId()!, res => {

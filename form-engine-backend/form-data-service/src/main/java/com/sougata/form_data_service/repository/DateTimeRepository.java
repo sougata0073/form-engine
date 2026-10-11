@@ -13,4 +13,7 @@ public interface DateTimeRepository extends AnyTypeQuestionResponseRepository<Da
 
     @Query("delete from date_times where question_id in :questionIds and form_response_id = :formResponseId")
     void deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
+
+    @Query("select * from date_times where question_id in :questionIds and form_response_id = :formResponseId")
+    List<DateTime> findAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
 }

@@ -1,10 +1,3 @@
-create sequence if not exists public.question_response_sequence
-    as bigint
-    start with 10000000000
-    increment by 1
-    minvalue 10000000000
-    maxvalue 9223372036854775807;
-
 create or replace function public.date_responses_increment_or_create(p_batch_responses jsonb) returns void
     language plpgsql as
 $$

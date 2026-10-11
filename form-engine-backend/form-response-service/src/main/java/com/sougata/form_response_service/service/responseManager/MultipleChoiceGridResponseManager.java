@@ -9,6 +9,7 @@ import com.sougata.form_engine.dto.question.details.MultipleChoiceGridDetailsDto
 import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
 import com.sougata.form_engine.dto.question.responseputreqbatch.MultipleChoiceGridResponseBatch;
 import com.sougata.form_engine.dto.question.responseputrequest.MultipleChoiceGridResponsePutReqDto;
+import com.sougata.form_engine.util.IdUtil;
 import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_response_service.model.MultipleChoiceGridResponse;
@@ -143,55 +144,48 @@ public class MultipleChoiceGridResponseManager extends ResponseManager<
     @Override
     public MultipleChoiceGridResponseQuestionDto getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
 
-//        var rowIdString = extraParams.get("rowId");
-//
-//        if (rowIdString == null) {
-//            throw new IllegalArgumentException("Row ID is required");
-//        }
-//
-//        long rowId;
-//
-//        try {
-//            rowId = Long.parseLong(rowIdString);
-//        } catch (NumberFormatException e) {
-//            throw new IllegalArgumentException("Invalid row ID: " + rowIdString);
-//        }
-//
-//        var grouped = multipleChoiceGridRepository.groupedByResponseRowColumn(
-//                formId,
-//                questionId,
-//                rowId,
-//                pageable
-//        );
-//
-//        var mc = new MultipleChoiceGridResponseQuestionDto();
-//
-//        var responses = grouped.stream().map(g -> {
-//            var res = new MultipleChoiceGridResponseQuestionDto.Response();
-//
-//            res.setQuestionId(questionId);
-//            res.setQuestionType(getQuestionType());
-//            res.setColumnId(g.get("columnId", Long.class));
-//            res.setResponseCount(g.get("responseCount", Long.class));
-//
-//            var map = new HashMap<String, List<String>>();
-//
-//            map.put("rowId", List.of(rowIdString));
-//            map.put("columnId", List.of(res.getColumnId() == null ? "" : res.getColumnId().toString()));
-//
-//            res.setFormResponsesIdentifier(IdUtil.generateCompressedEncodedId(map));
-//
-//            return res;
-//        }).toList();
-//
-//        mc.setQuestionId(questionId);
-//        mc.setQuestionType(getQuestionType());
-//        mc.setRowId(rowId);
-//        mc.setResponses(responses);
-//
-//        return mc;
+        var rowIdString = extraParams.get("rowId");
 
-        return null;
+        if (rowIdString == null) {
+            throw new IllegalArgumentException("Row ID is required");
+        }
+
+        long rowId;
+
+        try {
+            rowId = Long.parseLong(rowIdString);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid row ID: " + rowIdString);
+        }
+
+        var grouped = multipleChoiceGridRepository.groupedByRowColumn(
+                questionId,
+                rowId,
+                pageable
+        );
+
+        var mc = new MultipleChoiceGridResponseQuestionDto();
+
+        var responses = grouped.stream().map(g -> {
+            var res = new MultipleChoiceGridResponseQuestionDto.Response();
+
+            res.setColumnId(g.get("columnId", Long.class));
+            res.setResponseCount(g.get("responseCount", Long.class));
+
+            var map = new HashMap<String, List<String>>();
+
+            map.put("rowId", List.of(rowIdString));
+            map.put("columnId", List.of(res.getColumnId() == null ? "" : res.getColumnId().toString()));
+
+            res.setFormResponsesIdentifier(IdUtil.generateCompressedEncodedId(map));
+
+            return res;
+        }).toList();
+
+        mc.setRowId(rowId);
+        mc.setResponses(responses);
+
+        return mc;
     }
 
     @Override
@@ -228,21 +222,19 @@ public class MultipleChoiceGridResponseManager extends ResponseManager<
 
     @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
-//        var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
-//
-//        var rowId = map.get("rowId");
-//        var columnId = map.get("columnId");
-//
-//        if (rowId.isEmpty() || columnId.isEmpty()) {
-//            throw new IllegalArgumentException("Invalid Form Responses Identifier. Identifier: " + formResponsesIdentifier);
-//        }
-//
-//        var rowIdResponse = rowId.getFirst() == null ? null :  Long.parseLong(rowId.getFirst());
-//        var columnIdResponse = columnId.getFirst() == null ? null : Long.parseLong(columnId.getFirst());
-//
-//        return multipleChoiceGridRepository.getResponseIdsByGroupedResponse(formId, questionId, rowIdResponse, columnIdResponse, pageable);
+        var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 
-        return null;
+        var rowId = map.get("rowId");
+        var columnId = map.get("columnId");
+
+        if (rowId.isEmpty() || columnId.isEmpty()) {
+            throw new IllegalArgumentException("Invalid Form Responses Identifier. Identifier: " + formResponsesIdentifier);
+        }
+
+        var rowIdResponse = rowId.getFirst() == null ? null :  Long.parseLong(rowId.getFirst());
+        var columnIdResponse = columnId.getFirst() == null ? null : Long.parseLong(columnId.getFirst());
+
+        return multipleChoiceGridRepository.getResponseIdsByGroupedResponse(questionId, rowIdResponse, columnIdResponse, pageable);
     }
 
     @Override
@@ -259,7 +251,7 @@ public class MultipleChoiceGridResponseManager extends ResponseManager<
                                     row.getResponseColumnId()
                             );
                             responseMap
-                                    .computeIfAbsent(rowColumnString, _ -> new ArrayList<>())
+                                    .computeIfAbsent(rowColumnString, key -> new ArrayList<>())
                                     .add(q.getFormResponseId());
                         }
                 )

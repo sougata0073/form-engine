@@ -14,4 +14,7 @@ public interface DateRepository extends AnyTypeQuestionResponseRepository<Date, 
     @Query("delete from dates where question_id in :questionIds and form_response_id = :formResponseId")
     void deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
 
+    @Query("select * from dates where question_id in :questionIds and form_response_id = :formResponseId")
+    List<Date> findAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
+
 }

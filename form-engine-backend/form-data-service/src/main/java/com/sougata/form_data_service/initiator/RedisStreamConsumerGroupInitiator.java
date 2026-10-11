@@ -1,6 +1,6 @@
 package com.sougata.form_data_service.initiator;
 
-import com.sougata.form_engine.constant.RedisConsumerGroupNames;
+import com.sougata.form_engine.constant.RedisStreamsConsumerGroupNames;
 import com.sougata.form_engine.constant.RedisStreamNames;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
@@ -20,7 +20,7 @@ public class RedisStreamConsumerGroupInitiator implements ApplicationRunner {
 
     private static final Map<String, Set<String>> STREAM_NAME_AND_GROUPS = Map.of(
             RedisStreamNames.FORM_RESPONSE_STREAM,
-            Set.of(RedisConsumerGroupNames.FORM_RESPONSE_CONSUMER)
+            Set.of(RedisStreamsConsumerGroupNames.FORM_RESPONSE_CONSUMER)
     );
 
     @Override

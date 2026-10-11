@@ -13,4 +13,7 @@ public interface ParagraphRepository extends AnyTypeQuestionResponseRepository<P
 
     @Query("delete from paragraphs where question_id in :questionIds and form_response_id = :formResponseId")
     void deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
+
+    @Query("select * from paragraphs where question_id in :questionIds and form_response_id = :formResponseId")
+    List<Paragraph> findAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
 }

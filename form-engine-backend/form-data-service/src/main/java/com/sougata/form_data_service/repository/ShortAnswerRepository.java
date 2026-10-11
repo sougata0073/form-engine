@@ -13,4 +13,7 @@ public interface ShortAnswerRepository extends AnyTypeQuestionResponseRepository
 
     @Query("delete from short_answers where question_id in :questionIds and form_response_id = :formResponseId")
     void deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
+
+    @Query("select * from short_answers where question_id in :questionIds and form_response_id = :formResponseId")
+    List<ShortAnswer> findAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
 }

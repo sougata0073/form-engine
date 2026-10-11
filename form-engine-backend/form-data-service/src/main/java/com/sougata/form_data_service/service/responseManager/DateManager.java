@@ -4,6 +4,7 @@ import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.Date;
 import com.sougata.form_data_service.repository.DateRepository;
 import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.formResponse.individual.DateResponseIndividualDto;
 import com.sougata.form_engine.dto.question.responseputrequest.DateResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -14,7 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service("DATE_RESPONSE_MANAGER")
-public class DateManager extends ResponseManager<DateResponsePutReqDto> {
+public class DateManager extends ResponseManager<DateResponsePutReqDto, DateResponseIndividualDto> {
 
     private final DateRepository dateRepository;
 
@@ -38,6 +39,24 @@ public class DateManager extends ResponseManager<DateResponsePutReqDto> {
         dateRepository.save(date);
 
         return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<List<DateResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+        var responses = dateRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+
+        return CompletableFuture.completedFuture(
+                responses.stream().map(res -> {
+                    var d = new DateResponseIndividualDto();
+
+                    d.setQuestionId(res.getKey().getQuestionId());
+                    d.setQuestionType(getQuestionType());
+                    d.setDate(res.getDate());
+
+                    return d;
+                }).toList()
+        );
     }
 
     @Override

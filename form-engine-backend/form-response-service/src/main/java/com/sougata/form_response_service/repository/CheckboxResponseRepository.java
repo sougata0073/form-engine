@@ -43,13 +43,12 @@ public interface CheckboxResponseRepository extends AnyTypeQuestionResponseRepos
             fri.user_id userId
             from
             checkbox_responses cr
-            join question_response_form_response_individual qrfri\s
+            join question_response_form_response_individual qrfri
             on cr.question_response_id = qrfri.question_response_id
             and cr.question_id = :questionId
             join form_response_individuals fri
             on qrfri.form_response_individual_id = fri.form_response_id
-            group by
-            fri.form_response_id
+            group by fri.form_response_id
             having array_agg(cr.option_id order by cr.option_id) = :groupedResponse
             order by fri.form_response_id
             """, nativeQuery = true)

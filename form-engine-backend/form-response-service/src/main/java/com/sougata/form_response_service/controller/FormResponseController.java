@@ -88,7 +88,7 @@ public class FormResponseController {
     )
     public FormResponseIndividualDto getIndividualFormResponse(
             @PathVariable("formId") UUID formId,
-            @PathVariable("formResponseId") Long formResponseId
+            @PathVariable("formResponseId") UUID formResponseId
     ) {
         return formResponseService.getIndividualFormResponse(formId, formResponseId);
     }

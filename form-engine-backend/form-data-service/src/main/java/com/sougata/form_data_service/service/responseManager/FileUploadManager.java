@@ -4,6 +4,7 @@ import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.FileUpload;
 import com.sougata.form_data_service.repository.FileUploadRepository;
 import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.formResponse.individual.FileUploadResponseIndividualDto;
 import com.sougata.form_engine.dto.question.responseputrequest.FileUploadResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -14,7 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service("FILE_UPLOAD_RESPONSE_MANAGER")
-public class FileUploadManager extends ResponseManager<FileUploadResponsePutReqDto> {
+public class FileUploadManager extends ResponseManager<FileUploadResponsePutReqDto, FileUploadResponseIndividualDto> {
 
     private final FileUploadRepository fileUploadRepository;
 
@@ -41,6 +42,26 @@ public class FileUploadManager extends ResponseManager<FileUploadResponsePutReqD
         fileUploadRepository.save(fileUpload);
 
         return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<List<FileUploadResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+        var responses = fileUploadRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+
+        return CompletableFuture.completedFuture(
+                responses.stream().map(res -> {
+                    var fu = new FileUploadResponseIndividualDto();
+
+                    fu.setQuestionId(res.getKey().getQuestionId());
+                    fu.setQuestionType(getQuestionType());
+                    fu.setFileUrl(res.getFileUrl());
+                    fu.setFileName(res.getFileName());
+                    fu.setFileMimeType(res.getFileMimeType());
+
+                    return fu;
+                }).toList()
+        );
     }
 
     @Override

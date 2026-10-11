@@ -9,6 +9,7 @@ import com.sougata.form_engine.dto.question.details.TickBoxGridDetailsDto;
 import com.sougata.form_engine.dto.question.responseputreqbatch.FormResponseInfoQuestionResponse;
 import com.sougata.form_engine.dto.question.responseputreqbatch.TickBoxGridResponseBatch;
 import com.sougata.form_engine.dto.question.responseputrequest.TickBoxGridResponsePutReqDto;
+import com.sougata.form_engine.util.IdUtil;
 import com.sougata.form_engine.util.JsonUtil;
 import com.sougata.form_response_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_response_service.model.QuestionResponseSummary;
@@ -142,52 +143,45 @@ public class TickBoxGridResponseManager extends ResponseManager<
     @Override
     public TickBoxGridResponseQuestionDto getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable) {
 
-//        var rowIdString = extraParams.get("rowId");
-//
-//        if (rowIdString == null) {
-//            throw new IllegalArgumentException("Row ID is required");
-//        }
-//
-//        var rowId = Long.parseLong(rowIdString);
-//
-//        var grouped = tickBoxGridRepository.groupedByResponseRowColumn(
-//                formId,
-//                questionId,
-//                rowId,
-//                pageable
-//        );
-//
-//        var tb = new TickBoxGridResponseQuestionDto();
-//
-//        var responses = grouped.stream().map(g -> {
-//            var res = new TickBoxGridResponseQuestionDto.Response();
-//
-//            res.setQuestionId(questionId);
-//            res.setQuestionType(getQuestionType());
-//            res.setResponseCount(g.get("responseCount", Long.class));
-//
-//            var colIdArray = g.get("columnIds", Long[].class);
-//
-//            res.setColumnIds(colIdArray == null ? null : Arrays.stream(colIdArray).map(Object::toString).toList());
-//
-//            var map = new HashMap<String, List<String>>();
-//
-//            map.put("rowId", List.of(rowIdString));
-//            map.put("columnIds", res.getColumnIds() == null ? List.of() : res.getColumnIds());
-//
-//            res.setFormResponsesIdentifier(IdUtil.generateCompressedEncodedId(map));
-//
-//            return res;
-//        }).toList();
-//
-//        tb.setQuestionId(questionId);
-//        tb.setQuestionType(getQuestionType());
-//        tb.setRowId(rowId);
-//        tb.setResponses(responses);
-//
-//        return tb;
+        var rowIdString = extraParams.get("rowId");
 
-        return null;
+        if (rowIdString == null) {
+            throw new IllegalArgumentException("Row ID is required");
+        }
+
+        var rowId = Long.parseLong(rowIdString);
+
+        var grouped = tickBoxGridRepository.groupedByRowColumn(
+                questionId,
+                rowId,
+                pageable
+        );
+
+        var tb = new TickBoxGridResponseQuestionDto();
+
+        var responses = grouped.stream().map(g -> {
+            var res = new TickBoxGridResponseQuestionDto.Response();
+
+            res.setResponseCount(g.get("responseCount", Long.class));
+
+            var colIdArray = g.get("columnIds", Long[].class);
+
+            res.setColumnIds(colIdArray == null ? null : Arrays.stream(colIdArray).map(Object::toString).toList());
+
+            var map = new HashMap<String, List<String>>();
+
+            map.put("rowId", List.of(rowIdString));
+            map.put("columnIds", res.getColumnIds() == null ? List.of() : res.getColumnIds());
+
+            res.setFormResponsesIdentifier(IdUtil.generateCompressedEncodedId(map));
+
+            return res;
+        }).toList();
+
+        tb.setRowId(rowId);
+        tb.setResponses(responses);
+
+        return tb;
     }
 
     @Override
@@ -230,23 +224,21 @@ public class TickBoxGridResponseManager extends ResponseManager<
 
     @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
-//        var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
-//
-//        var rowId = map.get("rowId");
-//        var columnIds = map.get("columnIds");
-//
-//        if (rowId.isEmpty() || columnIds.isEmpty()) {
-//            throw new IllegalArgumentException("Invalid Form Responses Identifier. Identifier: " + formResponsesIdentifier);
-//        }
-//
-//        var rowIdResponse = rowId.getFirst() == null ? null : Long.parseLong(rowId.getFirst());
-//        var firstColumnId = columnIds.getFirst();
-//
-//        var columnIdsResponse = firstColumnId == null ? new Long[]{null} : columnIds.stream().map(Long::parseLong).toArray(Long[]::new);
-//
-//        return tickBoxGridRepository.getResponseIdsByGroupedResponse(formId, questionId, rowIdResponse, columnIdsResponse, pageable);
+        var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 
-        return null;
+        var rowId = map.get("rowId");
+        var columnIds = map.get("columnIds");
+
+        if (rowId.isEmpty() || columnIds.isEmpty()) {
+            throw new IllegalArgumentException("Invalid Form Responses Identifier. Identifier: " + formResponsesIdentifier);
+        }
+
+        var rowIdResponse = rowId.getFirst() == null ? null : Long.parseLong(rowId.getFirst());
+        var firstColumnId = columnIds.getFirst();
+
+        var columnIdsResponse = firstColumnId == null ? new Long[]{null} : columnIds.stream().map(Long::parseLong).toArray(Long[]::new);
+
+        return tickBoxGridRepository.getResponseIdsByGroupedResponse(questionId, rowIdResponse, columnIdsResponse, pageable);
     }
 
     @Override
@@ -264,7 +256,7 @@ public class TickBoxGridResponseManager extends ResponseManager<
                                     columnId
                             );
                             responseMap
-                                    .computeIfAbsent(rowColumnString, _ -> new ArrayList<>())
+                                    .computeIfAbsent(rowColumnString, key -> new ArrayList<>())
                                     .add(q.getFormResponseId());
 
                         })

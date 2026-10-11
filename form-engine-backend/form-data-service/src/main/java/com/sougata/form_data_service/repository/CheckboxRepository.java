@@ -14,4 +14,7 @@ public interface CheckboxRepository extends AnyTypeQuestionResponseRepository<Ch
     @Query("delete from checkboxes where question_id in :questionIds and form_response_id = :formResponseId")
     void deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
 
+    @Query("select * from checkboxes where question_id in :questionIds and form_response_id = :formResponseId")
+    List<Checkbox> findAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
+
 }

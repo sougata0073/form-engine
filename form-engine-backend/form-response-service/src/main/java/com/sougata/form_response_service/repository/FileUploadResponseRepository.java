@@ -40,4 +40,21 @@ public interface FileUploadResponseRepository extends AnyTypeQuestionResponseRep
             order by f.responseCount desc, f.fileUrl, f.fileName, f.fileMimeType
             """)
     List<Tuple> groupedByFile(Long questionId, Pageable pageable);
+
+    @Query(value = """
+            select
+            fri.form_response_id responseId,
+            fri.user_id userId
+            from file_upload_responses fur
+            join question_response_form_response_individual qrfri
+            on fur.question_response_id = qrfri.question_response_id
+            and fur.question_id = :questionId
+            and fur.file_url = :fUrl
+            and fur.file_name = :fName
+            and fur.file_mime_type = :fMimeType
+            join form_response_individuals fri
+            on fri.form_response_id = qrfri.form_response_individual_id
+            order by fri.form_response_id
+            """, nativeQuery = true)
+    List<Tuple> getResponseIdsByGroupedResponse(Long questionId, String fName, String fUrl, String fMimeType, Pageable pageable);
 }

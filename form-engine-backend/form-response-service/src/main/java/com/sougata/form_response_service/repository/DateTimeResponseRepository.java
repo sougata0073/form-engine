@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 
 @Repository("DATE_TIME_RESPONSE_REPOSITORY")
@@ -38,4 +39,18 @@ public interface DateTimeResponseRepository extends AnyTypeQuestionResponseRepos
             order by date, dt.date_time
             """, nativeQuery = true)
     List<Tuple> getResponseDateTimes(Long questionId, Pageable pageable);
+
+    @Query(value = """
+            select
+            fri.form_response_id responseId,
+            fri.user_id userId
+            from date_time_responses dtr
+            join question_response_form_response_individual qrfri
+            on dtr.question_response_id = qrfri.question_response_id
+            and dtr.question_id = :questionId and dtr.date_time = :groupedResponse
+            join form_response_individuals fri
+            on fri.form_response_id = qrfri.form_response_individual_id
+            order by fri.form_response_id
+            """, nativeQuery = true)
+    List<Tuple> getResponseIdsByGroupedResponse(Long questionId, Instant groupedResponse, Pageable pageable);
 }

@@ -18,7 +18,7 @@ public class MultipleChoiceGridResponsePutReqDto extends QuestionResponsePutReqD
 
     @NotNull
     @Size(max = 20)
-    private List<@Valid Row> rows;
+    private List<@NotNull @Valid Row> rows;
 
     @NoArgsConstructor
     @AllArgsConstructor

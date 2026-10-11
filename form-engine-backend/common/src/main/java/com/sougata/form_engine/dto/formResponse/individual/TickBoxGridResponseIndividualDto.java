@@ -8,6 +8,7 @@ import tools.jackson.databind.annotation.JsonSerialize;
 import tools.jackson.databind.ser.std.ToStringSerializer;
 
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -24,6 +25,6 @@ public class TickBoxGridResponseIndividualDto extends QuestionResponseIndividual
     public static class Row {
         @JsonSerialize(using = ToStringSerializer.class)
         private Long rowId;
-        private List<String> columnIds;
+        private Set<String> columnIds;
     }
 }

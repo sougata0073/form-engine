@@ -1,0 +1,1 @@
+export type ProblemDetailTitle = 'Form details may changed'

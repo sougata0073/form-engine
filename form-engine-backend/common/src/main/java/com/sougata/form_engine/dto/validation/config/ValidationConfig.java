@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Objects;
+
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.EXISTING_PROPERTY,
@@ -59,4 +61,12 @@ public class ValidationConfig {
 
     @JsonProperty(value = "@class")
     private String cls = getClass().getName();
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        ValidationConfig that = (ValidationConfig) o;
+        return validationId == that.validationId && Objects.equals(errorText, that.errorText);
+    }
+
 }

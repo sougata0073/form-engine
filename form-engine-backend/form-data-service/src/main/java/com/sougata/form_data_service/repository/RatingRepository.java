@@ -13,4 +13,7 @@ public interface RatingRepository extends AnyTypeQuestionResponseRepository<Rati
 
     @Query("delete from ratings where question_id in :questionIds and form_response_id = :formResponseId")
     void deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
+
+    @Query("select * from ratings where question_id in :questionIds and form_response_id = :formResponseId")
+    List<Rating> findAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
 }

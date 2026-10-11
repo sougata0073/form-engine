@@ -13,4 +13,7 @@ public interface LinearScaleRepository extends AnyTypeQuestionResponseRepository
 
     @Query("delete from linear_scales where question_id in :questionIds and form_response_id = :formResponseId")
     void deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
+
+    @Query("select * from linear_scales where question_id in :questionIds and form_response_id = :formResponseId")
+    List<LinearScale> findAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
 }

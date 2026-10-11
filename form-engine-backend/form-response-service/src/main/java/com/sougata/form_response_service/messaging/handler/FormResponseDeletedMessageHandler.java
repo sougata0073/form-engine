@@ -35,7 +35,6 @@ public class FormResponseDeletedMessageHandler implements MessageListener {
         var responseByQuestionCacheKeys = redisTemplate.keys(CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_BY_QUESTION, "formId=" + messageData.getFormId()) + "::*");
         var formResponseSummariesCacheKeys = redisTemplate.keys(CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_SUMMARIES, "formId=" + messageData.getFormId()) + "::*");
         var responseSummaryCacheKeys = redisTemplate.keys(CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_SUMMARY, "formId=" + messageData.getFormId()) + "::*");
-        var formResponseIdCacheKeys = redisTemplate.keys(CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_ID, "formId=" + messageData.getFormId()) + "::*");
 
         var cacheKeys = new ArrayList<>(
                 List.of(
@@ -48,7 +47,6 @@ public class FormResponseDeletedMessageHandler implements MessageListener {
         cacheKeys.addAll(responseByQuestionCacheKeys);
         cacheKeys.addAll(formResponseSummariesCacheKeys);
         cacheKeys.addAll(responseSummaryCacheKeys);
-        cacheKeys.addAll(formResponseIdCacheKeys);
 
         redisTemplate.delete(cacheKeys);
     }

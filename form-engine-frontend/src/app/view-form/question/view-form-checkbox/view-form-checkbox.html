@@ -9,9 +9,8 @@
       </mat-checkbox>
     }
   </form>
-  @let error = formError();
-  @if (error) {
-    <mat-error class="error-container">{{ error }}</mat-error>
+  @if (showError()) {
+    <mat-error class="error-container">{{ formError() }}</mat-error>
   }
   @if (!question().required) {
     <button

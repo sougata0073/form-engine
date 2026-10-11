@@ -183,23 +183,21 @@ public class DurationResponseManager extends ResponseManager<
 
     @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
-//        var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
-//
-//        var hours = map.get("hours");
-//        var minutes = map.get("minutes");
-//        var seconds = map.get("seconds");
-//
-//        if (hours.isEmpty() || minutes.isEmpty() || seconds.isEmpty()) {
-//            throw new IllegalArgumentException("Invalid Form Responses Identifier. Identifier: " + formResponsesIdentifier);
-//        }
-//
-//        var h = hours.getFirst() == null ? null : Integer.parseInt(hours.getFirst());
-//        var m = minutes.getFirst() == null ? null : Integer.parseInt(minutes.getFirst());
-//        var s = seconds.getFirst() == null ? null : Integer.parseInt(seconds.getFirst());
-//
-//        return durationRepository.getResponseIdsByGroupedResponse(formId, questionId, h, m, s, pageable);
+        var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 
-        return null;
+        var hours = map.get("hours");
+        var minutes = map.get("minutes");
+        var seconds = map.get("seconds");
+
+        if (hours.isEmpty() || minutes.isEmpty() || seconds.isEmpty()) {
+            throw new IllegalArgumentException("Invalid Form Responses Identifier. Identifier: " + formResponsesIdentifier);
+        }
+
+        var h = hours.getFirst() == null ? null : Integer.parseInt(hours.getFirst());
+        var m = minutes.getFirst() == null ? null : Integer.parseInt(minutes.getFirst());
+        var s = seconds.getFirst() == null ? null : Integer.parseInt(seconds.getFirst());
+
+        return durationRepository.getResponseIdsByGroupedResponse(questionId, h, m, s, pageable);
     }
 
     @Override
@@ -216,7 +214,7 @@ public class DurationResponseManager extends ResponseManager<
                             q.getQuestionResponsePutReq().getSeconds()
                     );
                     responseMap
-                            .computeIfAbsent(durationString, _ -> new ArrayList<>())
+                            .computeIfAbsent(durationString, key -> new ArrayList<>())
                             .add(q.getFormResponseId());
                 }
         );

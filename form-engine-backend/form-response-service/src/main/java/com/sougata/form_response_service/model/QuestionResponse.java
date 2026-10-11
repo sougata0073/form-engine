@@ -45,6 +45,7 @@ public class QuestionResponse {
                     )
             }
     )
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<FormResponseIndividual> formResponseIndividuals = new ArrayList<>();
 
 }

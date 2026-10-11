@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.UUID;
 
 @Repository("MULTIPLE_CHOICE_RESPONSE_REPOSITORY")
 public interface MultipleChoiceResponseRepository extends AnyTypeQuestionResponseRepository<MultipleChoiceResponse, Long> {
@@ -28,4 +27,18 @@ public interface MultipleChoiceResponseRepository extends AnyTypeQuestionRespons
             order by mc.responseCount desc, mc.optionId
             """)
     List<Tuple> groupedByOptionIds(Long questionId, Pageable pageable);
+
+    @Query(value = """
+            select
+            fri.form_response_id responseId,
+            fri.user_id userId
+            from multiple_choice_responses mcr
+            join question_response_form_response_individual qrfri
+            on mcr.question_response_id = qrfri.question_response_id
+            and mcr.question_id = :questionId and mcr.option_id = :groupedResponse
+            join form_response_individuals fri
+            on fri.form_response_id = qrfri.form_response_individual_id
+            order by fri.form_response_id
+            """, nativeQuery = true)
+    List<Tuple> getResponseIdsByGroupedResponse(Long questionId, Long groupedResponse, Pageable pageable);
 }

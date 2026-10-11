@@ -4,6 +4,7 @@ import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.MultipleChoiceGrid;
 import com.sougata.form_data_service.repository.MultipleChoiceGridRepository;
 import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.formResponse.individual.MultipleChoiceGridResponseIndividualDto;
 import com.sougata.form_engine.dto.question.responseputrequest.MultipleChoiceGridResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -15,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service("MULTIPLE_CHOICE_GRID_RESPONSE_MANAGER")
-public class MultipleChoiceGridManager extends ResponseManager<MultipleChoiceGridResponsePutReqDto> {
+public class MultipleChoiceGridManager extends ResponseManager<MultipleChoiceGridResponsePutReqDto, MultipleChoiceGridResponseIndividualDto> {
 
     private final MultipleChoiceGridRepository multipleChoiceGridRepository;
 
@@ -48,6 +49,32 @@ public class MultipleChoiceGridManager extends ResponseManager<MultipleChoiceGri
         multipleChoiceGridRepository.save(multipleChoiceGrid);
 
         return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<List<MultipleChoiceGridResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+        var responses = multipleChoiceGridRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+
+        return CompletableFuture.completedFuture(
+                responses.stream().map(res -> {
+                    var mcg = new MultipleChoiceGridResponseIndividualDto();
+
+                    mcg.setQuestionId(res.getKey().getQuestionId());
+                    mcg.setQuestionType(getQuestionType());
+                    mcg.setRows(
+                            res.getResponses().entrySet()
+                                    .stream()
+                                    .map(entry ->
+                                            new MultipleChoiceGridResponseIndividualDto.Row(
+                                                    entry.getKey(), entry.getValue()
+                                            )
+                                    ).toList()
+                    );
+
+                    return mcg;
+                }).toList()
+        );
     }
 
     @Override

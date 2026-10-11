@@ -13,4 +13,7 @@ public interface MultipleChoiceGridRepository extends AnyTypeQuestionResponseRep
 
     @Query("delete from multiple_choice_grids where question_id in :questionIds and form_response_id = :formResponseId")
     void deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
+
+    @Query("select * from multiple_choice_grids where question_id in :questionIds and form_response_id = :formResponseId")
+    List<MultipleChoiceGrid> findAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
 }

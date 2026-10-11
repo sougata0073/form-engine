@@ -196,7 +196,7 @@ public class CheckboxResponseManager extends ResponseManager<
 
         questionResponsePutReqs.forEach(q ->
                 q.getQuestionResponsePutReq().getResponseOptionIds().forEach(optionId ->
-                        responseMap.computeIfAbsent(optionId, _ -> new ArrayList<>()).add(q.getFormResponseId())
+                        responseMap.computeIfAbsent(optionId, key -> new ArrayList<>()).add(q.getFormResponseId())
                 )
         );
 

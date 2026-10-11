@@ -13,4 +13,7 @@ public interface TimeRepository extends AnyTypeQuestionResponseRepository<Time, 
 
     @Query("delete from times where question_id in :questionIds and form_response_id = :formResponseId")
     void deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
+
+    @Query("select * from times where question_id in :questionIds and form_response_id = :formResponseId")
+    List<Time> findAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
 }

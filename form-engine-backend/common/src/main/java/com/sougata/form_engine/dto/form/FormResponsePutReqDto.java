@@ -2,6 +2,7 @@ package com.sougata.form_engine.dto.form;
 
 import com.sougata.form_engine.dto.question.responseputrequest.QuestionResponsePutReqDto;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,5 +15,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FormResponsePutReqDto {
-    private List<@Valid QuestionResponsePutReqDto> responses;
+
+    @NotNull
+    private FormDetailsDto formDetailsResponseSubmittedOn;
+
+    @NotNull
+    private List<@NotNull @Valid QuestionResponsePutReqDto> responses;
+
 }

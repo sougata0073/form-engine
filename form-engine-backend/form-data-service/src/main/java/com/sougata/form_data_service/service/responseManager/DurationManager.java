@@ -4,6 +4,7 @@ import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.Duration;
 import com.sougata.form_data_service.repository.DurationRepository;
 import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.formResponse.individual.DurationResponseIndividualDto;
 import com.sougata.form_engine.dto.question.responseputrequest.DurationResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -14,7 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service("DURATION_RESPONSE_MANAGER")
-public class DurationManager extends ResponseManager<DurationResponsePutReqDto> {
+public class DurationManager extends ResponseManager<DurationResponsePutReqDto, DurationResponseIndividualDto> {
 
     private final DurationRepository durationRepository;
 
@@ -40,6 +41,26 @@ public class DurationManager extends ResponseManager<DurationResponsePutReqDto> 
         durationRepository.save(duration);
 
         return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<List<DurationResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+        var responses = durationRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+
+        return CompletableFuture.completedFuture(
+                responses.stream().map(res -> {
+                    var dr = new DurationResponseIndividualDto();
+
+                    dr.setQuestionId(res.getKey().getQuestionId());
+                    dr.setQuestionType(getQuestionType());
+                    dr.setHours(res.getHours());
+                    dr.setMinutes(res.getMinutes());
+                    dr.setSeconds(res.getSeconds());
+
+                    return dr;
+                }).toList()
+        );
     }
 
     @Override

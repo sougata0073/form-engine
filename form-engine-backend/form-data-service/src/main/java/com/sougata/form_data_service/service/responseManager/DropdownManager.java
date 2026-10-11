@@ -4,6 +4,7 @@ import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.Dropdown;
 import com.sougata.form_data_service.repository.DropdownRepository;
 import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.formResponse.individual.DropdownResponseIndividualDto;
 import com.sougata.form_engine.dto.question.responseputrequest.DropdownResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -14,7 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service("DROPDOWN_RESPONSE_MANAGER")
-public class DropdownManager extends ResponseManager<DropdownResponsePutReqDto> {
+public class DropdownManager extends ResponseManager<DropdownResponsePutReqDto, DropdownResponseIndividualDto> {
 
     private final DropdownRepository dropdownRepository;
 
@@ -38,6 +39,24 @@ public class DropdownManager extends ResponseManager<DropdownResponsePutReqDto> 
         dropdownRepository.save(dropdown);
 
         return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<List<DropdownResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+        var responses = dropdownRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+
+        return CompletableFuture.completedFuture(
+                responses.stream().map(res -> {
+                    var dr = new DropdownResponseIndividualDto();
+
+                    dr.setQuestionId(res.getKey().getQuestionId());
+                    dr.setQuestionType(getQuestionType());
+                    dr.setOptionId(res.getResponseOptionId());
+
+                    return dr;
+                }).toList()
+        );
     }
 
     @Override

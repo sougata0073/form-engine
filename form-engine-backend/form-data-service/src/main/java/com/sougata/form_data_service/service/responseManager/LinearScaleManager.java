@@ -4,6 +4,7 @@ import com.sougata.form_data_service.model.AnyTypeQuestionResponse;
 import com.sougata.form_data_service.model.LinearScale;
 import com.sougata.form_data_service.repository.LinearScaleRepository;
 import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.formResponse.individual.LinearScaleResponseIndividualDto;
 import com.sougata.form_engine.dto.question.responseputrequest.LinearScaleResponsePutReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -14,7 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service("LINEAR_SCALE_RESPONSE_MANAGER")
-public class LinearScaleManager extends ResponseManager<LinearScaleResponsePutReqDto> {
+public class LinearScaleManager extends ResponseManager<LinearScaleResponsePutReqDto, LinearScaleResponseIndividualDto> {
 
     private final LinearScaleRepository linearScaleRepository;
 
@@ -38,6 +39,24 @@ public class LinearScaleManager extends ResponseManager<LinearScaleResponsePutRe
         linearScaleRepository.save(linearScale);
 
         return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<List<LinearScaleResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+        var responses = linearScaleRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+
+        return CompletableFuture.completedFuture(
+                responses.stream().map(res -> {
+                    var ls = new LinearScaleResponseIndividualDto();
+
+                    ls.setQuestionId(res.getKey().getQuestionId());
+                    ls.setQuestionType(getQuestionType());
+                    ls.setScale(res.getScale());
+
+                    return ls;
+                }).toList()
+        );
     }
 
     @Override

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 
 @Repository("DATE_RESPONSE_REPOSITORY")
@@ -32,7 +33,7 @@ public interface DateResponseRepository extends AnyTypeQuestionResponseRepositor
             select
             extract(year from dr.date)::integer as year,
             extract(month from dr.date)::integer as month,
-            array_agg(to_char(dr.date, 'YYYY-MM-DD"T"HH24:MI:SS.MSOF') order by dr.date) as dates,
+            array_agg(to_char(dr.date at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS') || '+00:00' order by dr.date) as dates,
             array_agg(dr.response_count order by dr.date) as dateCounts
             from date_responses dr
             where dr.question_id = :questionId
@@ -41,4 +42,17 @@ public interface DateResponseRepository extends AnyTypeQuestionResponseRepositor
             """, nativeQuery = true)
     List<Tuple> groupedByYearMonth(Long questionId, Pageable pageable);
 
+    @Query(value = """
+            select
+            fri.form_response_id responseId,
+            fri.user_id userId
+            from date_responses dr
+            join question_response_form_response_individual qrfri
+            on dr.question_response_id = qrfri.question_response_id
+            and dr.question_id = :questionId and dr.date = :groupedResponse
+            join form_response_individuals fri
+            on fri.form_response_id = qrfri.form_response_individual_id
+            order by fri.form_response_id
+            """, nativeQuery = true)
+    List<Tuple> getResponseIdsByGroupedResponse(Long questionId, Instant groupedResponse, Pageable pageable);
 }

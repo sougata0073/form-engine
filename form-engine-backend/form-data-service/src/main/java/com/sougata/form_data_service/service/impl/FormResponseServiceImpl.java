@@ -12,11 +12,15 @@ import com.sougata.form_engine.constant.RedisStreamNames;
 import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.dto.form.FormResponsePutReqDto;
 import com.sougata.form_engine.dto.form.FormResponsePutResDto;
+import com.sougata.form_engine.dto.formResponse.individual.FormResponseIndividualDtoNoPage;
+import com.sougata.form_engine.dto.formResponse.individual.QuestionResponseIndividualDto;
 import com.sougata.form_engine.dto.messaging.FormResponseDeleteMessage;
 import com.sougata.form_engine.dto.messaging.FormResponseSavedMessage;
 import com.sougata.form_engine.dto.others.SuccessMessageDto;
 import com.sougata.form_engine.dto.question.responseputrequest.QuestionResponsePutReqDto;
 import com.sougata.form_engine.dto.validation.request.ResponseValidationRequestDto;
+import com.sougata.form_engine.exception.FormDetailsMayChangedException;
+import com.sougata.form_engine.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.connection.stream.StreamRecords;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -24,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -57,6 +62,15 @@ public class FormResponseServiceImpl implements FormResponseService {
 
         if (!formDetails.getAcceptingResponse() || isAcceptingDateExceeded || isNumberOfResponseExceeded) {
             throw new FormSubmitException("This form is not accepting response. Form ID: " + formId);
+        }
+
+//        TODO: Not working
+//        if (!formDetails.equals(req.getFormDetailsResponseSubmittedOn())) {
+//            throw new FormDetailsMayChangedException();
+//        }
+
+        if (!JsonUtil.toJson(formDetails).equals(JsonUtil.toJson(req.getFormDetailsResponseSubmittedOn()))) {
+            throw new FormDetailsMayChangedException();
         }
 
         var validationBody = new ResponseValidationRequestDto(req.getResponses());
@@ -103,6 +117,42 @@ public class FormResponseServiceImpl implements FormResponseService {
         );
 
         return new FormResponsePutResDto(savedFormResponse.getKey().getFormResponseId());
+    }
+
+    @Override
+    public FormResponseIndividualDtoNoPage getFormResponse(UUID formId, UUID formResponseId) {
+        var formResponseKey = new FormResponse.PartitionKey(formId, formResponseId);
+
+        var formResponse = formResponseRepository.findById(formResponseKey)
+                .orElseThrow(
+                        () -> new RuntimeException("Form response not found for form Id: " + formId + " and form response ID: " + formResponseId)
+                );
+
+        var responseFutures = new ArrayList<CompletableFuture<List<QuestionResponseIndividualDto>>>();
+
+        formResponse.getRespondedQuestionMap()
+                .entrySet()
+                .stream()
+                .collect(Collectors.groupingBy(Map.Entry::getValue))
+                .forEach(((questionType, entries) -> {
+                    var questionIds = entries.stream().map(Map.Entry::getKey).toList();
+                    var manager = responseManagerFactory.get(questionType);
+
+                    responseFutures.add(manager.getFormResponses(formResponseId, questionIds));
+                }));
+
+        var responses = CompletableFuture.allOf(responseFutures.toArray(CompletableFuture[]::new))
+                .thenApply(v -> responseFutures.stream()
+                        .map(CompletableFuture::join)
+                        .flatMap(List::stream)
+                        .toList()
+                ).join();
+
+        return new FormResponseIndividualDtoNoPage(
+                formResponse.getKey().getFormResponseId(),
+                formResponse.getUserId(),
+                responses
+        );
     }
 
     @Override

@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Objects;
+
 public class ShortAnswerValidationConfig {
 
     @NoArgsConstructor
@@ -31,6 +33,15 @@ public class ShortAnswerValidationConfig {
             return (getValidationId() == ValidationId.SHORT_ANSWER_NONE && toNumber == null) ||
                     (getValidationId() != ValidationId.SHORT_ANSWER_NONE && toNumber != null);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            Between that = (Between) o;
+            return super.equals(that) && Objects.equals(fromNumber, that.fromNumber) && Objects.equals(toNumber, that.toNumber);
+        }
+
     }
 
     @NoArgsConstructor
@@ -46,6 +57,15 @@ public class ShortAnswerValidationConfig {
             return (getValidationId() == ValidationId.SHORT_ANSWER_NONE && number == null) ||
                     (getValidationId() != ValidationId.SHORT_ANSWER_NONE && number != null);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            EqualTo that = (EqualTo) o;
+            return super.equals(that) && Objects.equals(number, that.number);
+        }
+
     }
 
     @NoArgsConstructor
@@ -60,6 +80,14 @@ public class ShortAnswerValidationConfig {
         public boolean isGreaterThanNumberValid() {
             return (getValidationId() == ValidationId.SHORT_ANSWER_NONE && number == null) ||
                     (getValidationId() != ValidationId.SHORT_ANSWER_NONE && number != null);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            GreaterThan that = (GreaterThan) o;
+            return super.equals(that) && Objects.equals(number, that.number);
         }
     }
 
@@ -76,6 +104,14 @@ public class ShortAnswerValidationConfig {
             return (getValidationId() == ValidationId.SHORT_ANSWER_NONE && number == null) ||
                     (getValidationId() != ValidationId.SHORT_ANSWER_NONE && number != null);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            GreaterThanOrEqualTo that = (GreaterThanOrEqualTo) o;
+            return super.equals(that) && Objects.equals(number, that.number);
+        }
     }
 
     @NoArgsConstructor
@@ -90,6 +126,14 @@ public class ShortAnswerValidationConfig {
         public boolean isLessThanNumberValid() {
             return (getValidationId() == ValidationId.SHORT_ANSWER_NONE && number == null) ||
                     (getValidationId() != ValidationId.SHORT_ANSWER_NONE && number != null);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            LessThan that = (LessThan) o;
+            return super.equals(that) && Objects.equals(number, that.number);
         }
     }
 
@@ -106,6 +150,15 @@ public class ShortAnswerValidationConfig {
             return (getValidationId() == ValidationId.SHORT_ANSWER_NONE && number == null) ||
                     (getValidationId() != ValidationId.SHORT_ANSWER_NONE && number != null);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            LessThanOrEqualTo that = (LessThanOrEqualTo) o;
+            return super.equals(that) && Objects.equals(number, that.number);
+        }
+
     }
 
     @NoArgsConstructor
@@ -129,6 +182,14 @@ public class ShortAnswerValidationConfig {
             return (getValidationId() == ValidationId.SHORT_ANSWER_NONE && toNumber == null) ||
                     (getValidationId() != ValidationId.SHORT_ANSWER_NONE && toNumber != null);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            NotBetween that = (NotBetween) o;
+            return super.equals(that) && Objects.equals(fromNumber, that.fromNumber) && Objects.equals(toNumber, that.toNumber);
+        }
     }
 
     @NoArgsConstructor
@@ -143,6 +204,14 @@ public class ShortAnswerValidationConfig {
         public boolean isNotEqualToNumberValid() {
             return (getValidationId() == ValidationId.SHORT_ANSWER_NONE && number == null) ||
                     (getValidationId() != ValidationId.SHORT_ANSWER_NONE && number != null);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            NotEqualTo that = (NotEqualTo) o;
+            return super.equals(that) && Objects.equals(number, that.number);
         }
     }
 
@@ -165,6 +234,14 @@ public class ShortAnswerValidationConfig {
             return (getValidationId() == ValidationId.SHORT_ANSWER_NONE && text == null) ||
                     (getValidationId() != ValidationId.SHORT_ANSWER_NONE && text != null);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            Matches that = (Matches) o;
+            return super.equals(that) && Objects.equals(text, that.text);
+        }
     }
 
     @NoArgsConstructor
@@ -179,6 +256,14 @@ public class ShortAnswerValidationConfig {
         public boolean isDoesNotMatchesPatternValid() {
             return (getValidationId() == ValidationId.SHORT_ANSWER_NONE && text == null) ||
                     (getValidationId() != ValidationId.SHORT_ANSWER_NONE && text != null);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            DoesNotMatch that = (DoesNotMatch) o;
+            return super.equals(that) && Objects.equals(text, that.text);
         }
     }
 
@@ -195,6 +280,14 @@ public class ShortAnswerValidationConfig {
             return (getValidationId() == ValidationId.SHORT_ANSWER_NONE && text == null) ||
                     (getValidationId() != ValidationId.SHORT_ANSWER_NONE && text != null);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            Contains that = (Contains) o;
+            return super.equals(that) && Objects.equals(text, that.text);
+        }
     }
 
     @NoArgsConstructor
@@ -209,6 +302,14 @@ public class ShortAnswerValidationConfig {
         public boolean isDoesNotContainsDoesNotContainsValid() {
             return (getValidationId() == ValidationId.SHORT_ANSWER_NONE && text == null) ||
                     (getValidationId() != ValidationId.SHORT_ANSWER_NONE && text != null);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            DoesNotContains that = (DoesNotContains) o;
+            return super.equals(that) && Objects.equals(text, that.text);
         }
     }
 
@@ -231,6 +332,14 @@ public class ShortAnswerValidationConfig {
             return (getValidationId() == ValidationId.SHORT_ANSWER_NONE && number == null) ||
                     (getValidationId() != ValidationId.SHORT_ANSWER_NONE && number != null);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            MaxCharacterCount that = (MaxCharacterCount) o;
+            return super.equals(that) && Objects.equals(number, that.number);
+        }
     }
 
     @NoArgsConstructor
@@ -245,6 +354,14 @@ public class ShortAnswerValidationConfig {
         public boolean isMinCharacterCountMinCountValid() {
             return (getValidationId() == ValidationId.SHORT_ANSWER_NONE && number == null) ||
                     (getValidationId() != ValidationId.SHORT_ANSWER_NONE && number != null);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            MinCharacterCount that = (MinCharacterCount) o;
+            return super.equals(that) && Objects.equals(number, that.number);
         }
     }
 

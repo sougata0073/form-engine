@@ -1,10 +1,10 @@
-import {Directive, inject, input, OnInit, output, signal} from '@angular/core';
+import {Directive, inject, input, OnChanges, OnInit, output, signal, SimpleChanges} from '@angular/core';
 import {QuestionRes} from '../model/edit-form/question/response/question-res';
 import {FormArray, FormControl, FormGroup, Validators} from '@angular/forms';
 import {ViewFormStateService} from '../service/view-form-state-service';
 
 @Directive()
-export abstract class ViewFormQuestionComponent<QR extends QuestionRes, OnlyQuestionResponsePutReq> implements OnInit {
+export abstract class ViewFormQuestionComponent<QR extends QuestionRes, OnlyQuestionResponsePutReq> implements OnInit, OnChanges {
 
   question = input.required<QR>();
   parentComponentId = input.required<string>()
@@ -18,6 +18,7 @@ export abstract class ViewFormQuestionComponent<QR extends QuestionRes, OnlyQues
   protected viewFormStateService = inject(ViewFormStateService)
 
   abstract getOnlyQuestionResponsePutReq(): OnlyQuestionResponsePutReq | null
+  abstract onQuestionInputChange(): void
 
   clearForm() {
     Object.values(this.formGroup.controls).forEach(control => {
@@ -26,19 +27,14 @@ export abstract class ViewFormQuestionComponent<QR extends QuestionRes, OnlyQues
   }
 
   ngOnInit() {
-    if (this.question().required) {
-      Object.values(this.formGroup.controls).forEach(control => {
-        control.addValidators(Validators.required)
-      })
-    }
-
     this.viewFormStateService.addFormSubmitCallback(this.formSubmitCallback)
+  }
 
-    this.formGroup.valueChanges.subscribe(() => {
-      this.formGroup.markAllAsTouched()
-      this.showError.set(this.formGroup.invalid)
-      this.hasError.emit(this.formGroup.invalid)
-    })
+  ngOnChanges(changes: SimpleChanges): void {
+    if(changes['question']) {
+      this.onQuestionInputChange()
+      this.viewFormStateService.addFormSubmitCallback(this.formSubmitCallback)
+    }
   }
 
   protected formSubmitCallback = () => {
