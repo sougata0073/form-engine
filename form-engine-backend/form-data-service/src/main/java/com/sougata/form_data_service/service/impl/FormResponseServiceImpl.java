@@ -1,6 +1,7 @@
 package com.sougata.form_data_service.service.impl;
 
 import com.sougata.form_data_service.exception.FormSubmitException;
+import com.sougata.form_data_service.feignClient.FormResponseServiceFeignClient;
 import com.sougata.form_data_service.feignClient.FormServiceFeignClient;
 import com.sougata.form_data_service.formValidation.service.FormSchemaService;
 import com.sougata.form_data_service.model.FormResponse;
@@ -9,6 +10,7 @@ import com.sougata.form_data_service.service.FormResponseService;
 import com.sougata.form_data_service.service.responseManager.ResponseManagerFactory;
 import com.sougata.form_engine.constant.RedisStreamKeys;
 import com.sougata.form_engine.constant.RedisStreamNames;
+import com.sougata.form_engine.constant.cache.CommonCacheNames;
 import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.dto.form.FormResponsePutReqDto;
 import com.sougata.form_engine.dto.form.FormResponsePutResDto;
@@ -43,6 +45,7 @@ public class FormResponseServiceImpl implements FormResponseService {
     private final FormServiceFeignClient formServiceFeignClient;
     private final FormSchemaService formSchemaService;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final FormResponseServiceFeignClient formResponseServiceFeignClient;
 
     @Override
     public FormResponsePutResDto saveResponse(UUID formId, FormResponsePutReqDto req, UUID responderId) {
@@ -57,13 +60,6 @@ public class FormResponseServiceImpl implements FormResponseService {
                 formDetails.getStopAcceptingResponseOn() != null &&
                         Instant.now().isAfter(formDetails.getStopAcceptingResponseOn());
 
-        boolean isNumberOfResponseExceeded = formDetails.getStopAcceptingResponseAfterResponse() != null &&
-                formResponseRepository.getFormResponseCount(formId) >= Integer.toUnsignedLong(formDetails.getStopAcceptingResponseAfterResponse());
-
-        if (!formDetails.getAcceptingResponse() || isAcceptingDateExceeded || isNumberOfResponseExceeded) {
-            throw new FormSubmitException("This form is not accepting response. Form ID: " + formId);
-        }
-
 //        TODO: Not working
 //        if (!formDetails.equals(req.getFormDetailsResponseSubmittedOn())) {
 //            throw new FormDetailsMayChangedException();
@@ -71,6 +67,23 @@ public class FormResponseServiceImpl implements FormResponseService {
 
         if (!JsonUtil.toJson(formDetails).equals(JsonUtil.toJson(req.getFormDetailsResponseSubmittedOn()))) {
             throw new FormDetailsMayChangedException();
+        }
+
+        var formResponseCountRedisKey = CommonCacheNames.FORM_RESPONSE_COUNT + "::" + formId;
+        var incrementedFormResponseCount = redisTemplate.opsForValue().increment(formResponseCountRedisKey);
+
+        boolean isNumberOfResponseExceeded =
+                formDetails.getStopAcceptingResponseAfterResponse() != null &&
+                        incrementedFormResponseCount > Integer.toUnsignedLong(formDetails.getStopAcceptingResponseAfterResponse());
+
+        System.out.println(incrementedFormResponseCount);
+
+        if (isAcceptingDateExceeded) {
+            redisTemplate.opsForValue().decrement(formResponseCountRedisKey);
+        }
+
+        if (!formDetails.getAcceptingResponse() || isAcceptingDateExceeded || isNumberOfResponseExceeded) {
+            throw new FormSubmitException("This form is not accepting response. Form ID: " + formId);
         }
 
         var validationBody = new ResponseValidationRequestDto(req.getResponses());

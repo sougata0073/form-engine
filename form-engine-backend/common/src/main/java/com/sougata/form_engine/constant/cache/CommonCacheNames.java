@@ -7,5 +7,6 @@ public final class CommonCacheNames {
     public static final String FORM_RESPONSE_SERVICE_PREFIX = "form-response";
     public static final String SEPARATOR = "::";
     public static final String FILE_TYPE = "fileType";
+    public static final String FORM_RESPONSE_COUNT = "form-response-count";
 
 }

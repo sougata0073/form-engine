@@ -72,7 +72,8 @@ export class ViewFormQuestionWrapper implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['question']) {
+    const questionChange = changes['question']
+    if(!questionChange.isFirstChange()) {
       this.createdComponentRef?.setInput('question', this.question());
     }
   }
