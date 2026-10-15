@@ -1,5 +1,6 @@
 package com.sougata.form_data_service.service.impl;
 
+import com.sougata.form_data_service.configuration.AppConfiguration;
 import com.sougata.form_data_service.exception.FormSubmitException;
 import com.sougata.form_data_service.feignClient.FormResponseServiceFeignClient;
 import com.sougata.form_data_service.feignClient.FormServiceFeignClient;
@@ -26,8 +27,10 @@ import com.sougata.form_engine.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.connection.stream.StreamRecords;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +48,9 @@ public class FormResponseServiceImpl implements FormResponseService {
     private final FormServiceFeignClient formServiceFeignClient;
     private final FormSchemaService formSchemaService;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
     private final FormResponseServiceFeignClient formResponseServiceFeignClient;
+    private final AppConfiguration appConfiguration;
 
     @Override
     public FormResponsePutResDto saveResponse(UUID formId, FormResponsePutReqDto req, UUID responderId) {
@@ -70,66 +75,82 @@ public class FormResponseServiceImpl implements FormResponseService {
         }
 
         var formResponseCountRedisKey = CommonCacheNames.FORM_RESPONSE_COUNT + "::" + formId;
-        var incrementedFormResponseCount = redisTemplate.opsForValue().increment(formResponseCountRedisKey);
 
-        boolean isNumberOfResponseExceeded =
-                formDetails.getStopAcceptingResponseAfterResponse() != null &&
-                        incrementedFormResponseCount > Integer.toUnsignedLong(formDetails.getStopAcceptingResponseAfterResponse());
+        if (!stringRedisTemplate.hasKey(formResponseCountRedisKey)) {
+            var formResponseCount = formResponseServiceFeignClient.getFormResponseCount(formId);
 
-        System.out.println(incrementedFormResponseCount);
-
-        if (isAcceptingDateExceeded) {
-            redisTemplate.opsForValue().decrement(formResponseCountRedisKey);
+            stringRedisTemplate.opsForValue().setIfAbsent(
+                    formResponseCountRedisKey,
+                    formResponseCount.getCount().toString(),
+                    Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes())
+            );
         }
 
-        if (!formDetails.getAcceptingResponse() || isAcceptingDateExceeded || isNumberOfResponseExceeded) {
+        var incrementedFormResponseCount = stringRedisTemplate.opsForValue().increment(formResponseCountRedisKey);
+
+        if (formDetails.getStopAcceptingResponseAfterResponse() != null
+                && incrementedFormResponseCount > formDetails.getStopAcceptingResponseAfterResponse()) {
+
+            stringRedisTemplate.opsForValue().decrement(formResponseCountRedisKey);
+            throw new FormSubmitException("This form has reached its maximum response limit and is no longer accepting responses.");
+
+        }
+
+        if (!formDetails.getAcceptingResponse() || isAcceptingDateExceeded) {
             throw new FormSubmitException("This form is not accepting response. Form ID: " + formId);
         }
 
-        var validationBody = new ResponseValidationRequestDto(req.getResponses());
+        try {
 
-        var validationResponse = formSchemaService.validateResponse(formId, formDetails, validationBody);
+            var validationBody = new ResponseValidationRequestDto(req.getResponses());
 
-        var formResponse = new FormResponse();
+            var validationResponse = formSchemaService.validateResponse(formId, formDetails, validationBody);
 
-        var formResponsePartitionKey = new FormResponse.PartitionKey();
-        formResponsePartitionKey.setFormId(formId);
+            var formResponse = new FormResponse();
 
-        formResponse.setKey(formResponsePartitionKey);
-        formResponse.setUserId(responderId);
-        formResponse.setRespondedQuestionMap(
-                req.getResponses()
-                        .stream()
-                        .collect(Collectors.toMap(QuestionResponsePutReqDto::getQuestionId, QuestionResponsePutReqDto::getQuestionType))
-        );
+            var formResponsePartitionKey = new FormResponse.PartitionKey();
+            formResponsePartitionKey.setFormId(formId);
 
-        var savedFormResponse = formResponseRepository.save(formResponse);
-
-        var questionResponseFutures = new ArrayList<CompletableFuture<Void>>();
-
-        req.getResponses().forEach(response -> {
-            var responseManager = responseManagerFactory.get(
-                    response.getQuestionType()
+            formResponse.setKey(formResponsePartitionKey);
+            formResponse.setUserId(responderId);
+            formResponse.setRespondedQuestionMap(
+                    req.getResponses()
+                            .stream()
+                            .collect(Collectors.toMap(QuestionResponsePutReqDto::getQuestionId, QuestionResponsePutReqDto::getQuestionType))
             );
-            var future = responseManager.create(response, savedFormResponse.getKey().getFormResponseId());
 
-            questionResponseFutures.add(future);
-        });
+            var savedFormResponse = formResponseRepository.save(formResponse);
 
-        CompletableFuture.allOf(questionResponseFutures.toArray(CompletableFuture[]::new)).join();
+            var questionResponseFutures = new ArrayList<CompletableFuture<Void>>();
 
-        redisTemplate.opsForStream().add(
-                StreamRecords.newRecord()
-                        .ofMap(Map.of(RedisStreamKeys.FORM_RESPONSE, new FormResponseSavedMessage(
-                                formId,
-                                savedFormResponse.getKey().getFormResponseId(),
-                                responderId,
-                                req.getResponses()
-                        )))
-                        .withStreamKey(RedisStreamNames.FORM_RESPONSE_STREAM)
-        );
+            req.getResponses().forEach(response -> {
+                var responseManager = responseManagerFactory.get(
+                        response.getQuestionType()
+                );
+                var future = responseManager.create(response, savedFormResponse.getKey().getFormResponseId());
 
-        return new FormResponsePutResDto(savedFormResponse.getKey().getFormResponseId());
+                questionResponseFutures.add(future);
+            });
+
+            CompletableFuture.allOf(questionResponseFutures.toArray(CompletableFuture[]::new)).join();
+
+            redisTemplate.opsForStream().add(
+                    StreamRecords.newRecord()
+                            .ofMap(Map.of(RedisStreamKeys.FORM_RESPONSE, new FormResponseSavedMessage(
+                                    formId,
+                                    savedFormResponse.getKey().getFormResponseId(),
+                                    responderId,
+                                    req.getResponses()
+                            )))
+                            .withStreamKey(RedisStreamNames.FORM_RESPONSE_STREAM)
+            );
+
+            return new FormResponsePutResDto(savedFormResponse.getKey().getFormResponseId());
+
+        } catch (Exception ex) {
+            stringRedisTemplate.opsForValue().decrement(formResponseCountRedisKey);
+            throw ex;
+        }
     }
 
     @Override

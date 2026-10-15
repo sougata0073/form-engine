@@ -19,4 +19,16 @@ public class GlobalExceptionHandler {
         return pb;
     }
 
+    @ExceptionHandler(FormSubmitException.class)
+    public ProblemDetail handleFormSubmitException(FormSubmitException ex) {
+        var pb = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage()
+        );
+
+        pb.setTitle("Form can not be submitted");
+
+        return pb;
+    }
+
 }

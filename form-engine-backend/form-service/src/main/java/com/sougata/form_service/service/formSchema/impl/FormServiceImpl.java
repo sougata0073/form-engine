@@ -22,6 +22,7 @@ import com.sougata.form_service.service.formSchema.questionManager.QuestionManag
 import com.sougata.form_service.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +40,7 @@ public class FormServiceImpl implements FormService {
     private final FormServiceCached formServiceCached;
     private final QuestionManagerFactory questionManagerFactory;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
     private final AppConfiguration appConfiguration;
 
     @Override
@@ -179,8 +181,25 @@ public class FormServiceImpl implements FormService {
                 f.getStopAcceptingResponseOn() != null &&
                         Instant.now().isAfter(f.getStopAcceptingResponseOn());
 
+        var formResponseCountRedisKey = CommonCacheNames.FORM_RESPONSE_COUNT + "::" + f.getId();
+
+        String formResponseCountString = stringRedisTemplate.opsForValue().get(formResponseCountRedisKey);
+        Long formResponseCount;
+
+        if (formResponseCountString == null) {
+            formResponseCount = formResponseServiceFeignClient.getFormResponseCount(f.getId()).getCount();
+
+            stringRedisTemplate.opsForValue().setIfAbsent(
+                    formResponseCountRedisKey,
+                    formResponseCount.toString(),
+                    Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes())
+            );
+        } else {
+            formResponseCount = Long.valueOf(formResponseCountString);
+        }
+
         boolean isNumberOfResponseExceeded = f.getStopAcceptingResponseAfterResponse() != null &&
-                formResponseServiceFeignClient.getFormResponseCount(f.getId()).getCount() >= f.getStopAcceptingResponseAfterResponse();
+                formResponseCount >= f.getStopAcceptingResponseAfterResponse();
 
         if (!f.getAcceptingResponse() || isAcceptingDateExceeded || isNumberOfResponseExceeded) {
             throw new FormNotAcceptingResponseException(
