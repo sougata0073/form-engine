@@ -14,4 +14,6 @@ VALUES ('Audio', ARRAY['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4']),
        ('Spreadsheet',
         ARRAY['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'text/csv']),
-       ('Video', ARRAY['video/mp4', 'video/webm', 'video/ogg']);
+       ('Video', ARRAY['video/mp4', 'video/webm', 'video/ogg'])
+ON CONFLICT (category)
+DO NOTHING;

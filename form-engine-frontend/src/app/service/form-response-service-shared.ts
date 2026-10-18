@@ -21,7 +21,7 @@ export class FormResponseServiceShared {
     private http = inject(HttpClient)
 
     getFormResponseCount(formId: string, onComplete: (res: FormResponseCount) => void) {
-        const url = `http://localhost:9094/api/v1/forms/${formId}/form-response-count`
+        const url = `http://localhost:9094/api/v1/form-responses/${formId}/form-response-count`
 
         this.http.get<FormResponseCount>(url).subscribe(res => {
             this._formResponseCount.set(res)

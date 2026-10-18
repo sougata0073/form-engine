@@ -39,7 +39,7 @@ export class ViewFormService {
     onComplete?: () => void,
     onError?: (pb: ProblemDetail) => void,
   ) {
-    const url = `http://localhost:9093/api/v1/forms/${formId}/responses`;
+    const url = `http://localhost:9093/api/v1/form-data/${formId}/responses`;
 
     this.http.post<FormResponsePutRes>(url, req).subscribe({
       next: (res) => {},

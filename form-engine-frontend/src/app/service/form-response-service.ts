@@ -25,7 +25,7 @@ export class FormResponseService {
   }
 
   getResponseSummaries(formId: string, onComplete: (res: ResponseSummaryRes) => void) {
-    const url = `http://localhost:9094/api/v1/forms/${formId}/response-summaries`;
+    const url = `http://localhost:9094/api/v1/form-responses/${formId}/response-summaries`;
 
     this.http.get<ResponseSummaryRes>(url).subscribe((res) => {
       onComplete(res);
@@ -39,7 +39,7 @@ export class FormResponseService {
     pageSize: number,
     onComplete: (res: T) => void,
   ) {
-    const url = `http://localhost:9094/api/v1/forms/${formId}/questions/${questionId}/response-summary`;
+    const url = `http://localhost:9094/api/v1/form-responses/${formId}/questions/${questionId}/response-summary`;
 
     this.http
       .get<T>(url, {
@@ -61,7 +61,7 @@ export class FormResponseService {
     extraParams: Record<string, string>,
     onComplete: (res: T) => void,
   ) {
-    const url = `http://localhost:9094/api/v1/forms/${formId}/questions/${questionId}/response`;
+    const url = `http://localhost:9094/api/v1/form-responses/${formId}/questions/${questionId}/response`;
 
     this.http
       .get<T>(url, {
@@ -84,7 +84,7 @@ export class FormResponseService {
     pageSize: number,
     onComplete: (res: FormResponseSummaries) => void,
   ) {
-    const url = `http://localhost:9094/api/v1/forms/${formId}/questions/${questionId}/form-response-summaries`;
+    const url = `http://localhost:9094/api/v1/form-responses/${formId}/questions/${questionId}/form-response-summaries`;
 
     this.http
       .get<FormResponseSummaries>(url, {
@@ -104,7 +104,7 @@ export class FormResponseService {
     formResponseId: string,
     onComplete: (res: ResponseIndividualRes) => void,
   ) {
-    const url = `http://localhost:9094/api/v1/forms/${formId}/responses/${formResponseId}`;
+    const url = `http://localhost:9094/api/v1/form-responses/${formId}/responses/${formResponseId}`;
 
     this.http.get<ResponseIndividualRes>(url).subscribe((res) => {
       onComplete(res);
@@ -116,7 +116,7 @@ export class FormResponseService {
     formResponsePage: number,
     onComplete: (res: ResponseIndividualRes) => void,
   ) {
-    const url = `http://localhost:9094/api/v1/forms/${formId}/responses`;
+    const url = `http://localhost:9094/api/v1/form-responses/${formId}/responses`;
 
     this.http
       .get<ResponseIndividualRes>(url, { params: { page: formResponsePage } })
@@ -130,7 +130,7 @@ export class FormResponseService {
     formResponseId: string,
     onComplete: () => void,
   ) {
-    const url = `http://localhost:9093/api/v1/forms/${formId}/responses/${formResponseId}`;
+    const url = `http://localhost:9093/api/v1/form-data/${formId}/responses/${formResponseId}`;
 
     this.http.delete<SuccessMessage>(url).subscribe((res) => {
       onComplete();

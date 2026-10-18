@@ -1,369 +1,880 @@
-const POST_URL =
-    "http://localhost:9093/api/v1/forms/d27b590f-a119-489e-871e-fd04676c88bc/responses";
+// ============================================================
+// CONFIGURATION
+// ============================================================
 
+const FORM_IDS = [
+  "09d3fc7a-bbfc-42d4-8d41-cee11e34e16b",
+  "4273fea5-62a8-489c-a998-d7ffac40a34e",
+  "46c0792e-ce98-4d95-a8ce-f7bf3f92eb34",
+  "58c99434-665e-4e5f-95de-f1a9ea3e53fe",
+  "409f665d-ea45-4688-9f7e-43dfcf3dc30d",
+  "7a7adde7-f767-48e2-b7a8-5d94de36bcd3",
+  "9a64940b-6a5b-4315-a846-ec3b86054868",
+  "cd3b7370-681d-4ca5-99a9-7fe2c964e6c1",
+  "87385e80-eb09-4643-890a-d873b741ca63",
+  "217872b9-e4e6-4e95-a0e7-8dbc89d9c0b2",
+];
+
+const VIEW_URL = "http://localhost:9092/api/v1/forms";
+const RESPONSE_URL = "http://localhost:9093/api/v1/forms";
+
+// TOTAL number of response requests across ALL forms
 const NUMBER_OF_REQUESTS = 5000;
-const CONCURRENCY = 2000;
+
+// Maximum requests PER FORM in each batch
+const CONCURRENCY = 1500;
+
+// ============================================================
+// QUESTION RESPONSE CONFIGURATION
+// ============================================================
+//
+// true:
+//     Send response for ALL questions.
+//     required flag is completely ignored.
+//
+// false:
+//     required = true
+//         -> ALWAYS send response
+//
+//     required = false
+//         -> Randomly send response according to
+//            OPTIONAL_RESPONSE_PROBABILITY
+//
+// ============================================================
+
+const RESPOND_TO_ALL_QUESTIONS = true;
+
+// Used only when RESPOND_TO_ALL_QUESTIONS = false.
+//
+// 1.0 = always respond to optional questions
+// 0.5 = 50% chance of responding
+// 0.0 = never respond to optional questions
+//
+const OPTIONAL_RESPONSE_PROBABILITY = 0.5;
 
 const HEADERS = {
-    "Content-Type": "application/json"
+  "Content-Type": "application/json",
 };
 
-const QUESTION_IDS = {
-    SHORT_ANSWER: "891942037265799335",
-    PARAGRAPH: "891942038003996839",
-    MULTIPLE_CHOICE: "891942038712834228",
-    CHECKBOX: "891942039719467168",
-    DROPDOWN: "891942040667379902",
-    FILE_UPLOAD: "891942041661429922",
-    LINEAR_SCALE: "891942042424793337",
-    RATING: "891942043179768043",
-    MULTIPLE_CHOICE_GRID: "891942043876022522",
-    TICK_BOX_GRID: "891942045125925091",
-    DATE: "891942046417770669",
-    TIME: "891942047101442213",
-    DATE_TIME: "891942047856417013",
-    DURATION: "891942048984684778"
-};
-
-const MULTIPLE_CHOICE_OPTIONS = [
-    "891942038717028593",
-    "891942038717028594",
-    "891942038717028595",
-    "891942038717028596",
-    "891942038717028597"
-];
-
-const CHECKBOX_OPTIONS = [
-    "891942039719467169",
-    "891942039719467170",
-    "891942039719467171",
-    "891942039719467172"
-];
-
-const DROPDOWN_OPTIONS = [
-    "891942040675768486",
-    "891942040675768487",
-    "891942040675768488",
-    "891942040675768489",
-    "891942040675768490"
-];
-
-const MCG_ROWS = [
-    "891942043876022533",
-    "891942043876022534",
-    "891942043876022535",
-    "891942043876022536",
-    "891942043876022537"
-];
-
-const MCG_COLUMNS = [
-    "891942043876022523",
-    "891942043876022524",
-    "891942043876022525",
-    "891942043876022526",
-    "891942043876022527",
-    "891942043876022528",
-    "891942043876022529",
-    "891942043876022530",
-    "891942043876022531",
-    "891942043876022532"
-];
-
-const TBG_ROWS = [
-    "891942045125925102",
-    "891942045125925103",
-    "891942045125925104",
-    "891942045125925105",
-    "891942045125925106"
-];
-
-const TBG_COLUMNS = [
-    "891942045125925092",
-    "891942045125925093",
-    "891942045125925094",
-    "891942045125925095",
-    "891942045125925096",
-    "891942045125925097",
-    "891942045125925098",
-    "891942045125925099",
-    "891942045125925100",
-    "891942045125925101"
-];
+// ============================================================
+// RANDOM HELPERS
+// ============================================================
 
 function randomItem(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
+  if (!arr || arr.length === 0) {
+    return null;
+  }
+
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 
 function randomSubset(arr) {
-    const shuffled = [...arr].sort(() => Math.random() - 0.5);
-    const count = Math.floor(Math.random() * arr.length) + 1;
-    return shuffled.slice(0, count);
+  if (!arr || arr.length === 0) {
+    return [];
+  }
+
+  const shuffled = [...arr].sort(() => Math.random() - 0.5);
+
+  const count = Math.floor(Math.random() * arr.length) + 1;
+
+  return shuffled.slice(0, count);
 }
 
 function randomDate() {
-    const start = new Date("2030-01-01");
-    const end = new Date("2030-12-31");
+  const start = new Date("2000-01-01");
 
-    return new Date(
-        start.getTime() +
-        Math.random() * (end.getTime() - start.getTime())
-    );
+  const end = new Date("2030-12-31");
+
+  return new Date(
+    start.getTime() + Math.random() * (end.getTime() - start.getTime()),
+  );
 }
 
 function isoDate(date) {
-    return new Date(
-        Date.UTC(
-            date.getUTCFullYear(),
-            date.getUTCMonth(),
-            date.getUTCDate()
-        )
-    ).toISOString();
+  return new Date(
+    Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      18,
+      30,
+      0,
+    ),
+  ).toISOString();
 }
 
 function isoTime() {
-    const d = new Date();
+  const d = new Date();
 
-    d.setUTCHours(
-        Math.floor(Math.random() * 24),
-        Math.floor(Math.random() * 60)
-    );
+  d.setUTCHours(
+    Math.floor(Math.random() * 24),
+    Math.floor(Math.random() * 60),
+    0,
+    0,
+  );
 
-    return d.toISOString();
+  return d.toISOString();
 }
 
 function uuid() {
-    return crypto.randomUUID();
+  return crypto.randomUUID();
 }
 
-function generatePayload(index) {
-    const date = randomDate();
+// ============================================================
+// FETCH FORM SCHEMA
+// ============================================================
+
+async function fetchFormSchema(formId, userId) {
+  const url = `${VIEW_URL}/${formId}/view`;
+
+  const response = await fetch(url, {
+    method: "GET",
+
+    headers: {
+      ...HEADERS,
+      "auth-jwt": userId,
+    },
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+
+    throw new Error(
+      `Failed to fetch form ${formId}. ` +
+        `Status: ${response.status}. ` +
+        `Response: ${message}`,
+    );
+  }
+
+  const form = await response.json();
+
+  if (!form.questions || !Array.isArray(form.questions)) {
+    throw new Error(
+      `Invalid form response for ${formId}: ` + `questions array not found`,
+    );
+  }
+
+  return form;
+}
+
+// ============================================================
+// SHOULD RESPOND TO QUESTION?
+// ============================================================
+
+function shouldRespondToQuestion(question) {
+  // ========================================================
+  // MODE 1:
+  // Respond to EVERY question
+  // ========================================================
+
+  if (RESPOND_TO_ALL_QUESTIONS === true) {
+    return true;
+  }
+
+  // ========================================================
+  // MODE 2:
+  // Respect required flag
+  // ========================================================
+
+  // Required question
+  // -> ALWAYS respond
+
+  if (question.required === true) {
+    return true;
+  }
+
+  // Optional question
+  // -> Random decision
+
+  return Math.random() < OPTIONAL_RESPONSE_PROBABILITY;
+}
+
+// ============================================================
+// PAYLOAD GENERATOR
+// ============================================================
+
+function generatePayload(form, index) {
+  const date = randomDate();
+
+  const responses = [];
+
+  for (const question of form.questions) {
+    // ====================================================
+    // QUESTION RESPONSE DECISION
+    // ====================================================
+
+    if (!shouldRespondToQuestion(question)) {
+      continue;
+    }
+
+    const questionId = question.id;
+
+    const questionType = question.questionType;
+
+    let response;
+
+    // ----------------------------------------------------
+    // SHORT ANSWER
+    // ----------------------------------------------------
+
+    if (questionType === "SHORT_ANSWER") {
+      response = {
+        text: `Short answer ${index}`,
+
+        questionId,
+        questionType,
+      };
+    }
+
+    // ----------------------------------------------------
+    // PARAGRAPH
+    // ----------------------------------------------------
+    else if (questionType === "PARAGRAPH") {
+      response = {
+        text: `Paragraph response ${index}.`,
+
+        questionId,
+        questionType,
+      };
+    }
+
+    // ----------------------------------------------------
+    // MULTIPLE CHOICE
+    // ----------------------------------------------------
+    else if (questionType === "MULTIPLE_CHOICE") {
+      response = {
+        responseOptionId: randomItem(
+          (question.options || []).map((option) => option.id),
+        ),
+
+        questionId,
+        questionType,
+      };
+    }
+
+    // ----------------------------------------------------
+    // CHECKBOX
+    // ----------------------------------------------------
+    else if (questionType === "CHECKBOX") {
+      response = {
+        responseOptionIds: randomSubset(
+          (question.options || []).map((option) => option.id),
+        ),
+
+        questionId,
+        questionType,
+      };
+    }
+
+    // ----------------------------------------------------
+    // DROPDOWN
+    // ----------------------------------------------------
+    else if (questionType === "DROPDOWN") {
+      response = {
+        responseOptionId: randomItem(
+          (question.options || []).map((option) => option.id),
+        ),
+
+        questionId,
+        questionType,
+      };
+    }
+
+    // ----------------------------------------------------
+    // FILE UPLOAD
+    // ----------------------------------------------------
+    else if (questionType === "FILE_UPLOAD") {
+      response = {
+        fileName: `image_${index}.jpg`,
+
+        fileUrl: `https://picsum.photos/seed/${index}/1200/800`,
+
+        fileSize:
+          Math.floor(Math.random() * (10 * 1024 * 1024 - 100 * 1024 + 1)) +
+          100 * 1024,
+
+        fileMimeType: "image/jpeg",
+
+        questionId,
+        questionType,
+      };
+    }
+
+    // ----------------------------------------------------
+    // LINEAR SCALE
+    // ----------------------------------------------------
+    else if (questionType === "LINEAR_SCALE") {
+      const from = question.fromNumber ?? 1;
+
+      const to = question.toNumber ?? 5;
+
+      response = {
+        scale: Math.floor(Math.random() * (to - from + 1)) + from,
+
+        questionId,
+        questionType,
+      };
+    }
+
+    // ----------------------------------------------------
+    // RATING
+    // ----------------------------------------------------
+    else if (questionType === "RATING") {
+      const maxRating = question.maxRatingNumber ?? 10;
+
+      response = {
+        rating: Math.floor(Math.random() * maxRating) + 1,
+
+        questionId,
+        questionType,
+      };
+    }
+
+    // ----------------------------------------------------
+    // MULTIPLE CHOICE GRID
+    // ----------------------------------------------------
+    else if (questionType === "MULTIPLE_CHOICE_GRID") {
+      const columns = question.columns || [];
+
+      const rows = question.rows || [];
+
+      response = {
+        rows: rows.map((row) => ({
+          rowId: row.id,
+
+          responseColumnId: randomItem(columns.map((column) => column.id)),
+        })),
+
+        questionId,
+        questionType,
+      };
+    }
+
+    // ----------------------------------------------------
+    // TICK BOX GRID
+    // ----------------------------------------------------
+    else if (questionType === "TICK_BOX_GRID") {
+      const columns = question.columns || [];
+
+      const rows = question.rows || [];
+
+      response = {
+        rows: rows.map((row) => ({
+          rowId: row.id,
+
+          responseColumnIds: randomSubset(columns.map((column) => column.id)),
+        })),
+
+        questionId,
+        questionType,
+      };
+    }
+
+    // ----------------------------------------------------
+    // DATE
+    // ----------------------------------------------------
+    else if (questionType === "DATE") {
+      response = {
+        date: isoDate(date),
+
+        questionId,
+        questionType,
+      };
+    }
+
+    // ----------------------------------------------------
+    // TIME
+    // ----------------------------------------------------
+    else if (questionType === "TIME") {
+      response = {
+        time: isoTime(),
+
+        questionId,
+        questionType,
+      };
+    }
+
+    // ----------------------------------------------------
+    // DATE TIME
+    // ----------------------------------------------------
+    else if (questionType === "DATE_TIME") {
+      response = {
+        dateTime: date.toISOString(),
+
+        questionId,
+        questionType,
+      };
+    }
+
+    // ----------------------------------------------------
+    // DURATION
+    // ----------------------------------------------------
+    else if (questionType === "DURATION") {
+      response = {
+        hours: Math.floor(Math.random() * 73),
+
+        minutes: Math.floor(Math.random() * 60),
+
+        seconds: Math.floor(Math.random() * 60),
+
+        questionId,
+        questionType,
+      };
+    }
+
+    // ----------------------------------------------------
+    // UNKNOWN QUESTION TYPE
+    // ----------------------------------------------------
+    else {
+      console.warn(
+        `Unknown question type "${questionType}" ` +
+          `for question ${questionId}. Skipping.`,
+      );
+
+      continue;
+    }
+
+    responses.push(response);
+  }
+
+  return {
+    formDetailsResponseSubmittedOn: form,
+    responses: responses,
+  };
+}
+
+// ============================================================
+// SUBMIT ONE RESPONSE
+//
+// ONE GROUP =
+//     1 GET schema
+//     1 POST response
+//
+// SAME userId is used for both GET and POST.
+// ============================================================
+
+async function submitOneResponse(formId, requestIndex) {
+  // --------------------------------------------------------
+  // UNIQUE USER ID FOR THIS GET + POST GROUP
+  // --------------------------------------------------------
+
+  const userId = uuid();
+
+  try {
+    // ====================================================
+    // 1. GET FORM SCHEMA
+    // ====================================================
+
+    const form = await fetchFormSchema(formId, userId);
+
+    // ====================================================
+    // 2. GENERATE PAYLOAD
+    // ====================================================
+
+    const payload = generatePayload(form, requestIndex);
+
+    // ====================================================
+    // 3. POST RESPONSE
+    // ====================================================
+
+    const postUrl = `${RESPONSE_URL}/${formId}/responses`;
+
+    const response = await fetch(postUrl, {
+      method: "POST",
+
+      headers: {
+        ...HEADERS,
+
+        "auth-jwt": userId,
+      },
+
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      let message;
+
+      try {
+        message = await response.text();
+      } catch {
+        message = "Unknown error";
+      }
+
+      message = message
+        .replace(/\n/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .substring(0, 120);
+
+      return {
+        success: false,
+
+        request: requestIndex,
+
+        formId,
+
+        status: response.status,
+
+        reason: message || response.statusText,
+      };
+    }
 
     return {
-        responses: [
-            {
-                text: `Short answer ${index}`,
-                questionId: QUESTION_IDS.SHORT_ANSWER,
-                questionType: "SHORT_ANSWER"
-            },
-            {
-                text: `Paragraph response ${index}.`,
-                questionId: QUESTION_IDS.PARAGRAPH,
-                questionType: "PARAGRAPH"
-            },
-            {
-                responseOptionId: randomItem(MULTIPLE_CHOICE_OPTIONS),
-                questionId: QUESTION_IDS.MULTIPLE_CHOICE,
-                questionType: "MULTIPLE_CHOICE"
-            },
-            {
-                responseOptionIds: randomSubset(CHECKBOX_OPTIONS),
-                questionId: QUESTION_IDS.CHECKBOX,
-                questionType: "CHECKBOX"
-            },
-            {
-                responseOptionId: randomItem(DROPDOWN_OPTIONS),
-                questionId: QUESTION_IDS.DROPDOWN,
-                questionType: "DROPDOWN"
-            },
-            {
-                fileName: `image_${index}.jpg`,
-                fileUrl: `https://picsum.photos/seed/${index}/1200/800`,
-                fileSize:
-                    Math.floor(
-                        Math.random() * (10 * 1024 * 1024 - 100 * 1024 + 1)
-                    ) + 100 * 1024,
-                fileMimeType: "image/jpeg",
-                questionId: QUESTION_IDS.FILE_UPLOAD,
-                questionType: "FILE_UPLOAD"
-            },
-            {
-                scale: Math.floor(Math.random() * 5) + 1,
-                questionId: QUESTION_IDS.LINEAR_SCALE,
-                questionType: "LINEAR_SCALE"
-            },
-            {
-                rating: Math.floor(Math.random() * 10) + 1,
-                questionId: QUESTION_IDS.RATING,
-                questionType: "RATING"
-            },
-            {
-                rows: MCG_ROWS.map(rowId => ({
-                    rowId,
-                    responseColumnId: randomItem(MCG_COLUMNS)
-                })),
-                questionId: QUESTION_IDS.MULTIPLE_CHOICE_GRID,
-                questionType: "MULTIPLE_CHOICE_GRID"
-            },
-            {
-                rows: TBG_ROWS.map(rowId => ({
-                    rowId,
-                    responseColumnIds: randomSubset(TBG_COLUMNS)
-                })),
-                questionId: QUESTION_IDS.TICK_BOX_GRID,
-                questionType: "TICK_BOX_GRID"
-            },
-            {
-                date: isoDate(date),
-                questionId: QUESTION_IDS.DATE,
-                questionType: "DATE"
-            },
-            {
-                time: isoTime(),
-                questionId: QUESTION_IDS.TIME,
-                questionType: "TIME"
-            },
-            {
-                dateTime: date.toISOString(),
-                questionId: QUESTION_IDS.DATE_TIME,
-                questionType: "DATE_TIME"
-            },
-            {
-                hours: Math.floor(Math.random() * 73),
-                minutes: Math.floor(Math.random() * 60),
-                seconds: Math.floor(Math.random() * 60),
-                questionId: QUESTION_IDS.DURATION,
-                questionType: "DURATION"
-            }
-        ]
+      success: true,
+
+      request: requestIndex,
+
+      formId,
     };
+  } catch (error) {
+    return {
+      success: false,
+
+      request: requestIndex,
+
+      formId,
+
+      status: "NETWORK",
+
+      reason: error.message,
+    };
+  }
 }
 
-async function sendRequests() {
-    console.time("⏱ Total Time");
+// ============================================================
+// RANDOM REQUEST DISTRIBUTION
+//
+// NUMBER_OF_REQUESTS is randomly distributed across FORM_IDS.
+//
+// Example:
+//
+// NUMBER_OF_REQUESTS = 10
+// FORM_IDS = [A, B]
+//
+// Possible:
+//
+// A -> 6
+// B -> 4
+//
+// Or:
+//
+// A -> 3
+// B -> 7
+//
+// If NUMBER_OF_REQUESTS >= FORM_IDS.length,
+// every form gets at least 1 request.
+// ============================================================
 
-    const failedRequests = [];
-    let successCount = 0;
+function distributeRequests(formIds, totalRequests) {
+  const numberOfForms = formIds.length;
 
-    for (
-        let start = 1;
-        start <= NUMBER_OF_REQUESTS;
-        start += CONCURRENCY
-    ) {
-        const promises = [];
+  if (numberOfForms === 0) {
+    return [];
+  }
 
-        for (
-            let i = start;
-            i < Math.min(start + CONCURRENCY, NUMBER_OF_REQUESTS + 1);
-            i++
-        ) {
-            const payload = generatePayload(i);
+  // --------------------------------------------------------
+  // Not enough requests to give every form one request.
+  // --------------------------------------------------------
 
-            promises.push(
-                fetch(POST_URL, {
-                    method: "POST",
-                    headers: {
-                        ...HEADERS,
-                        "auth-jwt": uuid()
-                    },
-                    body: JSON.stringify(payload)
-                })
-                    .then(async response => {
-                        if (response.ok) {
-                            successCount++;
-                            process.stdout?.write?.("✅");
-                            return;
-                        }
+  if (totalRequests < numberOfForms) {
+    const shuffled = [...formIds].sort(() => Math.random() - 0.5);
 
-                        let message;
+    return formIds.map((formId) => ({
+      formId,
 
-                        try {
-                            message = await response.text();
-                        } catch {
-                            message = "Unknown error";
-                        }
+      count: shuffled.slice(0, totalRequests).includes(formId) ? 1 : 0,
+    }));
+  }
 
-                        message = message
-                            .replace(/\n/g, " ")
-                            .replace(/\s+/g, " ")
-                            .trim()
-                            .substring(0, 120);
+  // --------------------------------------------------------
+  // Give every form one request first.
+  // --------------------------------------------------------
 
-                        failedRequests.push({
-                            request: i,
-                            status: response.status,
-                            reason: message || response.statusText
-                        });
+  const counts = formIds.map((formId) => ({
+    formId,
+    count: 1,
+  }));
 
-                        process.stdout?.write?.("❌");
-                    })
-                    .catch(error => {
-                        failedRequests.push({
-                            request: i,
-                            status: "NETWORK",
-                            reason: error.message
-                        });
+  let remaining = totalRequests - numberOfForms;
 
-                        process.stdout?.write?.("❌");
-                    })
-            );
-        }
+  // --------------------------------------------------------
+  // Randomly distribute remaining requests.
+  // --------------------------------------------------------
 
-        await Promise.all(promises);
+  while (remaining > 0) {
+    const randomIndex = Math.floor(Math.random() * numberOfForms);
 
-        process.stdout?.write?.(
-            `  [${Math.min(
-                start + CONCURRENCY - 1,
-                NUMBER_OF_REQUESTS
-            )}/${NUMBER_OF_REQUESTS}]\n`
-        );
-    }
+    counts[randomIndex].count++;
 
-    console.timeEnd("⏱ Total Time");
-    console.log("\n");
+    remaining--;
+  }
 
-    console.log("══════════════════════════════════════════════");
-    console.log("LOAD TEST SUMMARY");
-    console.log("══════════════════════════════════════════════");
-    console.log(`Total Requests : ${NUMBER_OF_REQUESTS}`);
-    console.log(`Successful     : ${successCount}`);
-    console.log(`Failed         : ${failedRequests.length}`);
+  return counts;
+}
+
+// ============================================================
+// MAIN LOAD TEST
+// ============================================================
+
+async function main() {
+  console.log("==============================================");
+
+  console.log("DYNAMIC FORM LOAD TEST");
+
+  console.log("==============================================");
+
+  const numberOfForms = FORM_IDS.length;
+
+  if (numberOfForms === 0) {
+    console.error("No form IDs configured.");
+
+    return;
+  }
+
+  if (NUMBER_OF_REQUESTS <= 0) {
+    console.error("NUMBER_OF_REQUESTS must be greater than 0.");
+
+    return;
+  }
+
+  if (OPTIONAL_RESPONSE_PROBABILITY < 0 || OPTIONAL_RESPONSE_PROBABILITY > 1) {
+    console.error("OPTIONAL_RESPONSE_PROBABILITY must be between 0 and 1.");
+
+    return;
+  }
+
+  console.log(`Forms                  : ${numberOfForms}`);
+
+  console.log(`Total Requests         : ${NUMBER_OF_REQUESTS}`);
+
+  console.log(`Concurrency/Form       : ${CONCURRENCY}`);
+
+  console.log(`Respond To All         : ${RESPOND_TO_ALL_QUESTIONS}`);
+
+  if (RESPOND_TO_ALL_QUESTIONS === false) {
     console.log(
-        `Success Rate   : ${(
-            (successCount / NUMBER_OF_REQUESTS) *
-            100
-        ).toFixed(2)}%`
+      `Optional Response Rate : ` + `${OPTIONAL_RESPONSE_PROBABILITY * 100}%`,
     );
-    console.log("══════════════════════════════════════════════");
+  }
 
-    if (failedRequests.length === 0) {
-        console.log("\nAll requests completed successfully.");
-        return;
+  // ========================================================
+  // RANDOMLY DISTRIBUTE REQUESTS ACROSS FORMS
+  // ========================================================
+
+  const formRequestCounts = distributeRequests(FORM_IDS, NUMBER_OF_REQUESTS);
+
+  console.log("\nREQUEST DISTRIBUTION");
+
+  console.log("----------------------------------------------");
+
+  for (const item of formRequestCounts) {
+    console.log(`${item.formId} : ${item.count} requests`);
+  }
+
+  console.log("----------------------------------------------");
+
+  const distributedTotal = formRequestCounts.reduce(
+    (total, item) => total + item.count,
+
+    0,
+  );
+
+  console.log(`Distributed Total    : ${distributedTotal}`);
+
+  // ========================================================
+  // GLOBAL STATISTICS
+  // ========================================================
+
+  let totalCompleted = 0;
+
+  let totalSuccessful = 0;
+
+  const failedRequests = [];
+
+  console.time("TOTAL LOAD TEST TIME");
+
+  // ========================================================
+  // CURRENT REQUEST INDEX FOR EACH FORM
+  // ========================================================
+
+  const currentIndexes = FORM_IDS.map(() => 1);
+
+  // ========================================================
+  // PROCESS BATCHES
+  // ========================================================
+
+  let batchNumber = 1;
+
+  while (
+    formRequestCounts.some(
+      (item) => currentIndexes[FORM_IDS.indexOf(item.formId)] <= item.count,
+    )
+  ) {
+    console.log(`\nBATCH ${batchNumber}`);
+
+    const batchPromises = [];
+
+    // ====================================================
+    // CREATE REQUESTS FOR ALL FORMS
+    // ====================================================
+
+    for (let formIndex = 0; formIndex < numberOfForms; formIndex++) {
+      const formId = FORM_IDS[formIndex];
+
+      const totalForThisForm = formRequestCounts[formIndex].count;
+
+      const startIndex = currentIndexes[formIndex];
+
+      if (startIndex > totalForThisForm) {
+        continue;
+      }
+
+      const endIndex = Math.min(
+        startIndex + CONCURRENCY - 1,
+
+        totalForThisForm,
+      );
+
+      currentIndexes[formIndex] = endIndex + 1;
+
+      // =================================================
+      // START REQUESTS FOR THIS FORM
+      // =================================================
+
+      for (
+        let requestIndex = startIndex;
+        requestIndex <= endIndex;
+        requestIndex++
+      ) {
+        const promise = submitOneResponse(formId, requestIndex).then(
+          (result) => {
+            totalCompleted++;
+
+            if (result.success) {
+              totalSuccessful++;
+
+              process.stdout?.write?.("✅ ");
+            } else {
+              failedRequests.push(result);
+
+              process.stdout?.write?.("❌ ");
+            }
+
+            process.stdout?.write?.(`${totalCompleted}/${NUMBER_OF_REQUESTS} `);
+
+            return result;
+          },
+        );
+
+        batchPromises.push(promise);
+      }
     }
 
-    let grouped = {};
+    // ====================================================
+    // WAIT FOR ENTIRE BATCH
+    // ====================================================
 
-    for (const f of failedRequests) {
-        const key = `${f.status} | ${f.reason}`;
-        grouped[key] = (grouped[key] || 0) + 1;
-    }
+    await Promise.all(batchPromises);
 
-    console.log("\nFAILED REQUESTS");
-    console.log("══════════════════════════════════════════════");
+    // ====================================================
+    // MOVE TO NEXT LINE
+    // ====================================================
 
-    Object.entries(grouped)
-        .sort((a, b) => b[1] - a[1])
-        .forEach(([message, count]) => {
-            console.log(`${count}x  ${message}`);
-        });
+    process.stdout?.write?.("\n");
 
-    console.log("══════════════════════════════════════════════");
+    batchNumber++;
+  }
 
-    grouped = {};
+  console.timeEnd("TOTAL LOAD TEST TIME");
 
-    for (const f of failedRequests) {
-        const key = `${f.status}`;
-        grouped[key] = (grouped[key] || 0) + 1;
-    }
+  // ========================================================
+  // SUMMARY
+  // ========================================================
 
-    console.log("\n📊 FAILURE BREAKDOWN");
+  console.log("\n");
 
-    Object.entries(grouped)
-        .sort((a, b) => b[1] - a[1])
-        .forEach(([status, count]) => {
-            console.log(`   ${status} : ${count}`);
-        });
+  console.log("══════════════════════════════════════════════");
 
-    console.log();
+  console.log("LOAD TEST SUMMARY");
+
+  console.log("══════════════════════════════════════════════");
+
+  console.log(`Total Requests : ${NUMBER_OF_REQUESTS}`);
+
+  console.log(`Successful     : ${totalSuccessful}`);
+
+  console.log(`Failed         : ${failedRequests.length}`);
+
+  console.log(
+    `Success Rate   : ` +
+      `${((totalSuccessful / NUMBER_OF_REQUESTS) * 100).toFixed(2)}%`,
+  );
+
+  console.log("══════════════════════════════════════════════");
+
+  // ========================================================
+  // FAILURE DETAILS
+  // ========================================================
+
+  if (failedRequests.length === 0) {
+    console.log("\nAll requests completed successfully.");
+
+    return;
+  }
+
+  // ========================================================
+  // GROUP FAILURE REASONS
+  // ========================================================
+
+  let grouped = {};
+
+  for (const failure of failedRequests) {
+    const key = `${failure.status} | ${failure.reason}`;
+
+    grouped[key] = (grouped[key] || 0) + 1;
+  }
+
+  console.log("\nFAILED REQUESTS");
+
+  console.log("══════════════════════════════════════════════");
+
+  Object.entries(grouped)
+
+    .sort((a, b) => b[1] - a[1])
+
+    .forEach(([message, count]) => {
+      console.log(`${count}x  ${message}`);
+    });
+
+  console.log("══════════════════════════════════════════════");
+
+  // ========================================================
+  // STATUS BREAKDOWN
+  // ========================================================
+
+  grouped = {};
+
+  for (const failure of failedRequests) {
+    const key = `${failure.status}`;
+
+    grouped[key] = (grouped[key] || 0) + 1;
+  }
+
+  console.log("\n📊 FAILURE BREAKDOWN");
+
+  Object.entries(grouped)
+
+    .sort((a, b) => b[1] - a[1])
+
+    .forEach(([status, count]) => {
+      console.log(`   ${status} : ${count}`);
+    });
+
+  console.log();
 }
 
-sendRequests();
+// ============================================================
+// START
+// ============================================================
+
+main();
