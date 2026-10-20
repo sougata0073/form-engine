@@ -38,4 +38,15 @@ public interface FormResponseIndividualRepository extends JpaRepository<FormResp
             """, nativeQuery = true)
     UUID getFormResponseIdByFormResponsePage(UUID formId, Long formResponsePage);
 
+    @Query(value = """
+            select
+            exists (
+              select 1
+              from form_response_individuals fri
+              where fri.form_response_summary_form_id = :formId
+              and fri.user_id = :userId
+            )
+            """, nativeQuery = true)
+    boolean existsByFormIdAndUserId(UUID formId, UUID userId);
+
 }

@@ -21,7 +21,7 @@ export class FormResponseServiceShared {
     private http = inject(HttpClient)
 
     getFormResponseCount(formId: string, onComplete: (res: FormResponseCount) => void) {
-        const url = `http://localhost:9094/api/v1/form-responses/${formId}/form-response-count`
+        const url = `form-responses/${formId}/form-response-count`
 
         this.http.get<FormResponseCount>(url).subscribe(res => {
             this._formResponseCount.set(res)
@@ -30,7 +30,7 @@ export class FormResponseServiceShared {
     }
 
     getFormInfo(formId: string, onComplete: (res: FormInfoRes) => void) {
-        const url = `http://localhost:9092/api/v1/forms/${formId}/info`
+        const url = `forms/${formId}/info`
 
         this.http.get<FormInfoRes>(url).subscribe(res => {
             this._formInfo.set(res)
@@ -39,7 +39,7 @@ export class FormResponseServiceShared {
     }
 
     getFormRes(formId: string, onComplete?: (res: FormDetails) => void) {
-        const url = `http://localhost:9092/api/v1/forms/${formId}`
+        const url = `forms/${formId}`
 
         this.http.get<FormDetails>(url).subscribe(res => {
             this._formDetails.set(res)

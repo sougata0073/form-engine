@@ -10,7 +10,7 @@ export class QuestionService {
   private http = inject(HttpClient)
 
   getQuestionDetails(formId: string, questionId: string, onComplete: (res: AnyQuestionRes) => void) {
-    const url = `http://localhost:9092/api/v1/forms/${formId}/questions/${questionId}`;
+    const url = `forms/${formId}/questions/${questionId}`;
 
     this.http.get<AnyQuestionRes>(url).subscribe(res => {
       onComplete(res)

@@ -21,8 +21,10 @@ export class HttpInterceptors {
       return next(req)
     }
 
+    const authHeader = `Bearer ${authService.getJwt()}`
+
     const newReq = req.clone({
-      headers: req.headers.append('auth-jwt', authService.getJwtData()?.sub!)
+      headers: req.headers.append('Authorization', authHeader)
     })
 
     return next(newReq)

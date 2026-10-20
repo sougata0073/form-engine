@@ -216,7 +216,7 @@ public class FormServiceImpl implements FormService {
                     new ViewFormErrorResDto(
                             f.getTitle(),
                             ViewFormErrorReason.RESPONSE_ALREADY_SUBMITTED,
-                            "You have already submitted a response to this form."
+                            "You have already submitted a response for this form."
                     )
             );
         }

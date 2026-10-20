@@ -19,8 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(path = "api/v1/forms")
-@CrossOrigin
+@RequestMapping(path = "api/v1/form-responses")
 @RequiredArgsConstructor
 public class FormResponseController {
 

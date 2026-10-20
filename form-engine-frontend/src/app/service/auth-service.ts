@@ -13,6 +13,10 @@ export class AuthService {
 
   private http = inject(HttpClient)
 
+  getJwt(): string | null {
+    return localStorage.getItem('jwt');
+  }
+
   getJwtData(): JwtData | null {
     const jwtToken = localStorage.getItem('jwt');
 
@@ -20,13 +24,13 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return !this.isJwtTokenExpired()
+    return localStorage.getItem('jwt') !== null && !this.isJwtTokenExpired()
   }
 
   isJwtTokenExpired(): boolean {
     const jwtToken = localStorage.getItem('jwt');
 
-    if (!jwtToken) {
+    if (jwtToken === null) {
       return true;
     }
 
@@ -43,12 +47,12 @@ export class AuthService {
   }
 
   loginWithSocial(socialLoginProvider: SocialLoginProvider) {
-    const url = `http://localhost:9091/oauth2/authorization/${socialLoginProvider}`
+    const url = `oauth2/authorization/${socialLoginProvider}`
     location.assign(url);
   }
 
   loginWithEmailPassword(credentials: LoginReq, onComplete?: () => void, onError?: (err: HttpErrorResponse) => void) {
-    const url = 'http://localhost:9091/api/v1/auth/login/email-pass'
+    const url = 'auth/login/email-pass'
 
     this.http.post<JwtTokenRes>(url, credentials).subscribe({
       next: res => {
@@ -60,7 +64,7 @@ export class AuthService {
   }
 
   registerWithEmailPassword(credentials: RegisterReq, onComplete?: () => void, onError?: (err: HttpErrorResponse) => void) {
-    const url = 'http://localhost:9091/api/v1/auth/register/email-pass'
+    const url = 'auth/register/email-pass'
 
     this.http.post<JwtTokenRes>(url, credentials).subscribe({
       next: res => {

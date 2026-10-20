@@ -1,6 +1,7 @@
 package com.sougata.form_data_service.controller;
 
 import com.sougata.form_data_service.service.FormResponseService;
+import com.sougata.form_engine.constant.HttpHeaderConstant;
 import com.sougata.form_engine.constant.cache.FormDataCacheNames;
 import com.sougata.form_engine.dto.form.FormResponsePutReqDto;
 import com.sougata.form_engine.dto.form.FormResponsePutResDto;
@@ -17,8 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("api/v1/forms")
-@CrossOrigin
+@RequestMapping("api/v1/form-data")
 @RequiredArgsConstructor
 public class FormResponseController {
 
@@ -28,7 +28,7 @@ public class FormResponseController {
     public ResponseEntity<FormResponsePutResDto> addFormResponse(
             @PathVariable("formId") UUID formId,
             @Valid @RequestBody FormResponsePutReqDto dto,
-            @RequestHeader("auth-jwt") UUID responderId
+            @RequestHeader(HttpHeaderConstant.X_USER_ID) UUID responderId
     ) {
         var res = formResponseService.saveResponse(formId, dto, responderId);
         return new ResponseEntity<>(res, HttpStatus.CREATED);

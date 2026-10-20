@@ -10,7 +10,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping(path = "api/v1/users")
-@CrossOrigin
 public class UserController {
 
     private final UserService userService;

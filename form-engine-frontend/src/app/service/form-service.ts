@@ -13,7 +13,7 @@ export class FormService {
   private http = inject(HttpClient)
 
   createForm(form: FormAddUpdateReq, onComplete?: (res: FormInfoRes) => void) {
-    const url = 'http://localhost:9092/api/v1/forms'
+    const url = 'forms'
 
     this.http.post<FormInfoRes>(url, form).subscribe(res => {
       onComplete?.(res)
@@ -22,7 +22,7 @@ export class FormService {
   }
 
   copyForm(formId: string, copyFormReq: CopyFormReq, onComplete?: (res: FormInfoRes) => void) {
-    const url = `http://localhost:9092/api/v1/forms/${formId}/copy`
+    const url = `forms/${formId}/copy`
 
     this.http.post<FormInfoRes>(url, copyFormReq).subscribe(res => {
       onComplete?.(res)
@@ -31,7 +31,7 @@ export class FormService {
   }
 
   getFormDetails(formId: string, onComplete: (res: FormDetails) => void) {
-    const url = `http://localhost:9092/api/v1/forms/${formId}/details`
+    const url = `forms/${formId}/details`
 
     this.http.get<FormDetails>(url).subscribe(res => {
       onComplete(res)

@@ -10,7 +10,6 @@ import com.sougata.form_engine.dto.formResponse.summary.ResponseSummaryDto;
 import com.sougata.form_engine.dto.formResponse.summary.ResponseSummaryResDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
 import com.sougata.form_engine.dto.user.UserSummaryShortDto;
-import com.sougata.form_response_service.configuration.AppConfiguration;
 import com.sougata.form_response_service.feignClient.AuthServiceFeignClient;
 import com.sougata.form_response_service.feignClient.FormDataServiceFeignClient;
 import com.sougata.form_response_service.feignClient.FormServiceFeignClient;
@@ -20,7 +19,6 @@ import com.sougata.form_response_service.service.FormResponseService;
 import com.sougata.form_response_service.service.responseManager.ResponseManagerFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,16 +37,12 @@ public class FormResponseServiceImpl implements FormResponseService {
     private final FormServiceFeignClient formServiceFeignClient;
     private final AuthServiceFeignClient authServiceFeignClient;
     private final ResponseManagerFactory responseManagerFactory;
-    private final StringRedisTemplate stringRedisTemplate;
-    private final AppConfiguration appConfiguration;
     private final FormDataServiceFeignClient formDataServiceFeignClient;
     private final FormResponseIndividualRepository formResponseIndividualRepository;
 
     @Override
     public boolean getIsResponseAlreadySubmitted(UUID formId, UUID userId) {
-//        TODO
-//        return formResponseRepository.existsByFormIdAndUserId(formId, userId);
-        return false;
+        return formResponseIndividualRepository.existsByFormIdAndUserId(formId, userId);
     }
 
     @Override

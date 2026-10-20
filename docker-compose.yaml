@@ -42,6 +42,39 @@ services:
       watch:
         - action: rebuild
           path: ./form-engine-backend/docker-compose.watch
+  gateway-service:
+    build:
+      context: ./form-engine-backend/gateway-service
+      dockerfile: Dockerfile
+      args:
+        - SERVER_PORT=${GATEWAY_SERVICE_CONTAINER_PORT}
+    ports:
+      - "${GATEWAY_SERVICE_HOST_PORT}:${GATEWAY_SERVICE_CONTAINER_PORT}"
+    env_file:
+      - ./form-engine-backend/env-docker/gateway-service.env
+    depends_on:
+      configuration-service:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      form-data-service:
+        condition: service_healthy
+      form-response-service:
+        condition: service_healthy
+      form-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:${GATEWAY_SERVICE_CONTAINER_PORT}/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 2m
+    develop:
+      watch:
+        - action: rebuild
+          path: ./form-engine-backend/docker-compose.watch
   redis:
     image: redis:8.10
     ports:
@@ -375,13 +408,7 @@ services:
     ports:
       - "${CLIENT_HOST_PORT}:${CLIENT_CONTAINER_PORT}"
     depends_on:
-      auth-service:
-        condition: service_healthy
-      form-data-service:
-        condition: service_healthy
-      form-response-service:
-        condition: service_healthy
-      form-service:
+      gateway-service:
         condition: service_healthy
     develop:
       watch:

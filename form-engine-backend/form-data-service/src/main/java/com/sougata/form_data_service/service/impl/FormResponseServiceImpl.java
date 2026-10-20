@@ -6,9 +6,12 @@ import com.sougata.form_data_service.feignClient.FormResponseServiceFeignClient;
 import com.sougata.form_data_service.feignClient.FormServiceFeignClient;
 import com.sougata.form_data_service.formValidation.service.FormSchemaService;
 import com.sougata.form_data_service.model.FormResponse;
+import com.sougata.form_data_service.model.FormResponseUser;
 import com.sougata.form_data_service.repository.FormResponseRepository;
+import com.sougata.form_data_service.repository.FormResponseUserRepository;
 import com.sougata.form_data_service.service.FormResponseService;
 import com.sougata.form_data_service.service.responseManager.ResponseManagerFactory;
+import com.sougata.form_engine.constant.DistributedLockNames;
 import com.sougata.form_engine.constant.RedisStreamKeys;
 import com.sougata.form_engine.constant.RedisStreamNames;
 import com.sougata.form_engine.constant.cache.CommonCacheNames;
@@ -25,6 +28,7 @@ import com.sougata.form_engine.dto.validation.request.ResponseValidationRequestD
 import com.sougata.form_engine.exception.FormDetailsMayChangedException;
 import com.sougata.form_engine.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.connection.stream.StreamRecords;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -32,10 +36,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
 public class FormResponseServiceImpl implements FormResponseService {
 
     private final FormResponseRepository formResponseRepository;
+    private final FormResponseUserRepository formResponseUserRepository;
     private final ResponseManagerFactory responseManagerFactory;
     private final FormServiceFeignClient formServiceFeignClient;
     private final FormSchemaService formSchemaService;
@@ -51,6 +53,7 @@ public class FormResponseServiceImpl implements FormResponseService {
     private final StringRedisTemplate stringRedisTemplate;
     private final FormResponseServiceFeignClient formResponseServiceFeignClient;
     private final AppConfiguration appConfiguration;
+    private final RedissonClient redissonClient;
 
     @Override
     public FormResponsePutResDto saveResponse(UUID formId, FormResponsePutReqDto req, UUID responderId) {
@@ -58,12 +61,20 @@ public class FormResponseServiceImpl implements FormResponseService {
         var formDetails = formServiceFeignClient.getFormDetails(formId);
 
         if (!formDetails.getPublished()) {
-            throw new FormSubmitException("This form is not published yet. Form ID: " + formId);
+            throw new FormSubmitException("This form is not published yet.");
+        }
+
+        if (!formDetails.getAcceptingResponse()) {
+            throw new FormSubmitException("This form is not accepting response.");
         }
 
         boolean isAcceptingDateExceeded =
                 formDetails.getStopAcceptingResponseOn() != null &&
                         Instant.now().isAfter(formDetails.getStopAcceptingResponseOn());
+
+        if (isAcceptingDateExceeded) {
+            throw new FormSubmitException("This form is no longer accepting responses.");
+        }
 
 //        TODO: Not working
 //        if (!formDetails.equals(req.getFormDetailsResponseSubmittedOn())) {
@@ -92,13 +103,12 @@ public class FormResponseServiceImpl implements FormResponseService {
                 && incrementedFormResponseCount > formDetails.getStopAcceptingResponseAfterResponse()) {
 
             stringRedisTemplate.opsForValue().decrement(formResponseCountRedisKey);
+
             throw new FormSubmitException("This form has reached its maximum response limit and is no longer accepting responses.");
-
         }
 
-        if (!formDetails.getAcceptingResponse() || isAcceptingDateExceeded) {
-            throw new FormSubmitException("This form is not accepting response. Form ID: " + formId);
-        }
+        var formResponseUserRedisLockKey = DistributedLockNames.FORM_RESPONSE_USER + formId + CommonCacheNames.SEPARATOR + responderId;
+        var formResponseUserRedisLock = redissonClient.getLock(formResponseUserRedisLockKey);
 
         try {
 
@@ -106,11 +116,20 @@ public class FormResponseServiceImpl implements FormResponseService {
 
             var validationResponse = formSchemaService.validateResponse(formId, formDetails, validationBody);
 
-            var formResponse = new FormResponse();
+            formResponseUserRedisLock.lock();
+
+            var formResponseUserPartitionKey = new FormResponseUser.PartitionKey();
+            formResponseUserPartitionKey.setFormId(formId);
+            formResponseUserPartitionKey.setUserId(responderId);
+
+            if (formResponseUserRepository.existsById(formResponseUserPartitionKey)) {
+                throw new FormSubmitException("You have already submitted a response for this form.");
+            }
 
             var formResponsePartitionKey = new FormResponse.PartitionKey();
             formResponsePartitionKey.setFormId(formId);
 
+            var formResponse = new FormResponse();
             formResponse.setKey(formResponsePartitionKey);
             formResponse.setUserId(responderId);
             formResponse.setRespondedQuestionMap(
@@ -120,6 +139,9 @@ public class FormResponseServiceImpl implements FormResponseService {
             );
 
             var savedFormResponse = formResponseRepository.save(formResponse);
+
+            var formResponseUser = new FormResponseUser(formResponseUserPartitionKey);
+            var savedFormResponseUser = formResponseUserRepository.save(formResponseUser);
 
             var questionResponseFutures = new ArrayList<CompletableFuture<Void>>();
 
@@ -148,8 +170,14 @@ public class FormResponseServiceImpl implements FormResponseService {
             return new FormResponsePutResDto(savedFormResponse.getKey().getFormResponseId());
 
         } catch (Exception ex) {
+
             stringRedisTemplate.opsForValue().decrement(formResponseCountRedisKey);
             throw ex;
+
+        } finally {
+
+            formResponseUserRedisLock.unlock();
+
         }
     }
 
@@ -164,7 +192,8 @@ public class FormResponseServiceImpl implements FormResponseService {
 
         var responseFutures = new ArrayList<CompletableFuture<List<QuestionResponseIndividualDto>>>();
 
-        formResponse.getRespondedQuestionMap()
+        Optional.ofNullable(formResponse.getRespondedQuestionMap())
+                .orElse(Collections.emptyMap())
                 .entrySet()
                 .stream()
                 .collect(Collectors.groupingBy(Map.Entry::getValue))

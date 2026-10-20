@@ -1,1 +1,1 @@
-export type ProblemDetailTitle = 'Form details may changed'
+export type ProblemDetailTitle = 'Form details may changed' | 'Form can not be submitted'

@@ -44,7 +44,7 @@ export class EditFormService {
 
   updateFormInfo = debounce(
     (formId: string, form: FormAddUpdateReq, onComplete?: (res: FormInfoRes) => void) => {
-      const url = `http://localhost:9092/api/v1/forms/${formId}`;
+      const url = `forms/${formId}`;
 
       this.http.put<FormInfoRes>(url, form).subscribe((res) => {
         this._formInfo.set(res);
@@ -59,7 +59,7 @@ export class EditFormService {
   );
 
   loadFormInfo(formId: string, onComplete: (res: FormInfoRes) => void) {
-    const url = `http://localhost:9092/api/v1/forms/${formId}/info`;
+    const url = `forms/${formId}/info`;
 
     this.http.get<FormInfoRes>(url).subscribe((res) => {
       this._formInfo.set(res);
@@ -68,7 +68,7 @@ export class EditFormService {
   }
 
   loadFormRes(formId: string, onComplete?: (res: FormDetails) => void) {
-    const url = `http://localhost:9092/api/v1/forms/${formId}`;
+    const url = `forms/${formId}`;
 
     this.http.get<FormDetails>(url).subscribe((res) => {
       this._formRes.set(res);
@@ -78,7 +78,7 @@ export class EditFormService {
   }
 
   addQuestion(question: AnyQuestionAddReq, onComplete?: (res: AnyQuestionRes) => void) {
-    const url = `http://localhost:9092/api/v1/forms/${this._formRes()!.id}/questions`;
+    const url = `forms/${this._formRes()!.id}/questions`;
 
     this.http.post<AnyQuestionRes>(url, question).subscribe((res) => {
       this._formRes.update((prev) => {
@@ -142,7 +142,7 @@ export class EditFormService {
     const updateReqFun: () => void = () => {
       const reqMapSnapshot = new Map(this.updateQuestionRequestMap);
 
-      const url = `http://localhost:9092/api/v1/forms/${this._formRes()!.id}/questions`;
+      const url = `forms/${this._formRes()!.id}/questions`;
 
       const req: MultipleQuestionUpdateReq = {
         questions: [...reqMapSnapshot.values()].map((v) => v.req),
@@ -186,7 +186,7 @@ export class EditFormService {
   }
 
   deleteQuestion(question: QuestionRes, onComplete?: () => void) {
-    const url = `http://localhost:9092/api/v1/forms/${this._formRes()!.id}/questions/${question.id}`;
+    const url = `forms/${this._formRes()!.id}/questions/${question.id}`;
 
     this.http.delete<SuccessMessage>(url).subscribe(() => {
       this._formRes.update((prev) => {
@@ -207,7 +207,7 @@ export class EditFormService {
     if (this._formRes()) {
       moveItemInArray(this._formRes()!.questions, prevIndex, currIndex);
 
-      const url = `http://localhost:9092/api/v1/forms/${this.formRes()!.id}/questions/${questionId}/order`;
+      const url = `forms/${this.formRes()!.id}/questions/${questionId}/order`;
       const reqBody: QuestionOrderUpdateReq = {
         currentIndex: currIndex,
       };

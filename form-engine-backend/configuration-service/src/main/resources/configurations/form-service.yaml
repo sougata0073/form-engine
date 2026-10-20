@@ -27,9 +27,10 @@ spring:
           batch_size: 100
         order_inserts: true
         order_updates: true
-    sql:
-      init:
-        mode: always
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:db/file-types-data.sql,classpath:db/template/template-categories.sql,classpath:db/template/education-assessment.sql,classpath:db/template/education-blank-quiz.sql,classpath:db/template/education-course-evaluation.sql,classpath:db/template/education-exit-ticket.sql,classpath:db/template/education-worksheet.sql,classpath:db/template/personal-contact-information.sql,classpath:db/template/personal-event-registration.sql,classpath:db/template/personal-find-a-time.sql,classpath:db/template/personal-party-invite.sql,classpath:db/template/personal-rsvp.sql,classpath:db/template/personal-t-shirt-sign-up.sql,classpath:db/template/work-customer-feedback.sql,classpath:db/template/work-event-feedback.sql,classpath:db/template/work-order-request.sql,classpath:db/template/work-time-off-request.sql,classpath:db/template/work-work-request.sql
   devtools:
     restart:
       enabled: true

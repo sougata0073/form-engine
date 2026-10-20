@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.UUID;
 
-@FeignClient("form-data-service")
+@FeignClient(value = "form-data-service", path = "api/v1/form-data")
 public interface FormDataServiceFeignClient {
 
-    @GetMapping(path = "api/v1/forms/{formId}/responses/{formResponseId}")
+    @GetMapping(path = "{formId}/responses/{formResponseId}")
     FormResponseIndividualDtoNoPage getFormResponse(@PathVariable("formId") UUID formId, @PathVariable("formResponseId") UUID formResponseId);
 
 }

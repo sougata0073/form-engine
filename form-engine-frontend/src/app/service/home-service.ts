@@ -16,31 +16,31 @@ export class HomeService {
   private http = inject(HttpClient)
 
   getRecentForms() {
-    const url = 'http://localhost:9092/api/v1/forms/recent'
+    const url = 'forms/recent'
 
     return this.http.get<FormSummariesRes>(url)
   }
 
   getTemplates() {
-    const url = 'http://localhost:9092/api/v1/templates'
+    const url = 'templates'
 
     return this.http.get<TemplateSummariesRes>(url)
   }
 
   buildFormFromTemplate(templateId: string) {
-    const url = `http://localhost:9092/api/v1/templates/${templateId}/build-form`
+    const url = `templates/${templateId}/build-form`
 
     return this.http.post<TemplateToFormBuildRes>(url, {})
   }
 
   renameForm(formId: string, req: FormRenameReq) {
-    const url = `http://localhost:9092/api/v1/forms/${formId}/rename`
+    const url = `forms/${formId}/rename`
 
     return this.http.patch<SuccessMessage>(url, req)
   }
 
   deleteForm(formId: string) {
-    const url = `http://localhost:9092/api/v1/forms/${formId}`
+    const url = `forms/${formId}`
 
     return this.http.delete<SuccessMessage>(url)
   }

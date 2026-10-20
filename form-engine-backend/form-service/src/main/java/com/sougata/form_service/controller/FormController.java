@@ -1,5 +1,6 @@
 package com.sougata.form_service.controller;
 
+import com.sougata.form_engine.constant.HttpHeaderConstant;
 import com.sougata.form_engine.constant.cache.FormCacheNames;
 import com.sougata.form_engine.constant.cache.QuestionCacheNames;
 import com.sougata.form_engine.dto.form.*;
@@ -15,7 +16,7 @@ import com.sougata.form_service.service.formSchema.FormService;
 import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.QuestionService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -27,24 +28,17 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("api/v1/forms")
-@CrossOrigin
+@RequiredArgsConstructor
 public class FormController {
 
     private final FormService formService;
     private final FormServiceCached formServiceCached;
     private final QuestionService questionService;
 
-    @Autowired
-    public FormController(FormService formService, FormServiceCached formServiceCached, QuestionService questionService) {
-        this.formService = formService;
-        this.formServiceCached = formServiceCached;
-        this.questionService = questionService;
-    }
-
     @PostMapping
     public ResponseEntity<FormInfoDto> addForm(
             @Valid @RequestBody FormPutReqDto req,
-            @RequestHeader("auth-jwt") UUID userId
+            @RequestHeader(HttpHeaderConstant.X_USER_ID) UUID userId
     ) {
         var res = formService.createForm(req, userId);
         return new ResponseEntity<>(res, HttpStatus.CREATED);
@@ -54,7 +48,7 @@ public class FormController {
     public ResponseEntity<FormInfoDto> copyForm(
             @Valid @RequestBody CopyFormReqDto req,
             @PathVariable("formId") UUID formId,
-            @RequestHeader("auth-jwt") UUID userId
+            @RequestHeader(HttpHeaderConstant.X_USER_ID) UUID userId
     ) {
         var res = formService.copyForm(formId, req, userId);
         return new ResponseEntity<>(res, HttpStatus.CREATED);
@@ -66,7 +60,7 @@ public class FormController {
     })
     public SuccessMessageDto deleteForm(
             @PathVariable("formId") UUID formId,
-            @RequestHeader("auth-jwt") UUID userId
+            @RequestHeader(HttpHeaderConstant.X_USER_ID) UUID userId
     ) {
         return formService.deleteForm(formId, userId);
     }
@@ -75,7 +69,7 @@ public class FormController {
     public FormInfoDto updateForm(
             @PathVariable("formId") UUID formId,
             @Valid @RequestBody FormPutReqDto dto,
-            @RequestHeader("auth-jwt") UUID userId
+            @RequestHeader(HttpHeaderConstant.X_USER_ID) UUID userId
     ) {
         return formService.updateForm(formId, dto, userId);
     }
@@ -84,7 +78,7 @@ public class FormController {
     public SuccessMessageDto renameForm(
             @PathVariable("formId") UUID formId,
             @RequestBody FormRenameReqDto body,
-            @RequestHeader("auth-jwt") UUID userId
+            @RequestHeader(HttpHeaderConstant.X_USER_ID) UUID userId
     ) {
         return formService.renameForm(formId, body, userId);
     }
@@ -92,7 +86,7 @@ public class FormController {
     @GetMapping(path = "{formId}")
     public FormDetailsDto getForm(
             @PathVariable("formId") UUID formId,
-            @RequestHeader("auth-jwt") UUID userId
+            @RequestHeader(HttpHeaderConstant.X_USER_ID) UUID userId
     ) {
         return formService.getForm(formId, userId);
     }
@@ -105,7 +99,7 @@ public class FormController {
     @GetMapping(path = "{formId}/view")
     public FormDetailsDto viewForm(
             @PathVariable("formId") UUID formId,
-            @RequestHeader("auth-jwt") UUID userId
+            @RequestHeader(HttpHeaderConstant.X_USER_ID) UUID userId
     ) {
         return formService.viewForm(formId, userId);
     }
@@ -171,7 +165,7 @@ public class FormController {
     @GetMapping(path = "recent")
     @Cacheable(cacheNames = {FormCacheNames.RECENT_FORMS}, key = "#userId")
     public FormSummariesDto getRecentForms(
-            @RequestHeader("auth-jwt") UUID userId
+            @RequestHeader(HttpHeaderConstant.X_USER_ID) UUID userId
     ) {
         return formService.getFormsSummaries(userId);
     }

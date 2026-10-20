@@ -18,7 +18,7 @@ export class ViewFormService {
     onError?: (error: ViewFormErrorRes) => void,
   ) {
 
-    const url = `http://localhost:9092/api/v1/forms/${formId}/view`;
+    const url = `forms/${formId}/view`;
 
     this.http.get<FormDetails>(url, { observe: 'response' }).subscribe({
       next: (res) => {
@@ -39,7 +39,7 @@ export class ViewFormService {
     onComplete?: () => void,
     onError?: (pb: ProblemDetail) => void,
   ) {
-    const url = `http://localhost:9093/api/v1/form-data/${formId}/responses`;
+    const url = `form-data/${formId}/responses`;
 
     this.http.post<FormResponsePutRes>(url, req).subscribe({
       next: (res) => {},

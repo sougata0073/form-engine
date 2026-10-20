@@ -1,9 +1,10 @@
 package com.sougata.auth_service.service;
 
+import com.sougata.auth_service.config.AppConfiguration;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -11,13 +12,10 @@ import java.util.Date;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
 
-    @Value("${jwt.secret-string}")
-    private String jwtSecretString;
-
-    @Value("${jwt.expiration-millis}")
-    private Long jwtExpirationMillis;
+    private final AppConfiguration appConfiguration;
 
     public String generateJwtToken(String id, String name, String email, String avatarUrl) {
 
@@ -32,13 +30,13 @@ public class JwtService {
                 .setSubject(id)
                 .addClaims(claims)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMillis))
+                .setExpiration(new Date(System.currentTimeMillis() + appConfiguration.getJwtExpirationMillis()))
                 .signWith(getJwtSecretKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
     private SecretKey getJwtSecretKey() {
-        return Keys.hmacShaKeyFor(jwtSecretString.getBytes());
+        return Keys.hmacShaKeyFor(appConfiguration.getJwtSecretString().getBytes());
     }
 
 }

@@ -1,7 +1,7 @@
 <div class="parent-container">
   <div class="content-wrapper">
     @if (!isFormSubmitted()) {
-      @if (formRes()) {
+      @if (formRes() && !formError()) {
         <div
           class="main-content"
           [class.loading]="isFormSubmitInProgress()">

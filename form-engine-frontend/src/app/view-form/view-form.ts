@@ -138,6 +138,12 @@ export class ViewForm implements OnInit, OnDestroy {
             },
             (error) => this.formError.set(error),
           );
+        } else if (problemDetail.title === 'Form can not be submitted') {
+          this.formError.set({
+            formTitle: this.formRes()?.title ?? null,
+            message: problemDetail.detail,
+            reason: 'RESPONSE_ALREADY_SUBMITTED',
+          });
         }
       },
     );

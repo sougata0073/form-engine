@@ -1,10 +1,10 @@
 package com.sougata.auth_service.service;
 
+import com.sougata.auth_service.config.AppConfiguration;
 import com.sougata.auth_service.dto.UserSummariesShortDto;
 import com.sougata.auth_service.dto.UserSummaryShortDto;
 import com.sougata.auth_service.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -15,21 +15,14 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final String USER_SUMMARY_SHORT_CACHE_KEY_PREFIX = "auth::userSummaryShort::";
 
-    @Value("${app.cache.default-ttl-minutes}")
-    private long cacheDefaultTtlMinutes;
-
     private final UserRepository userRepository;
     private final RedisTemplate<String, Object> redisTemplate;
-
-    @Autowired
-    public UserService(UserRepository userRepository, RedisTemplate<String, Object> redisTemplate) {
-        this.userRepository = userRepository;
-        this.redisTemplate = redisTemplate;
-    }
+    private final AppConfiguration appConfiguration;
 
     @SuppressWarnings("unchecked")
     public UserSummariesShortDto getUserSummariesShort(List<UUID> userIds) {
@@ -59,7 +52,7 @@ public class UserService {
                 connection.stringCommands().set(
                         key,
                         value,
-                        Expiration.seconds(cacheDefaultTtlMinutes * 60),
+                        Expiration.seconds(appConfiguration.getCacheDefaultTtlMinutes() * 60),
                         RedisStringCommands.SetOption.UPSERT
                 );
             });

@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
                 ex.getMessage()
         );
 
-        pb.setTitle("Form can not be submitted");
+        pb.setTitle(ProblemDetailTitle.FORM_CAN_NOT_BE_SUBMITTED);
 
         return pb;
     }
