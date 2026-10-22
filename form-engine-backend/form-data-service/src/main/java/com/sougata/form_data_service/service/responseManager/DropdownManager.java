@@ -43,7 +43,7 @@ public class DropdownManager extends ResponseManager<DropdownResponsePutReqDto, 
 
     @Override
     @Async
-    public CompletableFuture<List<DropdownResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+    public CompletableFuture<List<DropdownResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
         var responses = dropdownRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
 
         return CompletableFuture.completedFuture(

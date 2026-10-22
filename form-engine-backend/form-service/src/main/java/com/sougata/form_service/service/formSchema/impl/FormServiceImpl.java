@@ -61,8 +61,6 @@ public class FormServiceImpl implements FormService {
 
         addFirstInRecentForms(userId, formInfo);
 
-        redisTemplate.convertAndSend(MessagingChannelNames.FORM_CREATED, new FormCreatedMessage(savedForm.getId()));
-
         return formInfo;
     }
 

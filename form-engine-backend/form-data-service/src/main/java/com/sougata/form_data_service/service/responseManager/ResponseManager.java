@@ -10,10 +10,9 @@ import java.util.concurrent.CompletableFuture;
 
 public abstract class ResponseManager<QR extends QuestionResponsePutReqDto, QRID extends QuestionResponseIndividualDto> {
 
-
     public abstract CompletableFuture<Void> create(QR response, UUID formResponseId);
 
-    public abstract CompletableFuture<List<QRID>> getFormResponses(UUID formResponseId, List<Long> questionIds);
+    public abstract CompletableFuture<List<QRID>> getResponses(UUID formResponseId, List<Long> questionIds);
 
     public abstract CompletableFuture<Void> deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
 

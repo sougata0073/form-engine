@@ -43,7 +43,7 @@ public class TimeManager extends ResponseManager<TimeResponsePutReqDto, TimeResp
 
     @Override
     @Async
-    public CompletableFuture<List<TimeResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+    public CompletableFuture<List<TimeResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
         var responses = timeRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
 
         return CompletableFuture.completedFuture(

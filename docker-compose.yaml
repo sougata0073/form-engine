@@ -5,8 +5,8 @@ services:
       dockerfile: Dockerfile
       args:
         - SERVER_PORT=${CONFIGURATION_SERVICE_CONTAINER_PORT}
-    ports:
-      - "${CONFIGURATION_SERVICE_HOST_PORT}:${CONFIGURATION_SERVICE_CONTAINER_PORT}"
+    # ports:
+    #   - "${CONFIGURATION_SERVICE_HOST_PORT}:${CONFIGURATION_SERVICE_CONTAINER_PORT}"
     env_file:
       - ./form-engine-backend/env-docker/configuration-service.env
     healthcheck:
@@ -25,8 +25,8 @@ services:
       dockerfile: Dockerfile
       args:
         - SERVER_PORT=${SERVICE_REGISTRY_CONTAINER_PORT}
-    ports:
-      - "${SERVICE_REGISTRY_HOST_PORT}:${SERVICE_REGISTRY_CONTAINER_PORT}"
+    # ports:
+    #   - "${SERVICE_REGISTRY_HOST_PORT}:${SERVICE_REGISTRY_CONTAINER_PORT}"
     env_file:
       - ./form-engine-backend/env-docker/service-registry.env
     depends_on:
@@ -120,8 +120,10 @@ services:
       dockerfile: Dockerfile
       args:
         - SERVER_PORT=${AUTH_SERVICE_CONTAINER_PORT}
-    ports:
-      - "${AUTH_SERVICE_HOST_PORT}:${AUTH_SERVICE_CONTAINER_PORT}"
+    deploy:
+      replicas: 1
+    # ports:
+    #   - "${AUTH_SERVICE_HOST_PORT}:${AUTH_SERVICE_CONTAINER_PORT}"
     env_file:
       - ./form-engine-backend/env-docker/auth-service.env
     depends_on:
@@ -149,8 +151,10 @@ services:
       dockerfile: Dockerfile
       args:
         - SERVER_PORT=${FORM_DATA_SERVICE_CONTAINER_PORT}
-    ports:
-      - "${FORM_DATA_SERVICE_HOST_PORT}:${FORM_DATA_SERVICE_CONTAINER_PORT}"
+    # ports:
+    #   - "${FORM_DATA_SERVICE_HOST_PORT}:${FORM_DATA_SERVICE_CONTAINER_PORT}"
+    deploy:
+      replicas: 2
     env_file:
       - ./form-engine-backend/env-docker/form-data-service.env
     depends_on:
@@ -182,8 +186,10 @@ services:
       dockerfile: Dockerfile
       args:
         - SERVER_PORT=${FORM_RESPONSE_SERVICE_CONTAINER_PORT}
-    ports:
-      - "${FORM_RESPONSE_SERVICE_HOST_PORT}:${FORM_RESPONSE_SERVICE_CONTAINER_PORT}"
+    # ports:
+    #   - "${FORM_RESPONSE_SERVICE_HOST_PORT}:${FORM_RESPONSE_SERVICE_CONTAINER_PORT}"
+    deploy:
+      replicas: 2
     env_file:
       - ./form-engine-backend/env-docker/form-response-service.env
     depends_on:
@@ -213,8 +219,10 @@ services:
       dockerfile: Dockerfile
       args:
         - SERVER_PORT=${FORM_SERVICE_CONTAINER_PORT}
-    ports:
-      - "${FORM_SERVICE_HOST_PORT}:${FORM_SERVICE_CONTAINER_PORT}"
+    # ports:
+    #   - "${FORM_SERVICE_HOST_PORT}:${FORM_SERVICE_CONTAINER_PORT}"
+    deploy:
+      replicas: 1
     env_file:
       - ./form-engine-backend/env-docker/form-service.env
     depends_on:

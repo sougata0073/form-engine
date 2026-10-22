@@ -1,5 +1,6 @@
 package com.sougata.form_response_service.service.impl;
 
+import com.sougata.form_engine.constant.cache.FormResponseCacheNames;
 import com.sougata.form_engine.dto.form.FormResponseCountDto;
 import com.sougata.form_engine.dto.form.FormResponseSummariesDto;
 import com.sougata.form_engine.dto.form.FormResponseSummaryDto;
@@ -10,6 +11,7 @@ import com.sougata.form_engine.dto.formResponse.summary.ResponseSummaryDto;
 import com.sougata.form_engine.dto.formResponse.summary.ResponseSummaryResDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
 import com.sougata.form_engine.dto.user.UserSummaryShortDto;
+import com.sougata.form_response_service.configuration.AppConfiguration;
 import com.sougata.form_response_service.feignClient.AuthServiceFeignClient;
 import com.sougata.form_response_service.feignClient.FormDataServiceFeignClient;
 import com.sougata.form_response_service.feignClient.FormServiceFeignClient;
@@ -17,11 +19,14 @@ import com.sougata.form_response_service.repository.FormResponseIndividualReposi
 import com.sougata.form_response_service.repository.FormResponseSummaryRepository;
 import com.sougata.form_response_service.service.FormResponseService;
 import com.sougata.form_response_service.service.responseManager.ResponseManagerFactory;
+import com.sougata.form_response_service.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Map;
@@ -39,6 +44,8 @@ public class FormResponseServiceImpl implements FormResponseService {
     private final ResponseManagerFactory responseManagerFactory;
     private final FormDataServiceFeignClient formDataServiceFeignClient;
     private final FormResponseIndividualRepository formResponseIndividualRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final AppConfiguration appConfiguration;
 
     @Override
     public boolean getIsResponseAlreadySubmitted(UUID formId, UUID userId) {
@@ -146,12 +153,24 @@ public class FormResponseServiceImpl implements FormResponseService {
 
         var formResponseNoPage = formDataServiceFeignClient.getFormResponse(formId, formResponseId);
 
-        return new FormResponseIndividualDto(
+        var individualFormResponse = new FormResponseIndividualDto(
                 formResponseNoPage.getFormResponseId(),
                 page,
                 formResponseNoPage.getUserId(),
                 formResponseNoPage.getResponses()
         );
+
+        var individualFormResponseByPageCacheKey = CacheUtil.buildKey(
+                FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE_BY_PAGE, "formId=" + formId, "formResponseId=" + formResponseId, "page=" + page
+        );
+
+        redisTemplate.opsForValue().set(
+                individualFormResponseByPageCacheKey,
+                individualFormResponse,
+                Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes())
+        );
+
+        return individualFormResponse;
     }
 
     @Override

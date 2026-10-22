@@ -43,7 +43,7 @@ public class ShortAnswerManager extends ResponseManager<ShortAnswerResponsePutRe
 
     @Override
     @Async
-    public CompletableFuture<List<ShortAnswerResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+    public CompletableFuture<List<ShortAnswerResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
         var responses = shortAnswerRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
 
         return CompletableFuture.completedFuture(

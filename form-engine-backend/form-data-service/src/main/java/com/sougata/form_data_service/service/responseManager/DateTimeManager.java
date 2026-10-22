@@ -43,7 +43,7 @@ public class DateTimeManager extends ResponseManager<DateTimeResponsePutReqDto, 
 
     @Override
     @Async
-    public CompletableFuture<List<DateTimeResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+    public CompletableFuture<List<DateTimeResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
         var responses = dateTimeRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
 
         return CompletableFuture.completedFuture(

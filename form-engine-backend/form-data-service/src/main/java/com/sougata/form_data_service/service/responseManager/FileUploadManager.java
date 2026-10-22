@@ -46,7 +46,7 @@ public class FileUploadManager extends ResponseManager<FileUploadResponsePutReqD
 
     @Override
     @Async
-    public CompletableFuture<List<FileUploadResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+    public CompletableFuture<List<FileUploadResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
         var responses = fileUploadRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
 
         return CompletableFuture.completedFuture(

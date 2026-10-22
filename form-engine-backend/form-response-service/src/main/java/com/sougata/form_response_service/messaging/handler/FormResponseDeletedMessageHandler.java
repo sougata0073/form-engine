@@ -7,6 +7,8 @@ import com.sougata.form_engine.dto.messaging.FormResponseDeleteMessage;
 import com.sougata.form_response_service.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
+import org.redisson.api.RedissonClient;
+import org.redisson.api.options.KeysOptions;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -21,6 +23,7 @@ import java.util.List;
 public class FormResponseDeletedMessageHandler implements MessageListener {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final RedissonClient redissonClient;
     private final GenericJacksonJsonRedisSerializer redisSerializer;
 
     @Override
@@ -32,23 +35,28 @@ public class FormResponseDeletedMessageHandler implements MessageListener {
         var isResponseAlreadySubmittedCacheKey = CacheUtil.buildKey(FormResponseCacheNames.IS_RESPONSE_ALREADY_SUBMITTED, "formId=" + messageData.getFormId(), "userId=" + messageData.getUserId());
         var individualFormResponseCacheKey = CacheUtil.buildKey(FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE, "formId=" + messageData.getFormId(), "formResponseId=" + messageData.getFormResponseId());
 
-        var responseByQuestionCacheKeys = redisTemplate.keys(CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_BY_QUESTION, "formId=" + messageData.getFormId()) + "::*");
-        var formResponseSummariesCacheKeys = redisTemplate.keys(CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_SUMMARIES, "formId=" + messageData.getFormId()) + "::*");
-        var responseSummaryCacheKeys = redisTemplate.keys(CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_SUMMARY, "formId=" + messageData.getFormId()) + "::*");
+        var redissonKeys = redissonClient.getKeys();
 
-        var cacheKeys = new ArrayList<>(
-                List.of(
-                        formResponseCountCacheKey,
-                        responseSummariesCacheKey,
-                        isResponseAlreadySubmittedCacheKey,
-                        individualFormResponseCacheKey
-                )
+        redissonKeys.delete(
+                formResponseCountCacheKey,
+                responseSummariesCacheKey,
+                isResponseAlreadySubmittedCacheKey,
+                individualFormResponseCacheKey
         );
-        cacheKeys.addAll(responseByQuestionCacheKeys);
-        cacheKeys.addAll(formResponseSummariesCacheKeys);
-        cacheKeys.addAll(responseSummaryCacheKeys);
 
-        redisTemplate.delete(cacheKeys);
+        redissonKeys.deleteByPattern(
+                CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_BY_QUESTION, "formId=" + messageData.getFormId()) + "::*"
+        );
+        redissonKeys.deleteByPattern(
+                CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_SUMMARIES, "formId=" + messageData.getFormId()) + "::*"
+        );
+        redissonKeys.deleteByPattern(
+                CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_SUMMARY, "formId=" + messageData.getFormId()) + "::*"
+        );
+        redissonKeys.deleteByPattern(
+                CacheUtil.buildKey(FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE_BY_PAGE, "formId=" + messageData.getFormId(), "formResponseId=" + messageData.getFormResponseId()) + "::*"
+        );
+
     }
 
 }

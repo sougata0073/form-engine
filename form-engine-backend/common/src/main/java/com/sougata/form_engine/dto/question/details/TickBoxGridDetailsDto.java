@@ -30,7 +30,7 @@ public class TickBoxGridDetailsDto extends QuestionDetailsDto {
         var thatRowsMapById = that.rows.stream().collect(Collectors.toMap(TickBoxGridDetailsDto.Row::getId, Function.identity()));
 
         for (var entry : thisRowsMapById.entrySet()) {
-            if (Objects.equals(entry.getValue(), thatRowsMapById.get(entry.getKey()))) {
+            if (!Objects.equals(entry.getValue(), thatRowsMapById.get(entry.getKey()))) {
                 return false;
             }
         }
@@ -39,7 +39,7 @@ public class TickBoxGridDetailsDto extends QuestionDetailsDto {
         var thatColumnsMapById = that.columns.stream().collect(Collectors.toMap(TickBoxGridDetailsDto.Column::getId, Function.identity()));
 
         for (var entry : thisColumnsMapById.entrySet()) {
-            if (Objects.equals(entry.getValue(), thatColumnsMapById.get(entry.getKey()))) {
+            if (!Objects.equals(entry.getValue(), thatColumnsMapById.get(entry.getKey()))) {
                 return false;
             }
         }

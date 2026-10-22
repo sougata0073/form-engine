@@ -212,7 +212,7 @@ public class ProcessFormResponseTask {
 
         var rKeys = redissonClient.getKeys();
 
-        rKeys.deleteAsync(cacheKeys.toArray(new String[0]));
+        rKeys.deleteAsync(cacheKeys.toArray(String[]::new));
         cacheKeyPatterns.forEach(rKeys::deleteByPatternAsync);
     }
 

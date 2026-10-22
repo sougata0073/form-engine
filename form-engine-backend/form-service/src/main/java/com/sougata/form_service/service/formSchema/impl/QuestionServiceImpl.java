@@ -55,8 +55,6 @@ public class QuestionServiceImpl implements QuestionService {
         putQuestionDetails(questionDetails);
         putQuestionSummary(new QuestionSummaryDto(questionDetails.getId(), questionDetails.getQuestion(), questionDetails.getQuestionType(), questionDetails.getOrderIndex()));
 
-        redisTemplate.convertAndSend(MessagingChannelNames.QUESTION_CREATED, new QuestionCreatedMessage<>(formId, questionDetails));
-
         return questionDetails;
     }
 
@@ -98,9 +96,6 @@ public class QuestionServiceImpl implements QuestionService {
             putQuestionSummary(new QuestionSummaryDto(updatedQuestionDetails.getId(), updatedQuestionDetails.getQuestion(), updatedQuestionDetails.getQuestionType(), updatedQuestionDetails.getOrderIndex()));
 
             questionDetailsList.add(updatedQuestionDetails);
-
-            redisTemplate.convertAndSend(MessagingChannelNames.QUESTION_UPDATED, new QuestionUpdatedMessage<>(formId, updatedQuestionDetails, question.getUpdateFields()));
-
         });
 
         return new MultipleQuestionDetailsDto(questionDetailsList);

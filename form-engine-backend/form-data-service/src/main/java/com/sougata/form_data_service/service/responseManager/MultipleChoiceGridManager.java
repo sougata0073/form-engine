@@ -53,7 +53,7 @@ public class MultipleChoiceGridManager extends ResponseManager<MultipleChoiceGri
 
     @Override
     @Async
-    public CompletableFuture<List<MultipleChoiceGridResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+    public CompletableFuture<List<MultipleChoiceGridResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
         var responses = multipleChoiceGridRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
 
         return CompletableFuture.completedFuture(

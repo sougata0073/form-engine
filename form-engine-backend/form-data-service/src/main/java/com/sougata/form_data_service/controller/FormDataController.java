@@ -1,6 +1,7 @@
 package com.sougata.form_data_service.controller;
 
-import com.sougata.form_data_service.service.FormResponseService;
+import com.sougata.form_data_service.service.FormDataService;
+import com.sougata.form_data_service.service.FormDataServiceCached;
 import com.sougata.form_engine.constant.HttpHeaderConstant;
 import com.sougata.form_engine.constant.cache.FormDataCacheNames;
 import com.sougata.form_engine.dto.form.FormResponsePutReqDto;
@@ -20,9 +21,10 @@ import java.util.UUID;
 @RestController
 @RequestMapping("api/v1/form-data")
 @RequiredArgsConstructor
-public class FormResponseController {
+public class FormDataController {
 
-    private final FormResponseService formResponseService;
+    private final FormDataService formDataService;
+    private final FormDataServiceCached formDataServiceCached;
 
     @PostMapping(path = "{formId}/responses")
     public ResponseEntity<FormResponsePutResDto> addFormResponse(
@@ -30,26 +32,29 @@ public class FormResponseController {
             @Valid @RequestBody FormResponsePutReqDto dto,
             @RequestHeader(HttpHeaderConstant.X_USER_ID) UUID responderId
     ) {
-        var res = formResponseService.saveResponse(formId, dto, responderId);
+        var res = formDataService.saveResponse(formId, dto, responderId);
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
+    // Cached in service
     @GetMapping(path = "{formId}/responses/{formResponseId}")
-    @Cacheable(cacheNames = {FormDataCacheNames.FORM_RESPONSE_NO_PAGE}, key = "#formResponseId")
     public FormResponseIndividualDtoNoPage getFormResponse(
             @PathVariable("formId") UUID formId,
             @PathVariable("formResponseId") UUID formResponseId
     ) {
-        return formResponseService.getFormResponse(formId, formResponseId);
+        return formDataServiceCached.getFormResponse(formId, formResponseId);
     }
 
     @DeleteMapping(path = "{formId}/responses/{formResponseId}")
-    @CacheEvict(cacheNames = {FormDataCacheNames.FORM_RESPONSE_NO_PAGE}, key = "#formResponseId")
+    @CacheEvict(
+            cacheNames = {FormDataCacheNames.FORM_RESPONSE_NO_PAGE},
+            key = "'formId=' + :formId + '::formResponseId=' + #formResponseId"
+    )
     public SuccessMessageDto deleteFormResponse(
             @PathVariable("formId") UUID formId,
             @PathVariable("formResponseId") UUID formResponseId
     ) {
-        return formResponseService.deleteFormResponse(formId, formResponseId);
+        return formDataService.deleteFormResponse(formId, formResponseId);
     }
 
 }

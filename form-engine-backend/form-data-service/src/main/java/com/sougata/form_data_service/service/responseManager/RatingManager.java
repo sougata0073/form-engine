@@ -43,7 +43,7 @@ public class RatingManager extends ResponseManager<RatingResponsePutReqDto, Rati
 
     @Override
     @Async
-    public CompletableFuture<List<RatingResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+    public CompletableFuture<List<RatingResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
         var responses = ratingRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
 
         return CompletableFuture.completedFuture(

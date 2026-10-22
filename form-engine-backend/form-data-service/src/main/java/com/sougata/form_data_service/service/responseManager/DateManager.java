@@ -6,6 +6,7 @@ import com.sougata.form_data_service.repository.DateRepository;
 import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.formResponse.individual.DateResponseIndividualDto;
 import com.sougata.form_engine.dto.question.responseputrequest.DateResponsePutReqDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -15,14 +16,10 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service("DATE_RESPONSE_MANAGER")
+@RequiredArgsConstructor
 public class DateManager extends ResponseManager<DateResponsePutReqDto, DateResponseIndividualDto> {
 
     private final DateRepository dateRepository;
-
-    @Autowired
-    public DateManager(DateRepository dateRepository) {
-        this.dateRepository = dateRepository;
-    }
 
     @Override
     @Async
@@ -43,7 +40,7 @@ public class DateManager extends ResponseManager<DateResponsePutReqDto, DateResp
 
     @Override
     @Async
-    public CompletableFuture<List<DateResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+    public CompletableFuture<List<DateResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
         var responses = dateRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
 
         return CompletableFuture.completedFuture(

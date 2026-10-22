@@ -9,7 +9,8 @@ import com.sougata.form_data_service.model.FormResponse;
 import com.sougata.form_data_service.model.FormResponseUser;
 import com.sougata.form_data_service.repository.FormResponseRepository;
 import com.sougata.form_data_service.repository.FormResponseUserRepository;
-import com.sougata.form_data_service.service.FormResponseService;
+import com.sougata.form_data_service.service.FormDataService;
+import com.sougata.form_data_service.service.FormDataServiceCached;
 import com.sougata.form_data_service.service.responseManager.ResponseManagerFactory;
 import com.sougata.form_engine.constant.DistributedLockNames;
 import com.sougata.form_engine.constant.RedisStreamKeys;
@@ -18,15 +19,12 @@ import com.sougata.form_engine.constant.cache.CommonCacheNames;
 import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.dto.form.FormResponsePutReqDto;
 import com.sougata.form_engine.dto.form.FormResponsePutResDto;
-import com.sougata.form_engine.dto.formResponse.individual.FormResponseIndividualDtoNoPage;
-import com.sougata.form_engine.dto.formResponse.individual.QuestionResponseIndividualDto;
 import com.sougata.form_engine.dto.messaging.FormResponseDeleteMessage;
 import com.sougata.form_engine.dto.messaging.FormResponseSavedMessage;
 import com.sougata.form_engine.dto.others.SuccessMessageDto;
 import com.sougata.form_engine.dto.question.responseputrequest.QuestionResponsePutReqDto;
 import com.sougata.form_engine.dto.validation.request.ResponseValidationRequestDto;
 import com.sougata.form_engine.exception.FormDetailsMayChangedException;
-import com.sougata.form_engine.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.connection.stream.StreamRecords;
@@ -42,7 +40,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class FormResponseServiceImpl implements FormResponseService {
+public class FormDataServiceImpl implements FormDataService {
 
     private final FormResponseRepository formResponseRepository;
     private final FormResponseUserRepository formResponseUserRepository;
@@ -54,6 +52,7 @@ public class FormResponseServiceImpl implements FormResponseService {
     private final FormResponseServiceFeignClient formResponseServiceFeignClient;
     private final AppConfiguration appConfiguration;
     private final RedissonClient redissonClient;
+    private final FormDataServiceCached formDataServiceCached;
 
     @Override
     public FormResponsePutResDto saveResponse(UUID formId, FormResponsePutReqDto req, UUID responderId) {
@@ -77,13 +76,13 @@ public class FormResponseServiceImpl implements FormResponseService {
         }
 
 //        TODO: Not working
-//        if (!formDetails.equals(req.getFormDetailsResponseSubmittedOn())) {
-//            throw new FormDetailsMayChangedException();
-//        }
-
-        if (!JsonUtil.toJson(formDetails).equals(JsonUtil.toJson(req.getFormDetailsResponseSubmittedOn()))) {
+        if (!Objects.equals(formDetails, req.getFormDetailsResponseSubmittedOn())) {
             throw new FormDetailsMayChangedException();
         }
+
+//        if (!JsonUtil.toJson(formDetails).equals(JsonUtil.toJson(req.getFormDetailsResponseSubmittedOn()))) {
+//            throw new FormDetailsMayChangedException();
+//        }
 
         var formResponseCountRedisKey = CommonCacheNames.FORM_RESPONSE_COUNT + "::" + formId;
 
@@ -182,54 +181,19 @@ public class FormResponseServiceImpl implements FormResponseService {
     }
 
     @Override
-    public FormResponseIndividualDtoNoPage getFormResponse(UUID formId, UUID formResponseId) {
-        var formResponseKey = new FormResponse.PartitionKey(formId, formResponseId);
-
-        var formResponse = formResponseRepository.findById(formResponseKey)
-                .orElseThrow(
-                        () -> new RuntimeException("Form response not found for form Id: " + formId + " and form response ID: " + formResponseId)
-                );
-
-        var responseFutures = new ArrayList<CompletableFuture<List<QuestionResponseIndividualDto>>>();
-
-        Optional.ofNullable(formResponse.getRespondedQuestionMap())
-                .orElse(Collections.emptyMap())
-                .entrySet()
-                .stream()
-                .collect(Collectors.groupingBy(Map.Entry::getValue))
-                .forEach(((questionType, entries) -> {
-                    var questionIds = entries.stream().map(Map.Entry::getKey).toList();
-                    var manager = responseManagerFactory.get(questionType);
-
-                    responseFutures.add(manager.getFormResponses(formResponseId, questionIds));
-                }));
-
-        var responses = CompletableFuture.allOf(responseFutures.toArray(CompletableFuture[]::new))
-                .thenApply(v -> responseFutures.stream()
-                        .map(CompletableFuture::join)
-                        .flatMap(List::stream)
-                        .toList()
-                ).join();
-
-        return new FormResponseIndividualDtoNoPage(
-                formResponse.getKey().getFormResponseId(),
-                formResponse.getUserId(),
-                responses
-        );
-    }
-
-    @Override
     public SuccessMessageDto deleteFormResponse(UUID formId, UUID formResponseId) {
-        var formResponse = formResponseRepository.findById(new FormResponse.PartitionKey(formId, formResponseId))
+        var formResponses = formDataServiceCached.getFormResponse(formId, formResponseId);
+
+        var savedFormResponse = formResponseRepository.findById(new FormResponse.PartitionKey(formId, formResponseId))
                 .orElseThrow(
                         () -> new RuntimeException("Form response not found with form ID: " + formId + " and form response ID: " + formResponseId)
                 );
 
-        formResponseRepository.delete(formResponse);
+        formResponseRepository.delete(savedFormResponse);
 
         var questionResponseDeleteFutures = new ArrayList<CompletableFuture<Void>>();
 
-        formResponse.getRespondedQuestionMap()
+        savedFormResponse.getRespondedQuestionMap()
                 .entrySet()
                 .stream()
                 .collect(Collectors.groupingBy(Map.Entry::getValue))
@@ -246,7 +210,7 @@ public class FormResponseServiceImpl implements FormResponseService {
 
         redisTemplate.convertAndSend(
                 MessagingChannelNames.FORM_RESPONSE_DELETED,
-                new FormResponseDeleteMessage(formId, formResponseId, formResponse.getUserId())
+                new FormResponseDeleteMessage(formId, formResponseId, savedFormResponse.getUserId(), formResponses.getResponses())
         );
 
         return SuccessMessageDto.create("Response deleted successfully. Form id: " + formId + " Form response ID: " + formResponseId);

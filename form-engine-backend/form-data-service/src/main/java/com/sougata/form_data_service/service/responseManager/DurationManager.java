@@ -45,7 +45,7 @@ public class DurationManager extends ResponseManager<DurationResponsePutReqDto, 
 
     @Override
     @Async
-    public CompletableFuture<List<DurationResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+    public CompletableFuture<List<DurationResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
         var responses = durationRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
 
         return CompletableFuture.completedFuture(

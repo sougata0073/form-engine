@@ -43,7 +43,7 @@ public class CheckboxManager extends ResponseManager<CheckboxResponsePutReqDto, 
 
     @Override
     @Async
-    public CompletableFuture<List<CheckboxResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+    public CompletableFuture<List<CheckboxResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
         var responses = checkboxRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
 
         return CompletableFuture.completedFuture(

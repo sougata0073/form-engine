@@ -43,7 +43,7 @@ public class ParagraphManager extends ResponseManager<ParagraphResponsePutReqDto
 
     @Override
     @Async
-    public CompletableFuture<List<ParagraphResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+    public CompletableFuture<List<ParagraphResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
         var responses = paragraphRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
 
         return CompletableFuture.completedFuture(

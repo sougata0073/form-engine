@@ -51,7 +51,7 @@ public class TickBoxGridManager extends ResponseManager<TickBoxGridResponsePutRe
 
     @Override
     @Async
-    public CompletableFuture<List<TickBoxGridResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+    public CompletableFuture<List<TickBoxGridResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
         var responses = tickBoxGridRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
 
         return CompletableFuture.completedFuture(

@@ -43,7 +43,7 @@ public class LinearScaleManager extends ResponseManager<LinearScaleResponsePutRe
 
     @Override
     @Async
-    public CompletableFuture<List<LinearScaleResponseIndividualDto>> getFormResponses(UUID formResponseId, List<Long> questionIds) {
+    public CompletableFuture<List<LinearScaleResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
         var responses = linearScaleRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
 
         return CompletableFuture.completedFuture(

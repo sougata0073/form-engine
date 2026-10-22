@@ -26,7 +26,7 @@ public class RedisSubscriber {
                         handler, new ChannelTopic(channelName)
                 );
             } catch (ArrayIndexOutOfBoundsException e) {
-                throw new IllegalArgumentException("Invalid message handler name");
+                throw new RuntimeException("Invalid message handler name");
             }
         });
     }

@@ -93,6 +93,7 @@ public class FormResponseController {
     }
 
     // Page number starts from 0
+    // Cached in service
     @GetMapping(path = "{formId}/responses", params = {"page"})
     public FormResponseIndividualDto getIndividualFormResponseByPage(
             @PathVariable("formId") UUID formId,

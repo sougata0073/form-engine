@@ -1,4 +1,4 @@
-const FORM_IDS = ["5b5c255c-cb71-4d7f-962c-47c9a0b511ee"];
+const FORM_IDS = ["e5735205-3a1d-4cd4-b695-4f543e15df27"];
 
 const REGISTER_URL = "http://localhost:8083/api/v1/auth/register/email-pass";
 const VIEW_URL = "http://localhost:8083/api/v1/forms";

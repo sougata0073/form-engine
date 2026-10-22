@@ -28,7 +28,7 @@ public class DropdownDetailsDto extends QuestionDetailsDto {
         var thatOptionsMapById = that.options.stream().collect(Collectors.toMap(DropdownDetailsDto.Option::getId, Function.identity()));
 
         for (var entry : thisOptionsMapById.entrySet()) {
-            if (Objects.equals(entry.getValue(), thatOptionsMapById.get(entry.getKey()))) {
+            if (!Objects.equals(entry.getValue(), thatOptionsMapById.get(entry.getKey()))) {
                 return false;
             }
         }
