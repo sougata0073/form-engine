@@ -1,5 +1,6 @@
 package com.sougata.form_service.service.formSchema.impl;
 
+import com.sougata.form_engine.constant.DistributedLockNames;
 import com.sougata.form_engine.constant.cache.FormCacheNames;
 import com.sougata.form_engine.dto.form.FormDetailsDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
@@ -14,9 +15,11 @@ import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.questionManager.QuestionManagerFactory;
 import com.sougata.form_service.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +30,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -40,14 +42,14 @@ public class FormServiceCachedImpl implements FormServiceCached {
     private final AnyTypeQuestionRepositoryFactory anyTypeQuestionRepositoryFactory;
     private final QuestionRepository questionRepository;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final Executor cacheLoaderExecutor;
     private final AppConfiguration appConfiguration;
+    private final RedissonClient redissonClient;
 
     @Autowired
     @Lazy
     private FormServiceCached self;
 
-    private final ConcurrentHashMap<UUID, CompletableFuture<?>> inFlight = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, CompletableFuture<FormDetailsDto>> formDetailsInFlight = new ConcurrentHashMap<>();
 
     @Override
     public FormDetailsDto getFormDetails(UUID formId) {
@@ -60,22 +62,40 @@ public class FormServiceCachedImpl implements FormServiceCached {
             return formDetailsCached;
         }
 
-        var future = inFlight.computeIfAbsent(
-                formId,
-                id -> CompletableFuture.supplyAsync(() -> self.loadFormDetailsFromDb(id), cacheLoaderExecutor)
-        );
+        var formDetailsLock = redissonClient.getLock(DistributedLockNames.FORM_DETAILS + formId);
+
+        var future = formDetailsInFlight.computeIfAbsent(formId, id -> {
+
+            formDetailsLock.lock();
+
+            var formDetailsCachedAgain = (FormDetailsDto) redisTemplate.opsForValue().get(formDetailsCacheKey);
+
+            if (formDetailsCachedAgain != null) {
+                return CompletableFuture.completedFuture(formDetailsCachedAgain);
+            }
+
+            return self.loadFormDetailsFromDb(id);
+        });
 
         try {
-            return (FormDetailsDto) future.join();
+
+            return future.join();
+
         } finally {
-            inFlight.remove(formId, future);
+
+            formDetailsInFlight.remove(formId, future);
+
+            if (formDetailsLock.isHeldByCurrentThread()) {
+                formDetailsLock.unlock();
+            }
         }
     }
 
     @Override
+    @Async
     @SuppressWarnings("unchecked")
     @Transactional(readOnly = true)
-    public FormDetailsDto loadFormDetailsFromDb(UUID formId) {
+    public CompletableFuture<FormDetailsDto> loadFormDetailsFromDb(UUID formId) {
 
         Form f = formRepository.findById(formId).orElseThrow(() -> new FormNotFoundException(formId));
 
@@ -125,6 +145,6 @@ public class FormServiceCachedImpl implements FormServiceCached {
 
         redisTemplate.opsForValue().set(formDetailsCacheKey, formDetails, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
 
-        return formDetails;
+        return CompletableFuture.completedFuture(formDetails);
     }
 }

@@ -222,7 +222,7 @@ services:
     # ports:
     #   - "${FORM_SERVICE_HOST_PORT}:${FORM_SERVICE_CONTAINER_PORT}"
     deploy:
-      replicas: 1
+      replicas: 2
     env_file:
       - ./form-engine-backend/env-docker/form-service.env
     depends_on:
@@ -387,7 +387,7 @@ services:
       POSTGRES_PASSWORD: ${FORM_SERVICE_POSTGRES_PASSWORD}
     volumes:
       - form-service-postgres-vol:/var/lib/postgresql/18/docker
-      - ./form-engine-backend/form-service/postgres-schema-init.sql:/docker-entrypoint-initdb.d/postgres-schema-init.sql:ro
+      - ./form-engine-backend/form-service-postgres-init.sql:/docker-entrypoint-initdb.d/postgres-schema-init.sql:ro
     healthcheck:
         test: ["CMD-SHELL", "pg_isready -h localhost -U postgres"]
         interval: 5s

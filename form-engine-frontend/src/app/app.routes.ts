@@ -1,27 +1,5 @@
-import {Routes} from '@angular/router';
-import {EditForm} from './edit-form/edit-form';
-import {EditFormQuestions} from './edit-form/edit-form-questions/edit-form-questions';
-import {EditFormResponses} from './edit-form/edit-form-responses/edit-form-responses';
-import {EditFormSettings} from './edit-form/edit-form-settings/edit-form-settings';
-import {ViewForm} from './view-form/view-form';
-import {PreviewForm} from './preview-form/preview-form';
-import {Register} from './auth/register/register';
-import {SocialAuthSuccess} from './auth/social-auth-success/social-auth-success';
-import {Home} from './home/home';
-import {
-  EditFormResponsesSummary
-} from './edit-form/edit-form-responses/edit-form-responses-summary/edit-form-responses-summary';
-import {
-  EditFormResponsesQuestion
-} from './edit-form/edit-form-responses/edit-form-responses-question/edit-form-responses-question';
-import {
-  EditFormResponsesIndividual
-} from './edit-form/edit-form-responses/edit-form-responses-individual/edit-form-responses-individual';
-import {loggedInGuard} from './guard/logged-in-guard';
-import {Login} from './auth/login/login';
-import {
-  AllResponsesSummary
-} from './edit-form/edit-form-responses/edit-form-responses-summary/all-responses-summary/all-responses-summary';
+import { Routes } from '@angular/router';
+import { loggedInGuard } from './guard/logged-in-guard';
 
 export const routes: Routes = [
   {
@@ -34,72 +12,87 @@ export const routes: Routes = [
         children: [
           {
             path: 'edit',
-            component: EditForm,
+            loadComponent: () => import('./edit-form/edit-form').then((m) => m.EditForm),
             children: [
               {
                 path: 'questions',
-                component: EditFormQuestions
+                loadComponent: () =>
+                  import('./edit-form/edit-form-questions/edit-form-questions').then(
+                    (m) => m.EditFormQuestions,
+                  ),
               },
               {
                 path: 'responses',
-                component: EditFormResponses,
+                loadComponent: () =>
+                  import('./edit-form/edit-form-responses/edit-form-responses').then(
+                    (m) => m.EditFormResponses,
+                  ),
                 children: [
                   {
                     path: 'summary',
-                    component: EditFormResponsesSummary
+                    loadComponent: () =>
+                      import('./edit-form/edit-form-responses/edit-form-responses-summary/edit-form-responses-summary').then(
+                        (m) => m.EditFormResponsesSummary,
+                      ),
                   },
                   {
                     path: 'question',
-                    component: EditFormResponsesQuestion
+                    loadComponent: () =>
+                      import('./edit-form/edit-form-responses/edit-form-responses-question/edit-form-responses-question').then(
+                        (m) => m.EditFormResponsesQuestion,
+                      ),
                   },
                   {
                     path: 'individual',
-                    component: EditFormResponsesIndividual
-                  }
-                ]
+                    loadComponent: () =>
+                      import('./edit-form/edit-form-responses/edit-form-responses-individual/edit-form-responses-individual').then(
+                        (m) => m.EditFormResponsesIndividual,
+                      ),
+                  },
+                ],
               },
               {
                 path: 'settings',
-                component: EditFormSettings
-              }
-            ]
+                loadComponent: () =>
+                  import('./edit-form/edit-form-settings/edit-form-settings').then(
+                    (m) => m.EditFormSettings,
+                  ),
+              },
+            ],
           },
           {
             path: 'view',
-            component: ViewForm
+            loadComponent: () => import('./view-form/view-form').then((m) => m.ViewForm),
           },
           {
             path: 'preview',
-            component: PreviewForm
+            loadComponent: () => import('./preview-form/preview-form').then((m) => m.PreviewForm),
           },
-          {
-            path: 'all-responses',
-            children: [
-              {
-                path: 'summary',
-                component: AllResponsesSummary
-              }
-            ]
-          }
-        ]
-      }
-    ]
+        ],
+      },
+    ],
   },
   {
     path: 'register',
-    component: Register
+    loadComponent: () => import('./auth/register/register').then((m) => m.Register),
   },
   {
     path: 'login',
-    component: Login
+    loadComponent: () => import('./auth/login/login').then((m) => m.Login),
   },
   {
     path: 'social-auth-success',
-    component: SocialAuthSuccess
+    loadComponent: () =>
+      import('./auth/social-auth-success/social-auth-success').then((m) => m.SocialAuthSuccess),
   },
   {
     path: 'home',
-    component: Home,
-    canActivate: [loggedInGuard]
-  }
+    loadComponent: () => import('./home/home').then((m) => m.Home),
+    canActivate: [loggedInGuard],
+  },
+  {
+    path: '',
+    redirectTo: '/home',
+    pathMatch: 'full',
+  },
 ];
