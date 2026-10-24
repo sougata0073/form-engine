@@ -55,7 +55,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 savedUser.getId().toString(), savedUser.getUsername(), savedUser.getEmail(), savedUser.getAvatarUrl()
         );
 
-        String redirectUrl = this.frontendUrl + "/social-auth-success?jwt=" + jwt;
+        String redirectUrl = this.frontendUrl + "/auth-success?jwt=" + jwt;
 
         getRedirectStrategy().sendRedirect(request, response, redirectUrl);
     }

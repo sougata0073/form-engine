@@ -73,17 +73,13 @@ export const routes: Routes = [
     ],
   },
   {
-    path: 'register',
-    loadComponent: () => import('./auth/register/register').then((m) => m.Register),
-  },
-  {
     path: 'login',
     loadComponent: () => import('./auth/login/login').then((m) => m.Login),
   },
   {
-    path: 'social-auth-success',
+    path: 'auth-success',
     loadComponent: () =>
-      import('./auth/social-auth-success/social-auth-success').then((m) => m.SocialAuthSuccess),
+      import('./auth/auth-success/auth-success').then((m) => m.SocialAuthSuccess),
   },
   {
     path: 'home',
