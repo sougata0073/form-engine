@@ -31,7 +31,7 @@ export class InputDialog implements OnInit {
   formControl = new FormControl<string>('');
 
   static configure(
-    title: string, description: string | null, inputDefaultValue: string,
+    title: string, description: string | null, inputDefaultValue: string | null,
     btn1Text: string, onBtn1Click: () => void,
     btn2Text: string, onBtn2Click: () => void
   ) {

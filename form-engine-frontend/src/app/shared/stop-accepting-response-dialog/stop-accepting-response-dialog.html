@@ -70,7 +70,7 @@
                 } @else if (formGroup.controls.responseLimit.touched && formGroup.controls.responseLimit.hasError('min')) {
                   <mat-error>The limit cannot be less than 1 response</mat-error>
                 } @else if (formGroup.controls.responseLimit.touched && formGroup.controls.responseLimit.hasError('max')) {
-                  <mat-error>The limit cannot exceed 1,000 responses</mat-error>
+                  <mat-error>The limit cannot exceed 100,000 responses</mat-error>
                 }
               </div>
             }
@@ -91,7 +91,7 @@
             <input
               matInput
               formControlName="notAcceptingResponseMessage"
-              [placeholder]="formInfo()!.notAcceptingResponseMessage ?? ''"
+              [placeholder]="formInfo()!.generalSettings.notAcceptingResponseMessage ?? ''"
             >
           </mat-form-field>
         </form>

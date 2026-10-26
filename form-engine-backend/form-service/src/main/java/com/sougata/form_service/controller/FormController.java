@@ -3,7 +3,11 @@ package com.sougata.form_service.controller;
 import com.sougata.form_engine.constant.HttpHeaderConstant;
 import com.sougata.form_engine.constant.cache.FormCacheNames;
 import com.sougata.form_engine.constant.cache.QuestionCacheNames;
-import com.sougata.form_engine.dto.form.*;
+import com.sougata.form_engine.dto.form.CopyFormReqDto;
+import com.sougata.form_engine.dto.form.FormDetailsDto;
+import com.sougata.form_engine.dto.form.FormInfoDto;
+import com.sougata.form_engine.dto.form.FormSummariesDto;
+import com.sougata.form_engine.dto.form.FormUpdateReqDto;
 import com.sougata.form_engine.dto.others.SuccessMessageDto;
 import com.sougata.form_engine.dto.question.details.MultipleQuestionDetailsDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
@@ -19,10 +23,17 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
@@ -37,10 +48,9 @@ public class FormController {
 
     @PostMapping
     public ResponseEntity<FormInfoDto> addForm(
-            @Valid @RequestBody FormPutReqDto req,
             @RequestHeader(HttpHeaderConstant.X_USER_ID) UUID userId
     ) {
-        var res = formService.createForm(req, userId);
+        var res = formService.createForm(userId);
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
@@ -55,9 +65,7 @@ public class FormController {
     }
 
     @DeleteMapping(path = "{formId}")
-    @Caching(evict = {
-            @CacheEvict(cacheNames = {FormCacheNames.FORM_DETAILS, FormCacheNames.FORM_INFO}, key = "#formId"),
-    })
+    @CacheEvict(cacheNames = {FormCacheNames.FORM_DETAILS, FormCacheNames.FORM_INFO}, key = "#formId")
     public SuccessMessageDto deleteForm(
             @PathVariable("formId") UUID formId,
             @RequestHeader(HttpHeaderConstant.X_USER_ID) UUID userId
@@ -65,22 +73,13 @@ public class FormController {
         return formService.deleteForm(formId, userId);
     }
 
-    @PutMapping(path = "{formId}")
+    @PatchMapping(path = "{formId}")
     public FormInfoDto updateForm(
             @PathVariable("formId") UUID formId,
-            @Valid @RequestBody FormPutReqDto dto,
+            @Valid @RequestBody FormUpdateReqDto dto,
             @RequestHeader(HttpHeaderConstant.X_USER_ID) UUID userId
     ) {
         return formService.updateForm(formId, dto, userId);
-    }
-
-    @PatchMapping(path = "{formId}/rename")
-    public SuccessMessageDto renameForm(
-            @PathVariable("formId") UUID formId,
-            @RequestBody FormRenameReqDto body,
-            @RequestHeader(HttpHeaderConstant.X_USER_ID) UUID userId
-    ) {
-        return formService.renameForm(formId, body, userId);
     }
 
     @GetMapping(path = "{formId}")
@@ -117,7 +116,10 @@ public class FormController {
     }
 
     @GetMapping(path = "{formId}/questions/{questionId}/summary")
-    @Cacheable(cacheNames = {QuestionCacheNames.QUESTION_SUMMARY}, key = "#questionId")
+    @Cacheable(
+            cacheNames = {QuestionCacheNames.QUESTION_SUMMARY},
+            key = "'formId=' + #formId + '::questionId=' + #questionId"
+    )
     public QuestionSummaryDto getQuestionSummary(
             @PathVariable("formId") UUID formId,
             @PathVariable("questionId") Long questionId
@@ -126,7 +128,10 @@ public class FormController {
     }
 
     @GetMapping(path = "{formId}/questions/{questionId}")
-    @Cacheable(cacheNames = {QuestionCacheNames.QUESTION_DETAILS}, key = "#questionId")
+    @Cacheable(
+            cacheNames = {QuestionCacheNames.QUESTION_DETAILS},
+            key = "'formId=' + #formId + '::questionId=' + #questionId"
+    )
     public QuestionDetailsDto getQuestion(
             @PathVariable("formId") UUID formId,
             @PathVariable("questionId") Long questionId
@@ -152,9 +157,10 @@ public class FormController {
     }
 
     @DeleteMapping(path = "{formId}/questions/{questionId}")
-    @Caching(evict = {
-            @CacheEvict(cacheNames = {QuestionCacheNames.QUESTION_DETAILS, QuestionCacheNames.QUESTION_SUMMARY}, key = "#questionId")
-    })
+    @CacheEvict(
+            cacheNames = {QuestionCacheNames.QUESTION_DETAILS, QuestionCacheNames.QUESTION_SUMMARY},
+            key = "'formId=' + #formId + '::questionId=' + #questionId"
+    )
     public SuccessMessageDto deleteQuestion(
             @PathVariable("formId") UUID formId,
             @PathVariable("questionId") Long questionId

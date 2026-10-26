@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.FieldNameConstants;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -22,7 +21,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
-@FieldNameConstants
 @DynamicUpdate
 public class Form extends Auditable {
 
@@ -43,20 +41,22 @@ public class Form extends Auditable {
     private String description;
 
     @Column(nullable = false)
-    private Boolean published;
-
-    @Column(nullable = false)
-    private Boolean acceptingResponse;
-
-    @Column(columnDefinition = "text")
-    private String notAcceptingResponseMessage;
-
-    private Instant stopAcceptingResponseOn;
-
-    private Integer stopAcceptingResponseAfterResponse;
-
-    @Column(nullable = false)
     private Instant lastOpenedOn;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "form")
+    private FormGeneralSettings formGeneralSettings;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "form")
+    private FormDefaultSettings formDefaultSettings;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "form")
+    private FormPresentationSettings formPresentationSettings;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "form")
+    private FormQuizSettings formQuizSettings;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "form")
+    private FormResponseSettings formResponseSettings;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "form")
     private List<Question> questions = new ArrayList<>();

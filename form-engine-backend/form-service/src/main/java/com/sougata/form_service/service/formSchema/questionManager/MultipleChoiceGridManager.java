@@ -8,9 +8,7 @@ import com.sougata.form_engine.dto.question.schemaupdatereq.MultipleChoiceGridUp
 import com.sougata.form_engine.dto.template.questionTemplate.MultipleChoiceGridTemplateDetails;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.*;
-import com.sougata.form_service.repository.formSchema.MultipleChoiceGridColumnRepository;
 import com.sougata.form_service.repository.formSchema.MultipleChoiceGridRepository;
-import com.sougata.form_service.repository.formSchema.MultipleChoiceGridRowRepository;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.service.formSchema.FormService;
 import com.sougata.form_service.service.formSchema.QuestionManager;
@@ -25,19 +23,15 @@ import java.util.UUID;
 public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGrid, MultipleChoiceGridAddReqDto, MultipleChoiceGridUpdateReqDto, MultipleChoiceGridDetailsDto, MultipleChoiceGridTemplateDetails> {
 
     private final MultipleChoiceGridRepository multipleChoiceGridRepository;
-    private final MultipleChoiceGridRowRepository multipleChoiceGridRowRepository;
-    private final MultipleChoiceGridColumnRepository multipleChoiceGridColumnRepository;
 
-    public MultipleChoiceGridManager(MultipleChoiceGridRepository multipleChoiceGridRepository, FormService formService, QuestionRepository questionRepository, MultipleChoiceGridRowRepository multipleChoiceGridRowRepository, MultipleChoiceGridColumnRepository multipleChoiceGridColumnRepository) {
+    public MultipleChoiceGridManager(MultipleChoiceGridRepository multipleChoiceGridRepository, FormService formService, QuestionRepository questionRepository) {
         super(questionRepository, formService);
         this.multipleChoiceGridRepository = multipleChoiceGridRepository;
-        this.multipleChoiceGridRowRepository = multipleChoiceGridRowRepository;
-        this.multipleChoiceGridColumnRepository = multipleChoiceGridColumnRepository;
     }
 
     @Override
     public MultipleChoiceGridDetailsDto get(UUID formId, Long questionId) {
-        return toQuestionResDto(multipleChoiceGridRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
+        return toQuestionDetailsDto(multipleChoiceGridRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
     }
 
     @Override
@@ -51,7 +45,7 @@ public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGri
 
         var saved = multipleChoiceGridRepository.save(newMcg);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -65,7 +59,7 @@ public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGri
 
         var saved = multipleChoiceGridRepository.save(newMcg);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -185,16 +179,16 @@ public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGri
             }
         });
 
-        return toQuestionResDto(multipleChoiceGridRepository.save(mcg), question);
+        return toQuestionDetailsDto(multipleChoiceGridRepository.save(mcg), question);
     }
 
     @Override
-    public MultipleChoiceGridDetailsDto toQuestionResDto(MultipleChoiceGrid childQuestion) {
-        return toQuestionResDto(childQuestion, childQuestion.getQuestion());
+    public MultipleChoiceGridDetailsDto toQuestionDetailsDto(MultipleChoiceGrid childQuestion) {
+        return toQuestionDetailsDto(childQuestion, childQuestion.getQuestion());
     }
 
     @Override
-    public MultipleChoiceGridDetailsDto toQuestionResDto(MultipleChoiceGrid childQuestion, Question parentQuestion) {
+    public MultipleChoiceGridDetailsDto toQuestionDetailsDto(MultipleChoiceGrid childQuestion, Question parentQuestion) {
         var mc = new MultipleChoiceGridDetailsDto();
 
         populateCommonFields(parentQuestion, mc);
@@ -243,10 +237,12 @@ public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGri
 
     @Override
     @Transactional
-    public MultipleChoiceGrid createFromTemplate(MultipleChoiceGridTemplateDetails template, Form form) {
+    public MultipleChoiceGridDetailsDto createFromTemplate(MultipleChoiceGridTemplateDetails template, Form form) {
         var mcg = new MultipleChoiceGrid();
 
-        mcg.setQuestion(createQuestionFromTemplate(template, form));
+        var question = createQuestionFromTemplate(template, form);
+
+        mcg.setQuestion(question);
         mcg.setEachRowRequired(template.getEachRowRequired());
 
         var rows = template.getRows().stream()
@@ -276,7 +272,7 @@ public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGri
         mcg.setRows(rows);
         mcg.setColumns(columns);
 
-        return multipleChoiceGridRepository.save(mcg);
+        return toQuestionDetailsDto(multipleChoiceGridRepository.save(mcg), question);
     }
 
     @Override

@@ -1,11 +1,14 @@
-const FORM_IDS = ["8e48be64-1f98-43ab-bda1-b80c6f0c5f76"];
+const FORM_IDS = [
+  "8e48be64-1f98-43ab-bda1-b80c6f0c5f76",
+  "97cbc20d-4321-4612-bbac-e4e62550e2f3",
+];
 
 const REGISTER_URL = "http://localhost:8083/api/v1/auth/register/email-pass";
 const VIEW_URL = "http://localhost:8083/api/v1/forms";
 const RESPONSE_URL = "http://localhost:8083/api/v1/form-data";
 
-const NUMBER_OF_REQUESTS = 10000;
-const CONCURRENCY = 2000;
+const NUMBER_OF_REQUESTS = 1000;
+const CONCURRENCY = 1000;
 
 const RESPOND_TO_ALL_QUESTIONS = true;
 const OPTIONAL_RESPONSE_PROBABILITY = 0.5;

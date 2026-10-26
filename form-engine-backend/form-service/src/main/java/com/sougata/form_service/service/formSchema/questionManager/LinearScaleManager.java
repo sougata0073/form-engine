@@ -30,7 +30,7 @@ public class LinearScaleManager extends QuestionManager<LinearScale, LinearScale
 
     @Override
     public LinearScaleDetailsDto get(UUID formId, Long questionId) {
-        return toQuestionResDto(linearScaleRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
+        return toQuestionDetailsDto(linearScaleRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
     }
 
     @Override
@@ -44,7 +44,7 @@ public class LinearScaleManager extends QuestionManager<LinearScale, LinearScale
 
         var saved = linearScaleRepository.save(newLs);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class LinearScaleManager extends QuestionManager<LinearScale, LinearScale
 
         var saved = linearScaleRepository.save(newCb);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -77,16 +77,16 @@ public class LinearScaleManager extends QuestionManager<LinearScale, LinearScale
             }
         });
 
-        return toQuestionResDto(linearScaleRepository.save(ls), question);
+        return toQuestionDetailsDto(linearScaleRepository.save(ls), question);
     }
 
     @Override
-    public LinearScaleDetailsDto toQuestionResDto(LinearScale childQuestion) {
-        return toQuestionResDto(childQuestion, childQuestion.getQuestion());
+    public LinearScaleDetailsDto toQuestionDetailsDto(LinearScale childQuestion) {
+        return toQuestionDetailsDto(childQuestion, childQuestion.getQuestion());
     }
 
     @Override
-    public LinearScaleDetailsDto toQuestionResDto(LinearScale childQuestion, Question parentQuestion) {
+    public LinearScaleDetailsDto toQuestionDetailsDto(LinearScale childQuestion, Question parentQuestion) {
         var ls = new LinearScaleDetailsDto();
 
         populateCommonFields(parentQuestion, ls);
@@ -111,14 +111,16 @@ public class LinearScaleManager extends QuestionManager<LinearScale, LinearScale
 
     @Override
     @Transactional
-    public LinearScale createFromTemplate(LinearScaleTemplateDetails template, Form form) {
+    public LinearScaleDetailsDto createFromTemplate(LinearScaleTemplateDetails template, Form form) {
         var ls = new LinearScale();
 
-        ls.setQuestion(createQuestionFromTemplate(template, form));
+        var question = createQuestionFromTemplate(template, form);
+
+        ls.setQuestion(question);
         ls.setFromNumber(template.getFromNumber());
         ls.setToNumber(template.getToNumber());
 
-        return linearScaleRepository.save(ls);
+        return toQuestionDetailsDto(linearScaleRepository.save(ls), question);
     }
 
     @Override

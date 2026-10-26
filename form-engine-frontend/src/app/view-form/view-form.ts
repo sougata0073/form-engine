@@ -58,7 +58,7 @@ export class ViewForm implements OnInit, OnDestroy {
       this.formId(),
       (res) => {
         this.formRes.set(res);
-        this.title.setTitle(res.title ?? 'Form engine');
+        this.title.setTitle(res.formInfo.title ?? 'Form engine');
       },
       (error) => this.formError.set(error),
     );
@@ -96,7 +96,7 @@ export class ViewForm implements OnInit, OnDestroy {
 
           this.formRes.set(res);
 
-          this.title.setTitle(res.title ?? 'Form engine');
+          this.title.setTitle(res.formInfo.title ?? 'Form engine');
         },
         (error) => this.formError.set(error),
       );
@@ -134,13 +134,13 @@ export class ViewForm implements OnInit, OnDestroy {
 
               this.formRes.set(res);
 
-              this.title.setTitle(res.title ?? 'Form engine');
+              this.title.setTitle(res.formInfo.title ?? 'Form engine');
             },
             (error) => this.formError.set(error),
           );
         } else if (problemDetail.title === 'Form can not be submitted') {
           this.formError.set({
-            formTitle: this.formRes()?.title ?? null,
+            formTitle: this.formRes()?.formInfo.title ?? null,
             message: problemDetail.detail,
             reason: 'RESPONSE_ALREADY_SUBMITTED',
           });

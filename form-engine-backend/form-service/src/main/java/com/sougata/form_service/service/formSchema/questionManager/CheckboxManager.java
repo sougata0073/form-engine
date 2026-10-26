@@ -15,7 +15,6 @@ import com.sougata.form_service.model.formSchema.Checkbox;
 import com.sougata.form_service.model.formSchema.CheckboxOption;
 import com.sougata.form_service.model.formSchema.Form;
 import com.sougata.form_service.model.formSchema.Question;
-import com.sougata.form_service.repository.formSchema.CheckboxOptionRepository;
 import com.sougata.form_service.repository.formSchema.CheckboxRepository;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.service.formSchema.FormService;
@@ -32,18 +31,16 @@ import java.util.UUID;
 public class CheckboxManager extends QuestionManager<Checkbox, CheckboxAddReqDto, CheckboxUpdateReqDto, CheckboxDetailsDto, CheckboxTemplateDetails> {
 
     private final CheckboxRepository checkboxRepository;
-    private final CheckboxOptionRepository checkboxOptionRepository;
 
     @Autowired
-    public CheckboxManager(CheckboxRepository checkboxRepository, FormService formService, QuestionRepository questionRepository, CheckboxOptionRepository checkboxOptionRepository) {
+    public CheckboxManager(CheckboxRepository checkboxRepository, FormService formService, QuestionRepository questionRepository) {
         super(questionRepository, formService);
         this.checkboxRepository = checkboxRepository;
-        this.checkboxOptionRepository = checkboxOptionRepository;
     }
 
     @Override
     public CheckboxDetailsDto get(UUID formId, Long questionId) {
-        return toQuestionResDto(
+        return toQuestionDetailsDto(
                 checkboxRepository.findByQuestionId(questionId)
                         .orElseThrow(() -> new QuestionNotFoundException(questionId))
         );
@@ -60,7 +57,7 @@ public class CheckboxManager extends QuestionManager<Checkbox, CheckboxAddReqDto
 
         var savedCb = checkboxRepository.save(newCb);
 
-        return toQuestionResDto(savedCb, question);
+        return toQuestionDetailsDto(savedCb, question);
     }
 
     @Override
@@ -74,7 +71,7 @@ public class CheckboxManager extends QuestionManager<Checkbox, CheckboxAddReqDto
 
         var savedCb = checkboxRepository.save(newCb);
 
-        return toQuestionResDto(savedCb, question);
+        return toQuestionDetailsDto(savedCb, question);
     }
 
     @Override
@@ -143,16 +140,16 @@ public class CheckboxManager extends QuestionManager<Checkbox, CheckboxAddReqDto
             }
         });
 
-        return toQuestionResDto(checkboxRepository.save(cb), question);
+        return toQuestionDetailsDto(checkboxRepository.save(cb), question);
     }
 
     @Override
-    public CheckboxDetailsDto toQuestionResDto(Checkbox childQuestion) {
-        return toQuestionResDto(childQuestion, childQuestion.getQuestion());
+    public CheckboxDetailsDto toQuestionDetailsDto(Checkbox childQuestion) {
+        return toQuestionDetailsDto(childQuestion, childQuestion.getQuestion());
     }
 
     @Override
-    public CheckboxDetailsDto toQuestionResDto(Checkbox childQuestion, Question parentQuestion) {
+    public CheckboxDetailsDto toQuestionDetailsDto(Checkbox childQuestion, Question parentQuestion) {
         var cb = new CheckboxDetailsDto();
 
         populateCommonFields(parentQuestion, cb);
@@ -194,10 +191,12 @@ public class CheckboxManager extends QuestionManager<Checkbox, CheckboxAddReqDto
     }
 
     @Override
-    public Checkbox createFromTemplate(CheckboxTemplateDetails template, Form form) {
+    public CheckboxDetailsDto createFromTemplate(CheckboxTemplateDetails template, Form form) {
         var cb = new Checkbox();
 
-        cb.setQuestion(createQuestionFromTemplate(template, form));
+        var question = createQuestionFromTemplate(template, form);
+
+        cb.setQuestion(question);
         cb.setValidationConfig(JsonUtil.objectToOldJsonNode(template.getValidationConfig()));
         cb.setOptions(
                 template.getOptions().stream().map(op -> {
@@ -212,7 +211,7 @@ public class CheckboxManager extends QuestionManager<Checkbox, CheckboxAddReqDto
                         .toList()
         );
 
-        return checkboxRepository.save(cb);
+        return toQuestionDetailsDto(checkboxRepository.save(cb), question);
     }
 
     @Override

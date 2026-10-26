@@ -1,7 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable, Signal, signal, WritableSignal } from "@angular/core";
 import { FormResponseCount } from "../model/form/form-response-count";
-import { FormInfoRes } from "../model/form/form-info-res";
+import { FormInfo } from "../model/form/form-info";
 import { FormDetails } from "../model/form/form-details";
 
 @Injectable({
@@ -12,7 +12,7 @@ export class FormResponseServiceShared {
     private _formResponseCount = signal<FormResponseCount | null>(null)
     formResponseCount = this._formResponseCount.asReadonly()
 
-    private _formInfo = signal<FormInfoRes | null>(null)
+    private _formInfo = signal<FormInfo | null>(null)
     formInfo = this._formInfo.asReadonly()
 
     private _formDetails = signal<FormDetails | null>(null)
@@ -29,10 +29,10 @@ export class FormResponseServiceShared {
         })
     }
 
-    getFormInfo(formId: string, onComplete: (res: FormInfoRes) => void) {
+    getFormInfo(formId: string, onComplete: (res: FormInfo) => void) {
         const url = `forms/${formId}/info`
 
-        this.http.get<FormInfoRes>(url).subscribe(res => {
+        this.http.get<FormInfo>(url).subscribe(res => {
             this._formInfo.set(res)
             onComplete(res)
         })
@@ -47,7 +47,7 @@ export class FormResponseServiceShared {
         })
     }
 
-    updateFormInfo(updateFn: (formInfo: WritableSignal<FormInfoRes | null>) => void) {
+    updateFormInfo(updateFn: (formInfo: WritableSignal<FormInfo | null>) => void) {
         updateFn(this._formInfo)
     }
 

@@ -30,7 +30,7 @@ public class DateTimeManager extends QuestionManager<DateTime, DateTimeAddReqDto
 
     @Override
     public DateTimeDetailsDto get(UUID formId, Long questionId) {
-        return toQuestionResDto(dateTimeRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
+        return toQuestionDetailsDto(dateTimeRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
     }
 
     @Override
@@ -44,7 +44,7 @@ public class DateTimeManager extends QuestionManager<DateTime, DateTimeAddReqDto
 
         var saved = dateTimeRepository.save(newDt);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class DateTimeManager extends QuestionManager<DateTime, DateTimeAddReqDto
 
         var saved = dateTimeRepository.save(newDt);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class DateTimeManager extends QuestionManager<DateTime, DateTimeAddReqDto
 
         var question = updateQuestion(questionId, questionUpdateReq);
 
-        return toQuestionResDto(dateTimeRepository.save(dt), question);
+        return toQuestionDetailsDto(dateTimeRepository.save(dt), question);
     }
 
     @Override
@@ -83,12 +83,12 @@ public class DateTimeManager extends QuestionManager<DateTime, DateTimeAddReqDto
     }
 
     @Override
-    public DateTimeDetailsDto toQuestionResDto(DateTime childQuestion) {
-        return toQuestionResDto(childQuestion, childQuestion.getQuestion());
+    public DateTimeDetailsDto toQuestionDetailsDto(DateTime childQuestion) {
+        return toQuestionDetailsDto(childQuestion, childQuestion.getQuestion());
     }
 
     @Override
-    public DateTimeDetailsDto toQuestionResDto(DateTime childQuestion, Question parentQuestion) {
+    public DateTimeDetailsDto toQuestionDetailsDto(DateTime childQuestion, Question parentQuestion) {
         var dt = new DateTimeDetailsDto();
 
         populateCommonFields(parentQuestion, dt);
@@ -107,11 +107,13 @@ public class DateTimeManager extends QuestionManager<DateTime, DateTimeAddReqDto
 
     @Override
     @Transactional
-    public DateTime createFromTemplate(DateTimeTemplateDetails template, Form form) {
+    public DateTimeDetailsDto createFromTemplate(DateTimeTemplateDetails template, Form form) {
         var dt = new DateTime();
 
-        dt.setQuestion(createQuestionFromTemplate(template, form));
+        var question = createQuestionFromTemplate(template, form);
 
-        return dateTimeRepository.save(dt);
+        dt.setQuestion(question);
+
+        return toQuestionDetailsDto(dateTimeRepository.save(dt), question);
     }
 }

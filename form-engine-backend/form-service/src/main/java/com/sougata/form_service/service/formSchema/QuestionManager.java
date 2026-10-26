@@ -18,7 +18,7 @@ QuestionManager<
         Q extends AnyTypeQuestion,
         QAR extends QuestionAddReqDto,
         QUR extends QuestionUpdateReqDto,
-        QR extends QuestionDetailsDto,
+        QDetails extends QuestionDetailsDto,
         QTD extends QuestionTemplateDetails
         > {
 
@@ -30,27 +30,27 @@ QuestionManager<
         this.formService = formService;
     }
 
-    public abstract QR get(UUID formId, Long questionId);
+    public abstract QDetails get(UUID formId, Long questionId);
 
-    public abstract QR create(UUID formId, QAR crudDto);
+    public abstract QDetails create(UUID formId, QAR crudDto);
 
-    public abstract QR create(UUID formId, Long questionId, QAR questionAddReq);
+    public abstract QDetails create(UUID formId, Long questionId, QAR questionAddReq);
 
-    public abstract QR update(UUID formId, Long questionId, QUR questionUpdateReq);
+    public abstract QDetails update(UUID formId, Long questionId, QUR questionUpdateReq);
 
     public abstract QuestionType getQuestionType();
 
     public abstract void delete(Long questionId);
 
-    public abstract QR toQuestionResDto(Q childQuestion);
+    public abstract QDetails toQuestionDetailsDto(Q childQuestion);
 
-    public abstract QR toQuestionResDto(Q childQuestion, Question parentQuestion);
+    public abstract QDetails toQuestionDetailsDto(Q childQuestion, Question parentQuestion);
 
-    public abstract QAR toQuestionAddUpdateReq(QR questionRes);
+    public abstract QAR toQuestionAddUpdateReq(QDetails questionRes);
 
-    public abstract Q createFromTemplate(QTD template, Form form);
+    public abstract QDetails createFromTemplate(QTD template, Form form);
 
-    public void populateCommonFields(Q childQuestion, QR questionRes) {
+    public void populateCommonFields(Q childQuestion, QDetails questionRes) {
         questionRes.setId(childQuestion.getQuestionId());
         questionRes.setQuestion(childQuestion.getQuestion().getQuestion());
         questionRes.setQuestionType(getQuestionType());
@@ -59,7 +59,7 @@ QuestionManager<
         questionRes.setRequired(childQuestion.getQuestion().getRequired());
     }
 
-    public void populateCommonFields(Question parentQuestion, QR questionRes) {
+    public void populateCommonFields(Question parentQuestion, QDetails questionRes) {
         questionRes.setId(parentQuestion.getId());
         questionRes.setQuestion(parentQuestion.getQuestion());
         questionRes.setQuestionType(getQuestionType());
@@ -68,7 +68,7 @@ QuestionManager<
         questionRes.setRequired(parentQuestion.getRequired());
     }
 
-    public void populateCommonFields(QR questionRes, QAR questionAddUpdateRequest) {
+    public void populateCommonFields(QDetails questionRes, QAR questionAddUpdateRequest) {
         questionAddUpdateRequest.setQuestion(questionRes.getQuestion());
         questionAddUpdateRequest.setQuestionType(getQuestionType());
         questionAddUpdateRequest.setDescription(questionRes.getDescription());

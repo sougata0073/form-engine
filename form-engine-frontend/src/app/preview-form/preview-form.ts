@@ -59,7 +59,7 @@ export class PreviewForm implements OnInit {
       this.formId.set(params.get('formId')!);
 
       this.editFormService.loadFormRes(this.formId(), (res) => {
-        this.title.setTitle(res.title ?? 'Form engine')
+        this.title.setTitle(res.formInfo.title ?? 'Form engine')
       })
     });
   }

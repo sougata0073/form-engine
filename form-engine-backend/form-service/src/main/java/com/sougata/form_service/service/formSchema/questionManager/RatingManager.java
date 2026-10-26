@@ -30,7 +30,7 @@ public class RatingManager extends QuestionManager<Rating, RatingAddReqDto, Rati
 
     @Override
     public RatingDetailsDto get(UUID formId, Long questionId) {
-        return toQuestionResDto(ratingRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
+        return toQuestionDetailsDto(ratingRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
     }
 
     @Override
@@ -44,7 +44,7 @@ public class RatingManager extends QuestionManager<Rating, RatingAddReqDto, Rati
 
         var saved = ratingRepository.save(newR);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class RatingManager extends QuestionManager<Rating, RatingAddReqDto, Rati
 
         var saved = ratingRepository.save(newR);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -77,16 +77,16 @@ public class RatingManager extends QuestionManager<Rating, RatingAddReqDto, Rati
             }
         });
 
-        return toQuestionResDto(ratingRepository.save(r), question);
+        return toQuestionDetailsDto(ratingRepository.save(r), question);
     }
 
     @Override
-    public RatingDetailsDto toQuestionResDto(Rating childQuestion) {
-        return toQuestionResDto(childQuestion, childQuestion.getQuestion());
+    public RatingDetailsDto toQuestionDetailsDto(Rating childQuestion) {
+        return toQuestionDetailsDto(childQuestion, childQuestion.getQuestion());
     }
 
     @Override
-    public RatingDetailsDto toQuestionResDto(Rating childQuestion, Question parentQuestion) {
+    public RatingDetailsDto toQuestionDetailsDto(Rating childQuestion, Question parentQuestion) {
         var r = new RatingDetailsDto();
 
         populateCommonFields(parentQuestion, r);
@@ -111,14 +111,16 @@ public class RatingManager extends QuestionManager<Rating, RatingAddReqDto, Rati
 
     @Override
     @Transactional
-    public Rating createFromTemplate(RatingTemplateDetails template, Form form) {
+    public RatingDetailsDto createFromTemplate(RatingTemplateDetails template, Form form) {
         var r = new Rating();
 
-        r.setQuestion(createQuestionFromTemplate(template, form));
+        var question = createQuestionFromTemplate(template, form);
+
+        r.setQuestion(question);
         r.setMaxRatingNumber(template.getMaxRatingNumber());
         r.setRatingIcon(template.getRatingIcon());
 
-        return ratingRepository.save(r);
+        return toQuestionDetailsDto(ratingRepository.save(r), question);
     }
 
     @Override

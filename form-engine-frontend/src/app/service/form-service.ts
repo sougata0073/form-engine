@@ -1,9 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormDetails } from '../model/form/form-details';
-import { FormAddUpdateReq } from '../model/form/form-add-update-req';
 import { CopyFormReq } from '../model/form/copy-form-req';
-import { FormInfoRes } from '../model/form/form-info-res';
+import { FormInfo } from '../model/form/form-info';
 
 @Injectable({
   providedIn: 'root',
@@ -12,19 +11,19 @@ export class FormService {
 
   private http = inject(HttpClient)
 
-  createForm(form: FormAddUpdateReq, onComplete?: (res: FormInfoRes) => void) {
+  createForm(onComplete?: (res: FormInfo) => void) {
     const url = 'forms'
 
-    this.http.post<FormInfoRes>(url, form).subscribe(res => {
+    this.http.post<FormInfo>(url, {}).subscribe(res => {
       onComplete?.(res)
     })
 
   }
 
-  copyForm(formId: string, copyFormReq: CopyFormReq, onComplete?: (res: FormInfoRes) => void) {
+  copyForm(formId: string, copyFormReq: CopyFormReq, onComplete?: (res: FormInfo) => void) {
     const url = `forms/${formId}/copy`
 
-    this.http.post<FormInfoRes>(url, copyFormReq).subscribe(res => {
+    this.http.post<FormInfo>(url, copyFormReq).subscribe(res => {
       onComplete?.(res)
     })
 

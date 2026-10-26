@@ -5,12 +5,10 @@ services:
       dockerfile: Dockerfile
       args:
         - SERVER_PORT=${CONFIGURATION_SERVICE_CONTAINER_PORT}
-    # ports:
-    #   - "${CONFIGURATION_SERVICE_HOST_PORT}:${CONFIGURATION_SERVICE_CONTAINER_PORT}"
     env_file:
       - ./form-engine-backend/env-docker/configuration-service.env
     healthcheck:
-      test: ["CMD", "curl", "http://localhost:${CONFIGURATION_SERVICE_CONTAINER_PORT}/actuator/health"]
+      test: [ "CMD", "curl", "http://localhost:${CONFIGURATION_SERVICE_CONTAINER_PORT}/actuator/health" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -25,15 +23,13 @@ services:
       dockerfile: Dockerfile
       args:
         - SERVER_PORT=${SERVICE_REGISTRY_CONTAINER_PORT}
-    # ports:
-    #   - "${SERVICE_REGISTRY_HOST_PORT}:${SERVICE_REGISTRY_CONTAINER_PORT}"
     env_file:
       - ./form-engine-backend/env-docker/service-registry.env
     depends_on:
       configuration-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "http://localhost:${SERVICE_REGISTRY_CONTAINER_PORT}/actuator/health"]
+      test: [ "CMD", "curl", "http://localhost:${SERVICE_REGISTRY_CONTAINER_PORT}/actuator/health" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -66,7 +62,7 @@ services:
       form-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "http://localhost:${GATEWAY_SERVICE_CONTAINER_PORT}/actuator/health"]
+      test: [ "CMD", "curl", "http://localhost:${GATEWAY_SERVICE_CONTAINER_PORT}/actuator/health" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -84,7 +80,7 @@ services:
     volumes:
       - redis-vol:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -105,7 +101,7 @@ services:
       service-registry:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "http://localhost:${ADMIN_SERVICE_CONTAINER_PORT}/actuator/health"]
+      test: [ "CMD", "curl", "http://localhost:${ADMIN_SERVICE_CONTAINER_PORT}/actuator/health" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -122,8 +118,6 @@ services:
         - SERVER_PORT=${AUTH_SERVICE_CONTAINER_PORT}
     deploy:
       replicas: 1
-    # ports:
-    #   - "${AUTH_SERVICE_HOST_PORT}:${AUTH_SERVICE_CONTAINER_PORT}"
     env_file:
       - ./form-engine-backend/env-docker/auth-service.env
     depends_on:
@@ -136,7 +130,7 @@ services:
       auth-service-postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "http://localhost:${AUTH_SERVICE_CONTAINER_PORT}/actuator/health"]
+      test: [ "CMD", "curl", "http://localhost:${AUTH_SERVICE_CONTAINER_PORT}/actuator/health" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -151,8 +145,6 @@ services:
       dockerfile: Dockerfile
       args:
         - SERVER_PORT=${FORM_DATA_SERVICE_CONTAINER_PORT}
-    # ports:
-    #   - "${FORM_DATA_SERVICE_HOST_PORT}:${FORM_DATA_SERVICE_CONTAINER_PORT}"
     deploy:
       replicas: 2
     env_file:
@@ -164,14 +156,14 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      form-data-cassandra-1:
+      form-data-cassandra-seed:
         condition: service_healthy
-      form-data-cassandra-2:
+      form-data-cassandra-north-rack-2:
         condition: service_healthy
-      form-data-cassandra-3:
+      form-data-cassandra-east-rack-1:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "http://localhost:${FORM_DATA_SERVICE_CONTAINER_PORT}/actuator/health"]
+      test: [ "CMD", "curl", "http://localhost:${FORM_DATA_SERVICE_CONTAINER_PORT}/actuator/health" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -186,8 +178,6 @@ services:
       dockerfile: Dockerfile
       args:
         - SERVER_PORT=${FORM_RESPONSE_SERVICE_CONTAINER_PORT}
-    # ports:
-    #   - "${FORM_RESPONSE_SERVICE_HOST_PORT}:${FORM_RESPONSE_SERVICE_CONTAINER_PORT}"
     deploy:
       replicas: 2
     env_file:
@@ -204,7 +194,7 @@ services:
       form-data-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "http://localhost:${FORM_RESPONSE_SERVICE_CONTAINER_PORT}/actuator/health"]
+      test: [ "CMD", "curl", "http://localhost:${FORM_RESPONSE_SERVICE_CONTAINER_PORT}/actuator/health" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -219,8 +209,6 @@ services:
       dockerfile: Dockerfile
       args:
         - SERVER_PORT=${FORM_SERVICE_CONTAINER_PORT}
-    # ports:
-    #   - "${FORM_SERVICE_HOST_PORT}:${FORM_SERVICE_CONTAINER_PORT}"
     deploy:
       replicas: 2
     env_file:
@@ -235,7 +223,7 @@ services:
       form-service-postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "http://localhost:${FORM_SERVICE_CONTAINER_PORT}/actuator/health"]
+      test: [ "CMD", "curl", "http://localhost:${FORM_SERVICE_CONTAINER_PORT}/actuator/health" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -244,129 +232,116 @@ services:
       watch:
         - action: rebuild
           path: ./form-engine-backend/docker-compose.watch
-  form-data-cassandra-1:
+  form-data-cassandra-seed:
     image: cassandra:5.0
     environment:
       - MAX_HEAP_SIZE=256M
       - HEAP_NEWSIZE=100M
-      - CASSANDRA_SEEDS=form-data-cassandra-1
+      - CASSANDRA_SEEDS=form-data-cassandra-seed
       - CASSANDRA_CLUSTER_NAME=form-engine-cluster
       - CASSANDRA_DC=north
       - CASSANDRA_RACK=rack-1
       - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
     volumes:
-      - form-data-cassandra-1-vol:/var/lib/cassandra
+      - form-data-cassandra-seed-vol:/var/lib/cassandra
     healthcheck:
-        test: ["CMD-SHELL", "nodetool status | grep \"UN  $(hostname -I)\""]
-        interval: 5s
-        timeout: 5s
-        retries: 10
-        start_period: 2m
-  form-data-cassandra-2:
-      image: cassandra:5.0
-      environment:
-        - MAX_HEAP_SIZE=256M
-        - HEAP_NEWSIZE=100M
-        - CASSANDRA_SEEDS=form-data-cassandra-1
-        - CASSANDRA_CLUSTER_NAME=form-engine-cluster
-        - CASSANDRA_DC=north
-        - CASSANDRA_RACK=rack-2
-        - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
-      volumes:
-       - form-data-cassandra-2-vol:/var/lib/cassandra
-      depends_on:
-        form-data-cassandra-1:
-          condition: service_healthy
-      healthcheck:
-        test: ["CMD-SHELL", "nodetool status | grep \"UN  $(hostname -I)\""]
-        interval: 5s
-        timeout: 5s
-        retries: 10
-        start_period: 2m
-  form-data-cassandra-3:
+      test: [ "CMD-SHELL", "nodetool status | grep \"UN  $(hostname -I)\"" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 2m
+  form-data-cassandra-north-rack-2:
     image: cassandra:5.0
+    deploy:
+      replicas: 1
     environment:
       - MAX_HEAP_SIZE=256M
       - HEAP_NEWSIZE=100M
-      - CASSANDRA_SEEDS=form-data-cassandra-1
+      - CASSANDRA_SEEDS=form-data-cassandra-seed
+      - CASSANDRA_CLUSTER_NAME=form-engine-cluster
+      - CASSANDRA_DC=north
+      - CASSANDRA_RACK=rack-2
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+    volumes:
+      - form-data-cassandra-north-rack-2-vol:/var/lib/cassandra
+    depends_on:
+      form-data-cassandra-seed:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "nodetool status | grep \"UN  $(hostname -I)\"" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 2m
+  form-data-cassandra-east-rack-1:
+    image: cassandra:5.0
+    deploy:
+      replicas: 1
+    environment:
+      - MAX_HEAP_SIZE=256M
+      - HEAP_NEWSIZE=100M
+      - CASSANDRA_SEEDS=form-data-cassandra-seed
       - CASSANDRA_CLUSTER_NAME=form-engine-cluster
       - CASSANDRA_DC=east
       - CASSANDRA_RACK=rack-1
       - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
     volumes:
-      - form-data-cassandra-3-vol:/var/lib/cassandra
+      - form-data-cassandra-east-rack-1-vol:/var/lib/cassandra
     depends_on:
-      form-data-cassandra-1:
+      form-data-cassandra-seed:
         condition: service_healthy
     healthcheck:
-        test: ["CMD-SHELL", "nodetool status | grep \"UN  $(hostname -I)\""]
-        interval: 5s
-        timeout: 5s
-        retries: 10
-        start_period: 2m
-  # form-data-cassandra-4:
+      test: [ "CMD-SHELL", "nodetool status | grep \"UN  $(hostname -I)\"" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 2m
+  # form-data-cassandra-west-rack-1:
   #   image: cassandra:5.0
+  #   deploy:
+  #     replicas: 1
   #   environment:
-  #     - MAX_HEAP_SIZE=500M
-  #     - HEAP_NEWSIZE=256M
-  #     - CASSANDRA_SEEDS=form-data-cassandra-1
-  #     - CASSANDRA_CLUSTER_NAME=form-engine-cluster
-  #     - CASSANDRA_DC=east
-  #     - CASSANDRA_RACK=rack-2
-  #     - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
-  #   volumes:
-  #     - form-data-cassandra-4-vol:/var/lib/cassandra
-  #   depends_on:
-  #     form-data-cassandra-1:
-  #       condition: service_healthy
-  #   healthcheck:
-  #       test: ["CMD-SHELL", "nodetool status | grep \"UN  $(hostname -I)\""]
-  #       interval: 5s
-  #       timeout: 5s
-  #       retries: 10
-  #       start_period: 2m
-  # form-data-cassandra-5:
-  #   image: cassandra:5.0
-  #   environment:
-  #     - MAX_HEAP_SIZE=500M
-  #     - HEAP_NEWSIZE=256M
-  #     - CASSANDRA_SEEDS=form-data-cassandra-1
+  #     - MAX_HEAP_SIZE=256M
+  #     - HEAP_NEWSIZE=100M
+  #     - CASSANDRA_SEEDS=form-data-cassandra-seed
   #     - CASSANDRA_CLUSTER_NAME=form-engine-cluster
   #     - CASSANDRA_DC=west
   #     - CASSANDRA_RACK=rack-1
   #     - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
   #   volumes:
-  #     - form-data-cassandra-5-vol:/var/lib/cassandra
+  #     - form-data-cassandra-west-rack-1-vol:/var/lib/cassandra
   #   depends_on:
-  #     form-data-cassandra-1:
+  #     form-data-cassandra-seed:
   #       condition: service_healthy
   #   healthcheck:
-  #       test: ["CMD-SHELL", "nodetool status | grep \"UN  $(hostname -I)\""]
-  #       interval: 5s
-  #       timeout: 5s
-  #       retries: 10
-  #       start_period: 2m
-  # form-data-cassandra-6:
+  #     test: [ "CMD-SHELL", "nodetool status | grep \"UN  $(hostname -I)\"" ]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 10
+  #     start_period: 2m
+  # form-data-cassandra-south-rack-1:
   #   image: cassandra:5.0
+  #   deploy:
+  #     replicas: 1
   #   environment:
-  #     - MAX_HEAP_SIZE=500M
-  #     - HEAP_NEWSIZE=256M
-  #     - CASSANDRA_SEEDS=form-data-cassandra-1
+  #     - MAX_HEAP_SIZE=256M
+  #     - HEAP_NEWSIZE=100M
+  #     - CASSANDRA_SEEDS=form-data-cassandra-seed
   #     - CASSANDRA_CLUSTER_NAME=form-engine-cluster
   #     - CASSANDRA_DC=south
   #     - CASSANDRA_RACK=rack-1
   #     - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
   #   volumes:
-  #     - form-data-cassandra-6-vol:/var/lib/cassandra
+  #     - form-data-cassandra-south-rack-1-vol:/var/lib/cassandra
   #   depends_on:
-  #     form-data-cassandra-1:
+  #     form-data-cassandra-seed:
   #       condition: service_healthy
   #   healthcheck:
-  #       test: ["CMD-SHELL", "nodetool status | grep \"UN  $(hostname -I)\""]
-  #       interval: 5s
-  #       timeout: 5s
-  #       retries: 10
-  #       start_period: 2m
+  #     test: [ "CMD-SHELL", "nodetool status | grep \"UN  $(hostname -I)\"" ]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 10
+  #     start_period: 2m
   auth-service-postgres:
     image: postgres:18
     shm_size: 128mb
@@ -375,11 +350,11 @@ services:
     volumes:
       - auth-service-postgres-vol:/var/lib/postgresql/18/docker
     healthcheck:
-        test: ["CMD-SHELL", "pg_isready -h localhost -U postgres"]
-        interval: 5s
-        timeout: 5s
-        retries: 10
-        start_period: 1m
+      test: [ "CMD-SHELL", "pg_isready -h localhost -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 1m
   form-service-postgres:
     image: postgres:18
     shm_size: 128mb
@@ -389,11 +364,11 @@ services:
       - form-service-postgres-vol:/var/lib/postgresql/18/docker
       - ./form-engine-backend/form-service-postgres-init.sql:/docker-entrypoint-initdb.d/postgres-schema-init.sql:ro
     healthcheck:
-        test: ["CMD-SHELL", "pg_isready -h localhost -U postgres"]
-        interval: 5s
-        timeout: 5s
-        retries: 10
-        start_period: 1m
+      test: [ "CMD-SHELL", "pg_isready -h localhost -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 1m
   form-response-service-postgres:
     image: postgres:18
     shm_size: 128mb
@@ -402,11 +377,11 @@ services:
     volumes:
       - form-response-service-postgres-vol:/var/lib/postgresql/18/docker
     healthcheck:
-        test: ["CMD-SHELL", "pg_isready -h localhost -U postgres"]
-        interval: 5s
-        timeout: 5s
-        retries: 10
-        start_period: 1m
+      test: [ "CMD-SHELL", "pg_isready -h localhost -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 1m
   client:
     build:
       context: ./form-engine-frontend
@@ -428,12 +403,11 @@ services:
 
 volumes:
   redis-vol:
-  form-data-cassandra-1-vol:
-  form-data-cassandra-2-vol:
-  form-data-cassandra-3-vol:
-  # form-data-cassandra-4-vol:
-  # form-data-cassandra-5-vol:
-  # form-data-cassandra-6-vol:
+  form-data-cassandra-seed-vol:
+  form-data-cassandra-north-rack-2-vol:
+  form-data-cassandra-east-rack-1-vol: # form-data-cassandra-west-rack-1-vol:
+
+  # form-data-cassandra-south-rack-1-vol:
   auth-service-postgres-vol:
   form-service-postgres-vol:
   form-response-service-postgres-vol:

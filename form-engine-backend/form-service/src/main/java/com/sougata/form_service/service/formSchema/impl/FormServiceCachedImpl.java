@@ -2,7 +2,7 @@ package com.sougata.form_service.service.formSchema.impl;
 
 import com.sougata.form_engine.constant.DistributedLockNames;
 import com.sougata.form_engine.constant.cache.FormCacheNames;
-import com.sougata.form_engine.dto.form.FormDetailsDto;
+import com.sougata.form_engine.dto.form.*;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
 import com.sougata.form_service.configuration.AppConfiguration;
 import com.sougata.form_service.exception.FormNotFoundException;
@@ -97,7 +97,7 @@ public class FormServiceCachedImpl implements FormServiceCached {
     @Transactional(readOnly = true)
     public CompletableFuture<FormDetailsDto> loadFormDetailsFromDb(UUID formId) {
 
-        Form f = formRepository.findById(formId).orElseThrow(() -> new FormNotFoundException(formId));
+        Form form = formRepository.findById(formId).orElseThrow(() -> new FormNotFoundException(formId));
 
         List<QuestionDetailsDto> questionResponses = new ArrayList<>();
 
@@ -118,7 +118,7 @@ public class FormServiceCachedImpl implements FormServiceCached {
             var qResList = repo.findAllById((Iterable<Object>) (Iterable<?>) qIds).stream()
                     .map(q -> {
                         var parentQuestion = questionIdMap.get(q.getQuestionId());
-                        return manager.toQuestionResDto(q, parentQuestion);
+                        return manager.toQuestionDetailsDto(q, parentQuestion);
                     })
                     .toList();
 
@@ -128,16 +128,7 @@ public class FormServiceCachedImpl implements FormServiceCached {
         questionResponses.sort(Comparator.comparingInt(QuestionDetailsDto::getOrderIndex));
 
         var formDetails = new FormDetailsDto(
-                f.getId(),
-                f.getName(),
-                f.getTitle(),
-                f.getDescription(),
-                f.getPublished(),
-                f.getAcceptingResponse(),
-                f.getNotAcceptingResponseMessage(),
-                f.getStopAcceptingResponseOn(),
-                f.getStopAcceptingResponseAfterResponse(),
-                f.getLastOpenedOn(),
+                toFormInfo(form),
                 questionResponses
         );
 
@@ -146,5 +137,54 @@ public class FormServiceCachedImpl implements FormServiceCached {
         redisTemplate.opsForValue().set(formDetailsCacheKey, formDetails, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
 
         return CompletableFuture.completedFuture(formDetails);
+    }
+
+    private FormInfoDto toFormInfo(Form form) {
+        var defaultSettings = form.getFormDefaultSettings();
+        var generalSettings = form.getFormGeneralSettings();
+        var presentationSettings = form.getFormPresentationSettings();
+        var quizSettings = form.getFormQuizSettings();
+        var responseSettings = form.getFormResponseSettings();
+
+        return new FormInfoDto(
+                form.getId(),
+                form.getName(),
+                form.getTitle(),
+                form.getDescription(),
+                form.getLastOpenedOn(),
+                new FormDefaultSettingsDto(
+                        defaultSettings.getDefaultEmailCollectionOption(),
+                        defaultSettings.getMakeQuestionsRequiredByDefault()
+                ),
+                new FormGeneralSettingsDto(
+                        generalSettings.getPublished(),
+                        generalSettings.getAcceptingResponse(),
+                        generalSettings.getNotAcceptingResponseMessage(),
+                        generalSettings.getStopAcceptingResponseOn(),
+                        generalSettings.getResponseLimit()
+                ),
+                new FormPresentationSettingsDto(
+                        presentationSettings.getShowProgressBar(),
+                        presentationSettings.getShuffleQuestionOrder(),
+                        presentationSettings.getResponseSavedConfirmationMessage(),
+                        presentationSettings.getShowLinkToSubmitAnotherResponse(),
+                        presentationSettings.getShareResponseSummaryWithResponders(),
+                        presentationSettings.getDisableAutoSaveForAllRespondents()
+                ),
+                new FormQuizSettingsDto(
+                        quizSettings.getIsQuiz(),
+                        quizSettings.getReleaseMarksOption(),
+                        quizSettings.getRespondersCanSeeIncorrectAnswers(),
+                        quizSettings.getRespondersCanSeeCorrectAnswers(),
+                        quizSettings.getRespondersCanSeePointsReceived(),
+                        quizSettings.getQuestionPointValue()
+                ),
+                new FormResponseSettingsDto(
+                        responseSettings.getEmailCollectionOption(),
+                        responseSettings.getResponseCopySendOption(),
+                        responseSettings.getIsResponseEditable(),
+                        responseSettings.getSingleResponseOnly()
+                )
+        );
     }
 }

@@ -33,12 +33,6 @@ export class HomeService {
     return this.http.post<TemplateToFormBuildRes>(url, {})
   }
 
-  renameForm(formId: string, req: FormRenameReq) {
-    const url = `forms/${formId}/rename`
-
-    return this.http.patch<SuccessMessage>(url, req)
-  }
-
   deleteForm(formId: string) {
     const url = `forms/${formId}`
 

@@ -6,10 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -18,16 +16,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FormDetailsDto {
-    private UUID id;
-    private String name;
-    private String title;
-    private String description;
-    private Boolean published;
-    private Boolean acceptingResponse;
-    private String notAcceptingResponseMessage;
-    private Instant stopAcceptingResponseOn;
-    private Integer stopAcceptingResponseAfterResponse;
-    private Instant lastOpenedOn;
+    private FormInfoDto formInfo;
     private List<QuestionDetailsDto> questions;
 
     @Override
@@ -49,14 +38,6 @@ public class FormDetailsDto {
             }
         }
 
-        return Objects.equals(id, that.id)
-                && Objects.equals(name, that.name)
-                && Objects.equals(title, that.title)
-                && Objects.equals(description, that.description)
-                && Objects.equals(published, that.published)
-                && Objects.equals(acceptingResponse, that.acceptingResponse)
-                && Objects.equals(notAcceptingResponseMessage, that.notAcceptingResponseMessage)
-                && Objects.equals(stopAcceptingResponseOn, that.stopAcceptingResponseOn)
-                && Objects.equals(stopAcceptingResponseAfterResponse, that.stopAcceptingResponseAfterResponse);
+        return Objects.equals(formInfo, that.formInfo);
     }
 }

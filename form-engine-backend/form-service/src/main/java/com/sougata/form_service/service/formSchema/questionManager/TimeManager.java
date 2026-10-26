@@ -30,7 +30,7 @@ public class TimeManager extends QuestionManager<Time, TimeAddReqDto, TimeUpdate
 
     @Override
     public TimeDetailsDto get(UUID formId, Long questionId) {
-        return toQuestionResDto(timeRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
+        return toQuestionDetailsDto(timeRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
     }
 
     @Override
@@ -44,7 +44,7 @@ public class TimeManager extends QuestionManager<Time, TimeAddReqDto, TimeUpdate
 
         var saved = timeRepository.save(newTime);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class TimeManager extends QuestionManager<Time, TimeAddReqDto, TimeUpdate
 
         var saved = timeRepository.save(newTime);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -69,16 +69,16 @@ public class TimeManager extends QuestionManager<Time, TimeAddReqDto, TimeUpdate
 
         var question = updateQuestion(questionId, questionUpdateReq);
 
-        return toQuestionResDto(timeRepository.save(t), question);
+        return toQuestionDetailsDto(timeRepository.save(t), question);
     }
 
     @Override
-    public TimeDetailsDto toQuestionResDto(Time childQuestion) {
-        return toQuestionResDto(childQuestion, childQuestion.getQuestion());
+    public TimeDetailsDto toQuestionDetailsDto(Time childQuestion) {
+        return toQuestionDetailsDto(childQuestion, childQuestion.getQuestion());
     }
 
     @Override
-    public TimeDetailsDto toQuestionResDto(Time childQuestion, Question parentQuestion) {
+    public TimeDetailsDto toQuestionDetailsDto(Time childQuestion, Question parentQuestion) {
         var t = new TimeDetailsDto();
 
         populateCommonFields(parentQuestion, t);
@@ -97,12 +97,14 @@ public class TimeManager extends QuestionManager<Time, TimeAddReqDto, TimeUpdate
 
     @Override
     @Transactional
-    public Time createFromTemplate(TimeTemplateDetails template, Form form) {
+    public TimeDetailsDto createFromTemplate(TimeTemplateDetails template, Form form) {
         var t = new Time();
 
-        t.setQuestion(createQuestionFromTemplate(template, form));
+        var question = createQuestionFromTemplate(template, form);
 
-        return timeRepository.save(t);
+        t.setQuestion(question);
+
+        return toQuestionDetailsDto(timeRepository.save(t), question);
     }
 
     @Override

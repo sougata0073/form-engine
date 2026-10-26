@@ -57,4 +57,16 @@ public class FormDataController {
         return formDataService.deleteFormResponse(formId, formResponseId);
     }
 
+    @GetMapping(path = "{formId}/responders/{userId}/is-response-submitted")
+    @Cacheable(
+            cacheNames = {FormDataCacheNames.IS_RESPONSE_ALREADY_SUBMITTED},
+            key = "'formId=' + #formId + '::userId=' + #userId"
+    )
+    public boolean getIsResponseAlreadySubmitted(
+            @PathVariable("formId") UUID formId,
+            @PathVariable("userId") UUID userId
+    ) {
+        return formDataService.getIsResponseAlreadySubmitted(formId, userId);
+    }
+
 }

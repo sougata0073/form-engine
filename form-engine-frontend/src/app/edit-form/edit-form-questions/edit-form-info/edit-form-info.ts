@@ -1,12 +1,13 @@
-import {Component, inject, input, OnInit, signal} from '@angular/core';
-import {QuestionCard} from '../../../shared/question-card/question-card';
-import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {MatFormField, MatInput, MatLabel} from '@angular/material/input';
-import {EditFormStateService} from '../../../service/edit-form-state-service';
-import {FocusableComponent} from '../../../type/focusable-component';
-import {EditFormService} from '../../../service/edit-form-service';
-import {FormDetails} from '../../../model/form/form-details';
-import {CdkTextareaAutosize} from '@angular/cdk/text-field';
+import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { QuestionCard } from '../../../shared/question-card/question-card';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { MatFormField, MatInput, MatLabel } from '@angular/material/input';
+import { EditFormStateService } from '../../../service/edit-form-state-service';
+import { FocusableComponent } from '../../../type/focusable-component';
+import { EditFormService } from '../../../service/edit-form-service';
+import { FormDetails } from '../../../model/form/form-details';
+import { CdkTextareaAutosize } from '@angular/cdk/text-field';
+import { FormUpdateReq } from '../../../model/form/form-update-req';
 
 @Component({
   selector: 'app-edit-form-info',
@@ -16,48 +17,49 @@ import {CdkTextareaAutosize} from '@angular/cdk/text-field';
     MatInput,
     MatFormField,
     MatLabel,
-    CdkTextareaAutosize
+    CdkTextareaAutosize,
   ],
   templateUrl: './edit-form-info.html',
   styleUrl: './edit-form-info.scss',
 })
 export class EditFormInfo implements OnInit, FocusableComponent {
+  formRes = input.required<FormDetails>();
 
-  formRes = input.required<FormDetails>()
+  componentId = signal<string>('form-info');
 
-  componentId = signal<string>("form-info")
-
-  protected editFormStateService = inject(EditFormStateService)
-  protected editFormService = inject(EditFormService)
-  protected formStateService = inject(EditFormStateService)
+  protected editFormStateService = inject(EditFormStateService);
+  protected editFormService = inject(EditFormService);
+  protected formStateService = inject(EditFormStateService);
 
   protected formGroup = new FormGroup({
-    title: new FormControl<string | null>(''),
-    description: new FormControl<string | null>('')
-  })
+    title: new FormControl<string | null>(null),
+    description: new FormControl<string | null>(null),
+  });
 
   ngOnInit() {
     this.formGroup.patchValue({
-      title: this.formRes().title,
-      description: this.formRes().description
-    })
+      title: this.formRes().formInfo.title,
+      description: this.formRes().formInfo.description,
+    });
 
-    this.formGroup.valueChanges.subscribe(val => {
-      if (this.formGroup.invalid) return
+    this.formGroup.controls.title.valueChanges.subscribe(() => {
+      if (this.formGroup.invalid) return;
 
-      this.editFormService.updateFormInfo(this.formRes().id, {
-        name: this.formRes().name,
-        title: val.title!,
-        description: val.description!,
-        acceptingResponse: this.formRes().acceptingResponse,
-        notAcceptingResponseMessage: this.formRes().notAcceptingResponseMessage,
-        published: this.formRes().published,
-        stopAcceptingResponseAfterResponse: this.formRes().stopAcceptingResponseAfterResponse,
-        stopAcceptingResponseOn: !!this.formRes().stopAcceptingResponseOn ? new Date(this.formRes().stopAcceptingResponseOn) : null
-      })
-    })
+      this.editFormService.updateFormInfo(this.formRes().formInfo.id, {
+        title: this.formGroup.getRawValue().title,
+        updateFields: ['title' satisfies keyof FormUpdateReq],
+      });
+    });
 
-    this.editFormStateService.changeFocus(this.componentId())
+    this.formGroup.controls.description.valueChanges.subscribe(() => {
+      if (this.formGroup.invalid) return;
+
+      this.editFormService.updateFormInfo(this.formRes().formInfo.id, {
+        description: this.formGroup.getRawValue().description,
+        updateFields: ['description' satisfies keyof FormUpdateReq],
+      });
+    });
+
+    this.editFormStateService.changeFocus(this.componentId());
   }
-
 }

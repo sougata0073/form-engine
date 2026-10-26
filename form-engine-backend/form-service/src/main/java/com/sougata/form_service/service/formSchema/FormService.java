@@ -8,11 +8,11 @@ import com.sougata.form_service.model.formSchema.Form;
 import java.util.UUID;
 
 public interface FormService {
-    FormInfoDto createForm(FormPutReqDto dto, UUID userId);
+    FormInfoDto createForm(UUID userId);
 
     FormInfoDto copyForm(UUID formId, CopyFormReqDto req, UUID userId);
 
-    FormInfoDto updateForm(UUID formId, FormPutReqDto dto, UUID userId);
+    FormInfoDto updateForm(UUID formId, FormUpdateReqDto dto, UUID userId);
 
     FormDetailsDto getForm(UUID formId, UUID userId);
 
@@ -21,8 +21,6 @@ public interface FormService {
     FormSummariesDto getFormsSummaries(UUID userId);
 
     Form getFormById(UUID id);
-
-    SuccessMessageDto renameForm(UUID formId, FormRenameReqDto dto, UUID userId);
 
     FormInfoDto getFormInfo(UUID formId);
 

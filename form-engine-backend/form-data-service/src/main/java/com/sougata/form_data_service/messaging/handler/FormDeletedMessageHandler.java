@@ -34,5 +34,8 @@ public class FormDeletedMessageHandler implements MessageListener {
         redissonKeys.deleteByPattern(
                 CacheUtil.buildKey(FormDataCacheNames.FORM_RESPONSE_NO_PAGE, "formId=" + messageData.getFormId()) + "::*"
         );
+        redissonKeys.deleteByPattern(
+                CacheUtil.buildKey(FormDataCacheNames.IS_RESPONSE_ALREADY_SUBMITTED, "formId=" + messageData.getFormId()) + "::*"
+        );
     }
 }

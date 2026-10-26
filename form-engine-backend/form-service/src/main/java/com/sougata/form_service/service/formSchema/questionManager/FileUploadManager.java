@@ -39,7 +39,7 @@ public class FileUploadManager extends QuestionManager<FileUpload, FileUploadAdd
 
     @Override
     public FileUploadDetailsDto get(UUID formId, Long questionId) {
-        return toQuestionResDto(fileUploadRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
+        return toQuestionDetailsDto(fileUploadRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
     }
 
     @Override
@@ -53,7 +53,7 @@ public class FileUploadManager extends QuestionManager<FileUpload, FileUploadAdd
 
         var saved = fileUploadRepository.save(newFu);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class FileUploadManager extends QuestionManager<FileUpload, FileUploadAdd
 
         var saved = fileUploadRepository.save(newFu);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -96,16 +96,16 @@ public class FileUploadManager extends QuestionManager<FileUpload, FileUploadAdd
             }
         });
 
-        return toQuestionResDto(fileUploadRepository.save(fu), question);
+        return toQuestionDetailsDto(fileUploadRepository.save(fu), question);
     }
 
     @Override
-    public FileUploadDetailsDto toQuestionResDto(FileUpload childQuestion) {
-        return toQuestionResDto(childQuestion, childQuestion.getQuestion());
+    public FileUploadDetailsDto toQuestionDetailsDto(FileUpload childQuestion) {
+        return toQuestionDetailsDto(childQuestion, childQuestion.getQuestion());
     }
 
     @Override
-    public FileUploadDetailsDto toQuestionResDto(FileUpload childQuestion, Question parentQuestion) {
+    public FileUploadDetailsDto toQuestionDetailsDto(FileUpload childQuestion, Question parentQuestion) {
         var f = new FileUploadDetailsDto();
 
         populateCommonFields(parentQuestion, f);
@@ -137,10 +137,12 @@ public class FileUploadManager extends QuestionManager<FileUpload, FileUploadAdd
 
     @Override
     @Transactional
-    public FileUpload createFromTemplate(FileUploadTemplateDetails template, Form form) {
+    public FileUploadDetailsDto createFromTemplate(FileUploadTemplateDetails template, Form form) {
         var f = new FileUpload();
 
-        f.setQuestion(createQuestionFromTemplate(template, form));
+        var question = createQuestionFromTemplate(template, form);
+
+        f.setQuestion(question);
         f.setMaxFileSize(template.getMaxFileSize());
         f.setAllowedFileTypes(template.getAllowedFileTypes().stream().map(ft ->
                         fileTypeRepository.findByCategory(ft.getCategory())
@@ -148,7 +150,7 @@ public class FileUploadManager extends QuestionManager<FileUpload, FileUploadAdd
                 ).toList()
         );
 
-        return fileUploadRepository.save(f);
+        return toQuestionDetailsDto(fileUploadRepository.save(f), question);
     }
 
     @Override

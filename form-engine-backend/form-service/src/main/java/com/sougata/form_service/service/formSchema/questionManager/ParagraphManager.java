@@ -34,7 +34,7 @@ public class ParagraphManager extends QuestionManager<Paragraph, ParagraphAddReq
 
     @Override
     public ParagraphDetailsDto get(UUID formId, Long questionId) {
-        return toQuestionResDto(paragraphRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
+        return toQuestionDetailsDto(paragraphRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
     }
 
     @Override
@@ -48,7 +48,7 @@ public class ParagraphManager extends QuestionManager<Paragraph, ParagraphAddReq
 
         var saved = paragraphRepository.save(newP);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class ParagraphManager extends QuestionManager<Paragraph, ParagraphAddReq
 
         var saved = paragraphRepository.save(newP);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -77,16 +77,16 @@ public class ParagraphManager extends QuestionManager<Paragraph, ParagraphAddReq
             p.setValidationConfig(JsonUtil.objectToOldJsonNode(questionUpdateReq.getValidationConfig()));
         }
 
-        return toQuestionResDto(paragraphRepository.save(p), question);
+        return toQuestionDetailsDto(paragraphRepository.save(p), question);
     }
 
     @Override
-    public ParagraphDetailsDto toQuestionResDto(Paragraph childQuestion) {
-        return toQuestionResDto(childQuestion, childQuestion.getQuestion());
+    public ParagraphDetailsDto toQuestionDetailsDto(Paragraph childQuestion) {
+        return toQuestionDetailsDto(childQuestion, childQuestion.getQuestion());
     }
 
     @Override
-    public ParagraphDetailsDto toQuestionResDto(Paragraph childQuestion, Question parentQuestion) {
+    public ParagraphDetailsDto toQuestionDetailsDto(Paragraph childQuestion, Question parentQuestion) {
         var p = new ParagraphDetailsDto();
 
         populateCommonFields(parentQuestion, p);
@@ -113,13 +113,15 @@ public class ParagraphManager extends QuestionManager<Paragraph, ParagraphAddReq
 
     @Override
     @Transactional
-    public Paragraph createFromTemplate(ParagraphTemplateDetails template, Form form) {
+    public ParagraphDetailsDto createFromTemplate(ParagraphTemplateDetails template, Form form) {
         var p = new Paragraph();
 
-        p.setQuestion(createQuestionFromTemplate(template, form));
+        var question = createQuestionFromTemplate(template, form);
+
+        p.setQuestion(question);
         p.setValidationConfig(JsonUtil.objectToOldJsonNode(template.getValidationConfig()));
 
-        return paragraphRepository.save(p);
+        return toQuestionDetailsDto(paragraphRepository.save(p), question);
     }
 
     @Override

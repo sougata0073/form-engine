@@ -5,9 +5,7 @@ import com.sougata.form_engine.constant.cache.FormCacheNames;
 import com.sougata.form_engine.constant.cache.QuestionCacheNames;
 import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.dto.form.FormDetailsDto;
-import com.sougata.form_engine.dto.messaging.QuestionCreatedMessage;
 import com.sougata.form_engine.dto.messaging.QuestionDeleteMessage;
-import com.sougata.form_engine.dto.messaging.QuestionUpdatedMessage;
 import com.sougata.form_engine.dto.others.SuccessMessageDto;
 import com.sougata.form_engine.dto.question.details.MultipleQuestionDetailsDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
@@ -20,18 +18,20 @@ import com.sougata.form_service.configuration.AppConfiguration;
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.projection.QuestionIdAndOrderIndexProjection;
 import com.sougata.form_service.projection.QuestionSummaryProjection;
-import com.sougata.form_service.repository.formSchema.AnyTypeQuestionRepositoryFactory;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.service.formSchema.QuestionService;
 import com.sougata.form_service.service.formSchema.questionManager.QuestionManagerFactory;
+import com.sougata.form_service.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -40,7 +40,6 @@ import java.util.stream.Collectors;
 public class QuestionServiceImpl implements QuestionService {
 
     private final QuestionManagerFactory questionManagerFactory;
-    private final AnyTypeQuestionRepositoryFactory anyTypeQuestionRepositoryFactory;
     private final QuestionRepository questionRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final AppConfiguration appConfiguration;
@@ -52,8 +51,13 @@ public class QuestionServiceImpl implements QuestionService {
 
         addQuestionInQuestionSummaries(formId, questionDetails);
         addQuestionInFormDetails(formId, questionDetails);
-        putQuestionDetails(questionDetails);
-        putQuestionSummary(new QuestionSummaryDto(questionDetails.getId(), questionDetails.getQuestion(), questionDetails.getQuestionType(), questionDetails.getOrderIndex()));
+        putQuestionDetails(formId, questionDetails);
+        putQuestionSummary(formId, new QuestionSummaryDto(
+                questionDetails.getId(),
+                questionDetails.getQuestion(),
+                questionDetails.getQuestionType(),
+                questionDetails.getOrderIndex())
+        );
 
         return questionDetails;
     }
@@ -92,8 +96,13 @@ public class QuestionServiceImpl implements QuestionService {
 
             updateQuestionInFormDetails(formId, updatedQuestionDetails);
             updateQuestionInQuestionSummaries(formId, updatedQuestionDetails);
-            putQuestionDetails(updatedQuestionDetails);
-            putQuestionSummary(new QuestionSummaryDto(updatedQuestionDetails.getId(), updatedQuestionDetails.getQuestion(), updatedQuestionDetails.getQuestionType(), updatedQuestionDetails.getOrderIndex()));
+            putQuestionDetails(formId, updatedQuestionDetails);
+            putQuestionSummary(formId, new QuestionSummaryDto(
+                    updatedQuestionDetails.getId(),
+                    updatedQuestionDetails.getQuestion(),
+                    updatedQuestionDetails.getQuestionType(),
+                    updatedQuestionDetails.getOrderIndex())
+            );
 
             questionDetailsList.add(updatedQuestionDetails);
         });
@@ -175,8 +184,8 @@ public class QuestionServiceImpl implements QuestionService {
             questionRepository.save(question);
             questionRepository.updateNextQuestionOrderIndexes(formId, questionId, prevIndex, req.getCurrentIndex());
 
-            var formDetailsCacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + FormCacheNames.FORM_DETAILS + CommonCacheNames.SEPARATOR + formId;
-            var questionSummariesCacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_SUMMARIES + CommonCacheNames.SEPARATOR + formId;
+            var formDetailsCacheKey = CacheUtil.buildKey(FormCacheNames.FORM_DETAILS, formId);
+            var questionSummariesCacheKey = CacheUtil.buildKey(QuestionCacheNames.QUESTION_SUMMARIES, formId);
 
             var formDetailsCached = (FormDetailsDto) redisTemplate.opsForValue().get(formDetailsCacheKey);
             var questionSummariesCached = (QuestionSummariesDto) redisTemplate.opsForValue().get(questionSummariesCacheKey);
@@ -216,7 +225,7 @@ public class QuestionServiceImpl implements QuestionService {
                 }
             }
 
-            var questionDetailsCacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_DETAILS + CommonCacheNames.SEPARATOR + questionId;
+            var questionDetailsCacheKey = CacheUtil.buildKey(QuestionCacheNames.QUESTION_DETAILS, "formId=" + formId, "questionId=" + questionId);
 
             var questionDetailsCached = (QuestionDetailsDto) redisTemplate.opsForValue().get(questionDetailsCacheKey);
 
@@ -226,7 +235,7 @@ public class QuestionServiceImpl implements QuestionService {
                 redisTemplate.opsForValue().set(questionDetailsCacheKey, questionDetailsCached, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
             }
 
-            var questionSummaryCacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_SUMMARY + CommonCacheNames.SEPARATOR + questionId;
+            var questionSummaryCacheKey = CacheUtil.buildKey(QuestionCacheNames.QUESTION_SUMMARY, "formId=" + formId, "questionId=" + questionId);
 
             var questionSummaryCached = (QuestionSummaryDto) redisTemplate.opsForValue().get(questionSummaryCacheKey);
 
@@ -331,7 +340,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     private void deleteQuestionInFormDetails(UUID formId, Long questionId) {
-        var cacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + FormCacheNames.FORM_DETAILS + CommonCacheNames.SEPARATOR + formId;
+        var cacheKey = CacheUtil.buildKey(FormCacheNames.FORM_DETAILS, formId);
 
         var formDetails = (FormDetailsDto) redisTemplate.opsForValue().get(cacheKey);
 
@@ -343,14 +352,14 @@ public class QuestionServiceImpl implements QuestionService {
         }
     }
 
-    private void putQuestionDetails(QuestionDetailsDto question) {
-        var cacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_DETAILS + CommonCacheNames.SEPARATOR + question.getId();
+    private void putQuestionDetails(UUID formId, QuestionDetailsDto question) {
+        var cacheKey = CacheUtil.buildKey(QuestionCacheNames.QUESTION_DETAILS, "formId=" + formId, "questionId=" + question.getId());
 
         redisTemplate.opsForValue().set(cacheKey, question, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
     }
 
-    private void putQuestionSummary(QuestionSummaryDto question) {
-        var cacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + QuestionCacheNames.QUESTION_SUMMARY + CommonCacheNames.SEPARATOR + question.getId();
+    private void putQuestionSummary(UUID formId, QuestionSummaryDto question) {
+        var cacheKey = CacheUtil.buildKey(QuestionCacheNames.QUESTION_SUMMARY, "formId=" + formId, "questionId=" + question.getId());
 
         redisTemplate.opsForValue().set(cacheKey, question, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
     }

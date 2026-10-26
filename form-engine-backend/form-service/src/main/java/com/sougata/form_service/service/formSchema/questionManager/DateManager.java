@@ -30,7 +30,7 @@ public class DateManager extends QuestionManager<Date, DateAddReqDto, DateUpdate
 
     @Override
     public DateDetailsDto get(UUID formId, Long questionId) {
-        return toQuestionResDto(dateRepository.findByQuestionId(questionId)
+        return toQuestionDetailsDto(dateRepository.findByQuestionId(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(questionId)));
     }
 
@@ -45,7 +45,7 @@ public class DateManager extends QuestionManager<Date, DateAddReqDto, DateUpdate
 
         var saved = dateRepository.save(newDate);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class DateManager extends QuestionManager<Date, DateAddReqDto, DateUpdate
 
         var saved = dateRepository.save(newDate);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class DateManager extends QuestionManager<Date, DateAddReqDto, DateUpdate
 
         var question = updateQuestion(questionId, questionUpdateReq);
 
-        return toQuestionResDto(dateRepository.save(date), question);
+        return toQuestionDetailsDto(dateRepository.save(date), question);
     }
 
     @Override
@@ -84,12 +84,12 @@ public class DateManager extends QuestionManager<Date, DateAddReqDto, DateUpdate
     }
 
     @Override
-    public DateDetailsDto toQuestionResDto(Date childQuestion) {
-        return toQuestionResDto(childQuestion, childQuestion.getQuestion());
+    public DateDetailsDto toQuestionDetailsDto(Date childQuestion) {
+        return toQuestionDetailsDto(childQuestion, childQuestion.getQuestion());
     }
 
     @Override
-    public DateDetailsDto toQuestionResDto(Date childQuestion, Question parentQuestion) {
+    public DateDetailsDto toQuestionDetailsDto(Date childQuestion, Question parentQuestion) {
         var d = new DateDetailsDto();
 
         populateCommonFields(parentQuestion, d);
@@ -108,12 +108,14 @@ public class DateManager extends QuestionManager<Date, DateAddReqDto, DateUpdate
 
     @Override
     @Transactional
-    public Date createFromTemplate(DateTemplateDetails template, Form form) {
+    public DateDetailsDto createFromTemplate(DateTemplateDetails template, Form form) {
         var d = new Date();
 
-        d.setQuestion(createQuestionFromTemplate(template, form));
+        var question = createQuestionFromTemplate(template, form);
 
-        return dateRepository.save(d);
+        d.setQuestion(question);
+
+        return toQuestionDetailsDto(dateRepository.save(d), question);
     }
 
 }

@@ -8,15 +8,11 @@ import com.sougata.form_response_service.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.redisson.api.RedissonClient;
-import org.redisson.api.options.KeysOptions;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Component(MessagingChannelNames.FORM_RESPONSE_DELETED + "_" + CommonMessagingNames.MESSAGE_HANDLER_SUFFIX)
 @RequiredArgsConstructor
@@ -32,7 +28,6 @@ public class FormResponseDeletedMessageHandler implements MessageListener {
 
         var formResponseCountCacheKey = CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_COUNT, messageData.getFormId());
         var responseSummariesCacheKey = CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_SUMMARIES, messageData.getFormId());
-        var isResponseAlreadySubmittedCacheKey = CacheUtil.buildKey(FormResponseCacheNames.IS_RESPONSE_ALREADY_SUBMITTED, "formId=" + messageData.getFormId(), "userId=" + messageData.getUserId());
         var individualFormResponseCacheKey = CacheUtil.buildKey(FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE, "formId=" + messageData.getFormId(), "formResponseId=" + messageData.getFormResponseId());
 
         var redissonKeys = redissonClient.getKeys();
@@ -40,7 +35,6 @@ public class FormResponseDeletedMessageHandler implements MessageListener {
         redissonKeys.delete(
                 formResponseCountCacheKey,
                 responseSummariesCacheKey,
-                isResponseAlreadySubmittedCacheKey,
                 individualFormResponseCacheKey
         );
 

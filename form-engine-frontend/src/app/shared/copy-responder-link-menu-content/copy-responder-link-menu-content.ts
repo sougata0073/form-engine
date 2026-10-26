@@ -7,7 +7,7 @@ import {Router} from '@angular/router';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {PublishFormDialog} from '../publish-form-dialog/publish-form-dialog';
 import {MatDialog} from '@angular/material/dialog';
-import {FormInfoRes} from '../../model/form/form-info-res';
+import {FormInfo} from '../../model/form/form-info';
 
 @Component({
   selector: 'app-copy-responder-link-menu-content',
@@ -21,7 +21,7 @@ import {FormInfoRes} from '../../model/form/form-info-res';
   styleUrl: './copy-responder-link-menu-content.scss',
 })
 export class CopyResponderLinkMenuContent implements OnInit {
-  formInfo = input.required<FormInfoRes>()
+  formInfo = input.required<FormInfo>()
 
   copy = output<void>()
   publish = output<void>()

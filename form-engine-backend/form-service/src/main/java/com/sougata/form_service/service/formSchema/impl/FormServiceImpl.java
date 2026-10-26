@@ -3,24 +3,27 @@ package com.sougata.form_service.service.formSchema.impl;
 import com.sougata.form_engine.constant.ViewFormErrorReason;
 import com.sougata.form_engine.constant.cache.CommonCacheNames;
 import com.sougata.form_engine.constant.cache.FormCacheNames;
+import com.sougata.form_engine.constant.cache.QuestionCacheNames;
 import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.dto.form.*;
-import com.sougata.form_engine.dto.messaging.FormCreatedMessage;
 import com.sougata.form_engine.dto.messaging.FormDeletedMessage;
 import com.sougata.form_engine.dto.others.SuccessMessageDto;
+import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
 import com.sougata.form_engine.dto.template.TemplateDetails;
 import com.sougata.form_service.configuration.AppConfiguration;
 import com.sougata.form_service.exception.FormNotAcceptingResponseException;
 import com.sougata.form_service.exception.FormNotFoundException;
 import com.sougata.form_service.exception.FormResponseAlreadySubmittedException;
+import com.sougata.form_service.feignClient.FormDataServiceFeignClient;
 import com.sougata.form_service.feignClient.FormResponseServiceFeignClient;
-import com.sougata.form_service.model.formSchema.Form;
+import com.sougata.form_service.model.formSchema.*;
 import com.sougata.form_service.repository.formSchema.FormRepository;
 import com.sougata.form_service.service.formSchema.FormService;
 import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.questionManager.QuestionManagerFactory;
 import com.sougata.form_service.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -28,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.UUID;
 
@@ -37,29 +41,46 @@ public class FormServiceImpl implements FormService {
 
     private final FormRepository formRepo;
     private final FormResponseServiceFeignClient formResponseServiceFeignClient;
+    private final FormDataServiceFeignClient formDataServiceFeignClient;
     private final FormServiceCached formServiceCached;
     private final QuestionManagerFactory questionManagerFactory;
     private final RedisTemplate<String, Object> redisTemplate;
     private final StringRedisTemplate stringRedisTemplate;
     private final AppConfiguration appConfiguration;
+    private final RedissonClient redissonClient;
 
     @Override
-    public FormInfoDto createForm(FormPutReqDto dto, UUID userId) {
+    public FormInfoDto createForm(UUID userId) {
         var newForm = new Form();
 
+        var newFormDefaultSettings = new FormDefaultSettings();
+        var newFormGeneralSettings = new FormGeneralSettings();
+        var newFormPresentationSettings = new FormPresentationSettings();
+        var newFormQuizSettings = new FormQuizSettings();
+        var newFormResponseSettings = new FormResponseSettings();
+
+        newFormDefaultSettings.setForm(newForm);
+        newFormGeneralSettings.setForm(newForm);
+        newFormPresentationSettings.setForm(newForm);
+        newFormQuizSettings.setForm(newForm);
+        newFormResponseSettings.setForm(newForm);
+
         newForm.setUserId(userId);
-        newForm.setName(dto.getName());
-        newForm.setTitle(dto.getTitle());
-        newForm.setDescription(dto.getDescription());
-        newForm.setPublished(dto.getPublished());
-        newForm.setAcceptingResponse(dto.getAcceptingResponse());
+        newForm.setName("Untitled form");
         newForm.setLastOpenedOn(Instant.now());
+
+        newForm.setFormDefaultSettings(newFormDefaultSettings);
+        newForm.setFormGeneralSettings(newFormGeneralSettings);
+        newForm.setFormPresentationSettings(newFormPresentationSettings);
+        newForm.setFormQuizSettings(newFormQuizSettings);
+        newForm.setFormResponseSettings(newFormResponseSettings);
 
         var savedForm = formRepo.save(newForm);
 
         var formInfo = toFormInfo(savedForm);
 
         addFirstInRecentForms(userId, formInfo);
+        putFormInfo(formInfo);
 
         return formInfo;
     }
@@ -68,15 +89,65 @@ public class FormServiceImpl implements FormService {
     @Transactional
     public FormInfoDto copyForm(UUID formId, CopyFormReqDto req, UUID userId) {
         var referenceFormDetails = formServiceCached.getFormDetails(formId);
+
+        var referenceFormDefaultSettings = referenceFormDetails.getFormInfo().getDefaultSettings();
+        var referenceFormGeneralSettings = referenceFormDetails.getFormInfo().getGeneralSettings();
+        var referenceFormPresentationSettings = referenceFormDetails.getFormInfo().getPresentationSettings();
+        var referenceFormQuizSettings = referenceFormDetails.getFormInfo().getQuizSettings();
+        var referenceFormResponseSettings = referenceFormDetails.getFormInfo().getResponseSettings();
+
         var newForm = new Form();
+
+        var newFormDefaultSettings = new FormDefaultSettings();
+        var newFormGeneralSettings = new FormGeneralSettings();
+        var newFormPresentationSettings = new FormPresentationSettings();
+        var newFormQuizSettings = new FormQuizSettings();
+        var newFormResponseSettings = new FormResponseSettings();
+
+        newFormDefaultSettings.setForm(newForm);
+        newFormDefaultSettings.setDefaultEmailCollectionOption(referenceFormDefaultSettings.getDefaultEmailCollectionOption());
+        newFormDefaultSettings.setMakeQuestionsRequiredByDefault(referenceFormDefaultSettings.getMakeQuestionsRequiredByDefault());
+
+        newFormGeneralSettings.setForm(newForm);
+        newFormGeneralSettings.setPublished(referenceFormGeneralSettings.getPublished());
+        newFormGeneralSettings.setAcceptingResponse(referenceFormGeneralSettings.getAcceptingResponse());
+        newFormGeneralSettings.setNotAcceptingResponseMessage(referenceFormGeneralSettings.getNotAcceptingResponseMessage());
+        newFormGeneralSettings.setStopAcceptingResponseOn(referenceFormGeneralSettings.getStopAcceptingResponseOn());
+        newFormGeneralSettings.setResponseLimit(referenceFormGeneralSettings.getResponseLimit());
+
+        newFormPresentationSettings.setForm(newForm);
+        newFormPresentationSettings.setShowProgressBar(referenceFormPresentationSettings.getShowProgressBar());
+        newFormPresentationSettings.setShuffleQuestionOrder(referenceFormPresentationSettings.getShuffleQuestionOrder());
+        newFormPresentationSettings.setResponseSavedConfirmationMessage(referenceFormPresentationSettings.getResponseSavedConfirmationMessage());
+        newFormPresentationSettings.setShowLinkToSubmitAnotherResponse(referenceFormPresentationSettings.getShowLinkToSubmitAnotherResponse());
+        newFormPresentationSettings.setShareResponseSummaryWithResponders(referenceFormPresentationSettings.getShareResponseSummaryWithResponders());
+        newFormPresentationSettings.setDisableAutoSaveForAllRespondents(referenceFormPresentationSettings.getDisableAutoSaveForAllRespondents());
+
+        newFormQuizSettings.setForm(newForm);
+        newFormQuizSettings.setIsQuiz(referenceFormQuizSettings.getIsQuiz());
+        newFormQuizSettings.setReleaseMarksOption(referenceFormQuizSettings.getReleaseMarksOption());
+        newFormQuizSettings.setRespondersCanSeeIncorrectAnswers(referenceFormQuizSettings.getRespondersCanSeeIncorrectAnswers());
+        newFormQuizSettings.setRespondersCanSeeCorrectAnswers(referenceFormQuizSettings.getRespondersCanSeeCorrectAnswers());
+        newFormQuizSettings.setRespondersCanSeePointsReceived(referenceFormQuizSettings.getRespondersCanSeePointsReceived());
+        newFormQuizSettings.setQuestionPointValue(referenceFormQuizSettings.getQuestionPointValue());
+
+        newFormResponseSettings.setForm(newForm);
+        newFormResponseSettings.setEmailCollectionOption(referenceFormResponseSettings.getEmailCollectionOption());
+        newFormResponseSettings.setResponseCopySendOption(referenceFormResponseSettings.getResponseCopySendOption());
+        newFormResponseSettings.setIsResponseEditable(referenceFormResponseSettings.getIsResponseEditable());
+        newFormResponseSettings.setSingleResponseOnly(referenceFormResponseSettings.getSingleResponseOnly());
 
         newForm.setUserId(userId);
         newForm.setName(req.getFormName());
-        newForm.setTitle(referenceFormDetails.getTitle());
-        newForm.setDescription(referenceFormDetails.getDescription());
-        newForm.setPublished(referenceFormDetails.getPublished());
-        newForm.setAcceptingResponse(referenceFormDetails.getAcceptingResponse());
+        newForm.setTitle(referenceFormDetails.getFormInfo().getTitle());
+        newForm.setDescription(referenceFormDetails.getFormInfo().getDescription());
         newForm.setLastOpenedOn(Instant.now());
+
+        newForm.setFormDefaultSettings(newFormDefaultSettings);
+        newForm.setFormGeneralSettings(newFormGeneralSettings);
+        newForm.setFormPresentationSettings(newFormPresentationSettings);
+        newForm.setFormQuizSettings(newFormQuizSettings);
+        newForm.setFormResponseSettings(newFormResponseSettings);
 
         var savedForm = formRepo.save(newForm);
 
@@ -89,31 +160,118 @@ public class FormServiceImpl implements FormService {
         var formInfo = toFormInfo(savedForm);
 
         addFirstInRecentForms(userId, formInfo);
+        putFormInfo(formInfo);
 
         return formInfo;
     }
 
     @Override
-    public FormInfoDto updateForm(UUID formId, FormPutReqDto dto, UUID userId) {
-        Form f = getFormById(formId);
+    public FormInfoDto updateForm(UUID formId, FormUpdateReqDto dto, UUID userId) {
+        var formToUpdate = getFormById(formId);
 
-        f.setUserId(userId);
-        f.setName(dto.getName());
-        f.setTitle(dto.getTitle());
-        f.setDescription(dto.getDescription());
-        f.setPublished(dto.getPublished());
-        f.setAcceptingResponse(dto.getAcceptingResponse());
-        f.setNotAcceptingResponseMessage(dto.getNotAcceptingResponseMessage());
-        f.setStopAcceptingResponseOn(dto.getStopAcceptingResponseOn());
-        f.setStopAcceptingResponseAfterResponse(dto.getStopAcceptingResponseAfterResponse());
+        var formToUpdateDefaultSettings = formToUpdate.getFormDefaultSettings();
+        var formToUpdateGeneralSettings = formToUpdate.getFormGeneralSettings();
+        var formToUpdatePresentationSettings = formToUpdate.getFormPresentationSettings();
+        var formToUpdateQuizSettings = formToUpdate.getFormQuizSettings();
+        var formToUpdateResponseSettings = formToUpdate.getFormResponseSettings();
 
-        Form savedForm = formRepo.save(f);
+        var dtoDefaultSettings = dto.getDefaultSettingsUpdateReq();
+        var dtoGeneralSettings = dto.getGeneralSettingsUpdateReq();
+        var dtoPresentationSettings = dto.getPresentationSettingsUpdateReq();
+        var dtoQuizSettings = dto.getQuizSettingsUpdateReq();
+        var dtoResponseSettings = dto.getResponseSettingsUpdateReq();
+
+        dto.getUpdateFields().forEach(field -> {
+            switch (field) {
+                case FormUpdateReqDto.Fields.name -> formToUpdate.setName(dto.getName());
+                case FormUpdateReqDto.Fields.title -> formToUpdate.setTitle(dto.getTitle());
+                case FormUpdateReqDto.Fields.description -> formToUpdate.setDescription(dto.getDescription());
+
+                case FormUpdateReqDto.Fields.defaultSettingsUpdateReq ->
+                        dto.getDefaultSettingsUpdateReq().getUpdateFields().forEach(settingsField -> {
+                            switch (settingsField) {
+                                case FormDefaultSettingsUpdateReqDto.Fields.defaultEmailCollectionOption ->
+                                        formToUpdateDefaultSettings.setDefaultEmailCollectionOption(dtoDefaultSettings.getDefaultEmailCollectionOption());
+                                case FormDefaultSettingsUpdateReqDto.Fields.makeQuestionsRequiredByDefault ->
+                                        formToUpdateDefaultSettings.setMakeQuestionsRequiredByDefault(dtoDefaultSettings.getMakeQuestionsRequiredByDefault());
+                            }
+                        });
+
+                case FormUpdateReqDto.Fields.generalSettingsUpdateReq ->
+                        dtoGeneralSettings.getUpdateFields().forEach(settingsField -> {
+                            switch (settingsField) {
+                                case FormGeneralSettingsUpdateReqDto.Fields.published ->
+                                        formToUpdateGeneralSettings.setPublished(dtoGeneralSettings.getPublished());
+                                case FormGeneralSettingsUpdateReqDto.Fields.acceptingResponse ->
+                                        formToUpdateGeneralSettings.setAcceptingResponse(dtoGeneralSettings.getAcceptingResponse());
+                                case FormGeneralSettingsUpdateReqDto.Fields.notAcceptingResponseMessage ->
+                                        formToUpdateGeneralSettings.setNotAcceptingResponseMessage(dtoGeneralSettings.getNotAcceptingResponseMessage());
+                                case FormGeneralSettingsUpdateReqDto.Fields.stopAcceptingResponseOn ->
+                                        formToUpdateGeneralSettings.setStopAcceptingResponseOn(dtoGeneralSettings.getStopAcceptingResponseOn());
+                                case FormGeneralSettingsUpdateReqDto.Fields.responseLimit ->
+                                        formToUpdateGeneralSettings.setResponseLimit(dtoGeneralSettings.getResponseLimit());
+                            }
+                        });
+
+                case FormUpdateReqDto.Fields.presentationSettingsUpdateReq ->
+                        dtoPresentationSettings.getUpdateFields().forEach(settingsField -> {
+                            switch (settingsField) {
+                                case FormPresentationSettingsUpdateReqDto.Fields.showProgressBar ->
+                                        formToUpdatePresentationSettings.setShowProgressBar(dtoPresentationSettings.getShowProgressBar());
+                                case FormPresentationSettingsUpdateReqDto.Fields.shuffleQuestionOrder ->
+                                        formToUpdatePresentationSettings.setShuffleQuestionOrder(dtoPresentationSettings.getShuffleQuestionOrder());
+                                case FormPresentationSettingsUpdateReqDto.Fields.responseSavedConfirmationMessage ->
+                                        formToUpdatePresentationSettings.setResponseSavedConfirmationMessage(dtoPresentationSettings.getResponseSavedConfirmationMessage());
+                                case FormPresentationSettingsUpdateReqDto.Fields.showLinkToSubmitAnotherResponse ->
+                                        formToUpdatePresentationSettings.setShowLinkToSubmitAnotherResponse(dtoPresentationSettings.getShowLinkToSubmitAnotherResponse());
+                                case FormPresentationSettingsUpdateReqDto.Fields.shareResponseSummaryWithResponders ->
+                                        formToUpdatePresentationSettings.setShareResponseSummaryWithResponders(dtoPresentationSettings.getShareResponseSummaryWithResponders());
+                                case FormPresentationSettingsUpdateReqDto.Fields.disableAutoSaveForAllRespondents ->
+                                        formToUpdatePresentationSettings.setDisableAutoSaveForAllRespondents(dtoPresentationSettings.getDisableAutoSaveForAllRespondents());
+                            }
+                        });
+
+                case FormUpdateReqDto.Fields.quizSettingsUpdateReq ->
+                        dtoQuizSettings.getUpdateFields().forEach(settingsField -> {
+                            switch (settingsField) {
+                                case FormQuizSettingsUpdateReqDto.Fields.isQuiz ->
+                                        formToUpdateQuizSettings.setIsQuiz(dtoQuizSettings.getIsQuiz());
+                                case FormQuizSettingsUpdateReqDto.Fields.releaseMarksOption ->
+                                        formToUpdateQuizSettings.setReleaseMarksOption(dtoQuizSettings.getReleaseMarksOption());
+                                case FormQuizSettingsUpdateReqDto.Fields.respondersCanSeeIncorrectAnswers ->
+                                        formToUpdateQuizSettings.setRespondersCanSeeIncorrectAnswers(dtoQuizSettings.getRespondersCanSeeIncorrectAnswers());
+                                case FormQuizSettingsUpdateReqDto.Fields.respondersCanSeeCorrectAnswers ->
+                                        formToUpdateQuizSettings.setRespondersCanSeeCorrectAnswers(dtoQuizSettings.getRespondersCanSeeCorrectAnswers());
+                                case FormQuizSettingsUpdateReqDto.Fields.respondersCanSeePointsReceived ->
+                                        formToUpdateQuizSettings.setRespondersCanSeePointsReceived(dtoQuizSettings.getRespondersCanSeePointsReceived());
+                                case FormQuizSettingsUpdateReqDto.Fields.questionPointValue ->
+                                        formToUpdateQuizSettings.setQuestionPointValue(dtoQuizSettings.getQuestionPointValue());
+                            }
+                        });
+
+                case FormUpdateReqDto.Fields.responseSettingsUpdateReq ->
+                        dtoResponseSettings.getUpdateFields().forEach(settingsField -> {
+                            switch (settingsField) {
+                                case FormResponseSettingsUpdateReqDto.Fields.emailCollectionOption ->
+                                        formToUpdateResponseSettings.setEmailCollectionOption(dtoResponseSettings.getEmailCollectionOption());
+                                case FormResponseSettingsUpdateReqDto.Fields.responseCopySendOption ->
+                                        formToUpdateResponseSettings.setResponseCopySendOption(dtoResponseSettings.getResponseCopySendOption());
+                                case FormResponseSettingsUpdateReqDto.Fields.isResponseEditable ->
+                                        formToUpdateResponseSettings.setIsResponseEditable(dtoResponseSettings.getIsResponseEditable());
+                                case FormResponseSettingsUpdateReqDto.Fields.singleResponseOnly ->
+                                        formToUpdateResponseSettings.setSingleResponseOnly(dtoResponseSettings.getSingleResponseOnly());
+                            }
+                        });
+            }
+        });
+
+        var savedForm = formRepo.save(formToUpdate);
 
         var formInfo = toFormInfo(savedForm);
 
         updateRecentForms(userId, formInfo);
         updateFormDetails(formInfo);
-        updateFormInfo(formInfo);
+        putFormInfo(formInfo);
 
         return formInfo;
     }
@@ -127,45 +285,48 @@ public class FormServiceImpl implements FormService {
         formRepo.updateLastOpenedOn(formId, currTime);
 
         var recentFormsCacheKey = CacheUtil.buildKey(FormCacheNames.RECENT_FORMS, userId);
-        if (redisTemplate.hasKey(recentFormsCacheKey)) {
-            var formSummaries = (FormSummariesDto) redisTemplate.opsForValue().get(recentFormsCacheKey);
+        var formSummariesCached = (FormSummariesDto) redisTemplate.opsForValue().get(recentFormsCacheKey);
 
-            formSummaries.getForms().forEach(f -> {
+        if (formSummariesCached != null) {
+
+            formSummariesCached.getForms().forEach(f -> {
                 if (f.getId().equals(formId)) {
                     f.setLastOpenedOn(currTime);
                 }
             });
-            formSummaries.getForms().sort(Comparator.comparing(FormSummaryDto::getLastOpenedOn, Comparator.reverseOrder()));
+            formSummariesCached.getForms().sort(Comparator.comparing(FormSummaryDto::getLastOpenedOn, Comparator.reverseOrder()));
 
-            redisTemplate.opsForValue().set(recentFormsCacheKey, formSummaries, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
+            redisTemplate.opsForValue().set(recentFormsCacheKey, formSummariesCached, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
         }
 
         var formDetailsCacheKey = CacheUtil.buildKey(FormCacheNames.FORM_DETAILS, formId);
-        if (redisTemplate.hasKey(formDetailsCacheKey)) {
-            var formDetails = (FormDetailsDto) redisTemplate.opsForValue().get(formDetailsCacheKey);
+        var formDetailsCached = (FormDetailsDto) redisTemplate.opsForValue().get(formDetailsCacheKey);
 
-            formDetails.setLastOpenedOn(currTime);
+        if (formDetailsCached != null) {
 
-            redisTemplate.opsForValue().set(formDetailsCacheKey, formDetails, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
+            formDetailsCached.getFormInfo().setLastOpenedOn(currTime);
+
+            redisTemplate.opsForValue().set(formDetailsCacheKey, formDetailsCached, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
         }
 
         var formInfoCacheKey = CacheUtil.buildKey(FormCacheNames.FORM_INFO, formId);
-        if (redisTemplate.hasKey(formInfoCacheKey)) {
-            var prevFormInfo = (FormInfoDto) redisTemplate.opsForValue().get(formInfoCacheKey);
+        var prevFormInfoCached = (FormInfoDto) redisTemplate.opsForValue().get(formInfoCacheKey);
 
-            prevFormInfo.setLastOpenedOn(currTime);
+        if (prevFormInfoCached != null) {
 
-            redisTemplate.opsForValue().set(formInfoCacheKey, prevFormInfo, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
+            prevFormInfoCached.setLastOpenedOn(currTime);
+
+            redisTemplate.opsForValue().set(formInfoCacheKey, prevFormInfoCached, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
         }
 
         return formServiceCached.getFormDetails(formId);
     }
 
     @Override
-    public FormDetailsDto viewForm(UUID id, UUID userId) {
-        var f = formServiceCached.getFormDetails(id);
+    public FormDetailsDto viewForm(UUID formId, UUID userId) {
+        var formDetails = formServiceCached.getFormDetails(formId);
 
-        if (!f.getPublished()) {
+        if (!formDetails.getFormInfo().getGeneralSettings().getPublished()) {
             throw new FormNotAcceptingResponseException(
                     new ViewFormErrorResDto(
                             null,
@@ -176,16 +337,16 @@ public class FormServiceImpl implements FormService {
         }
 
         boolean isAcceptingDateExceeded =
-                f.getStopAcceptingResponseOn() != null &&
-                        Instant.now().isAfter(f.getStopAcceptingResponseOn());
+                formDetails.getFormInfo().getGeneralSettings().getStopAcceptingResponseOn() != null &&
+                        Instant.now().isAfter(formDetails.getFormInfo().getGeneralSettings().getStopAcceptingResponseOn());
 
-        var formResponseCountRedisKey = CommonCacheNames.FORM_RESPONSE_COUNT + "::" + f.getId();
+        var formResponseCountRedisKey = CommonCacheNames.FORM_RESPONSE_COUNT + "::" + formDetails.getFormInfo().getId();
 
         String formResponseCountString = stringRedisTemplate.opsForValue().get(formResponseCountRedisKey);
         Long formResponseCount;
 
         if (formResponseCountString == null) {
-            formResponseCount = formResponseServiceFeignClient.getFormResponseCount(f.getId()).getCount();
+            formResponseCount = formResponseServiceFeignClient.getFormResponseCount(formDetails.getFormInfo().getId()).getCount();
 
             stringRedisTemplate.opsForValue().setIfAbsent(
                     formResponseCountRedisKey,
@@ -196,30 +357,30 @@ public class FormServiceImpl implements FormService {
             formResponseCount = Long.valueOf(formResponseCountString);
         }
 
-        boolean isNumberOfResponseExceeded = f.getStopAcceptingResponseAfterResponse() != null &&
-                formResponseCount >= f.getStopAcceptingResponseAfterResponse();
+        boolean isNumberOfResponseExceeded = formDetails.getFormInfo().getGeneralSettings().getResponseLimit() != null &&
+                formResponseCount >= formDetails.getFormInfo().getGeneralSettings().getResponseLimit();
 
-        if (!f.getAcceptingResponse() || isAcceptingDateExceeded || isNumberOfResponseExceeded) {
+        if (!formDetails.getFormInfo().getGeneralSettings().getAcceptingResponse() || isAcceptingDateExceeded || isNumberOfResponseExceeded) {
             throw new FormNotAcceptingResponseException(
                     new ViewFormErrorResDto(
-                            f.getTitle(),
+                            formDetails.getFormInfo().getTitle(),
                             ViewFormErrorReason.NOT_ACCEPTING_RESPONSE,
-                            f.getNotAcceptingResponseMessage()
+                            formDetails.getFormInfo().getGeneralSettings().getNotAcceptingResponseMessage()
                     )
             );
         }
 
-        if (formResponseServiceFeignClient.getIsResponseAlreadySubmitted(id, userId)) {
+        if (formDataServiceFeignClient.getIsResponseAlreadySubmitted(formId, userId)) {
             throw new FormResponseAlreadySubmittedException(
                     new ViewFormErrorResDto(
-                            f.getTitle(),
+                            formDetails.getFormInfo().getTitle(),
                             ViewFormErrorReason.RESPONSE_ALREADY_SUBMITTED,
                             "You have already submitted a response for this form."
                     )
             );
         }
 
-        return f;
+        return formDetails;
     }
 
     @Override
@@ -239,46 +400,6 @@ public class FormServiceImpl implements FormService {
     }
 
     @Override
-    public SuccessMessageDto renameForm(UUID formId, FormRenameReqDto dto, UUID userId) {
-
-        formRepo.renameForm(formId, dto.getNewName());
-
-        var recentFormsCacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + FormCacheNames.RECENT_FORMS + CommonCacheNames.SEPARATOR + userId;
-        if (redisTemplate.hasKey(recentFormsCacheKey)) {
-            var formSummaries = (FormSummariesDto) redisTemplate.opsForValue().get(recentFormsCacheKey);
-
-            formSummaries.getForms().forEach(f -> {
-                if (f.getId().equals(formId)) {
-                    f.setName(dto.getNewName());
-                }
-            });
-
-            redisTemplate.opsForValue().set(recentFormsCacheKey, formSummaries, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
-        }
-
-
-        var formDetailsCacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + FormCacheNames.FORM_DETAILS + CommonCacheNames.SEPARATOR + formId;
-        if (redisTemplate.hasKey(formDetailsCacheKey)) {
-            var formDetails = (FormDetailsDto) redisTemplate.opsForValue().get(formDetailsCacheKey);
-
-            formDetails.setName(dto.getNewName());
-
-            redisTemplate.opsForValue().set(formDetailsCacheKey, formDetails, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
-        }
-
-        var formInfoCacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + FormCacheNames.FORM_INFO + CommonCacheNames.SEPARATOR + formId;
-        if (redisTemplate.hasKey(formInfoCacheKey)) {
-            var prevFormInfo = (FormInfoDto) redisTemplate.opsForValue().get(formInfoCacheKey);
-
-            prevFormInfo.setName(dto.getNewName());
-
-            redisTemplate.opsForValue().set(formInfoCacheKey, prevFormInfo, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
-        }
-
-        return SuccessMessageDto.create("Form renamed successfully");
-    }
-
-    @Override
     public FormInfoDto getFormInfo(UUID formId) {
         Form f = getFormById(formId);
 
@@ -286,10 +407,14 @@ public class FormServiceImpl implements FormService {
     }
 
     @Override
+    @Transactional
     public SuccessMessageDto deleteForm(UUID formId, UUID userId) {
         formRepo.deleteById(formId);
 
         deleteFormFromRecentForms(userId, formId);
+        deleteFormDetailsCache(formId);
+        deleteFormInfoCache(formId);
+        deleteFormQuestionCache(formId);
 
         redisTemplate.convertAndSend(
                 MessagingChannelNames.FORM_DELETED,
@@ -302,48 +427,105 @@ public class FormServiceImpl implements FormService {
     @Override
     @Transactional
     public Form createFromTemplate(TemplateDetails template, UUID userId) {
-        Form f = new Form();
+        var newForm = new Form();
 
-        f.setUserId(userId);
-        f.setName(template.getName());
-        f.setTitle(template.getTitle());
-        f.setDescription(template.getDescription());
-        f.setPublished(false);
-        f.setAcceptingResponse(true);
-        f.setLastOpenedOn(Instant.now());
+        var newFormDefaultSettings = new FormDefaultSettings();
+        var newFormGeneralSettings = new FormGeneralSettings();
+        var newFormPresentationSettings = new FormPresentationSettings();
+        var newFormQuizSettings = new FormQuizSettings();
+        var newFormResponseSettings = new FormResponseSettings();
 
-        var savedForm = formRepo.save(f);
+        newFormDefaultSettings.setForm(newForm);
+        newFormGeneralSettings.setForm(newForm);
+        newFormPresentationSettings.setForm(newForm);
+        newFormQuizSettings.setForm(newForm);
+        newFormResponseSettings.setForm(newForm);
+
+        newForm.setUserId(userId);
+        newForm.setName(template.getName());
+        newForm.setTitle(template.getTitle());
+        newForm.setDescription(template.getDescription());
+        newForm.setLastOpenedOn(Instant.now());
+
+        newForm.setFormDefaultSettings(newFormDefaultSettings);
+        newForm.setFormGeneralSettings(newFormGeneralSettings);
+        newForm.setFormPresentationSettings(newFormPresentationSettings);
+        newForm.setFormQuizSettings(newFormQuizSettings);
+        newForm.setFormResponseSettings(newFormResponseSettings);
+
+        var savedForm = formRepo.save(newForm);
+
+        var questions = new ArrayList<QuestionDetailsDto>();
 
         template.getQuestionTemplates().forEach(qt -> {
             var questionManager = questionManagerFactory.get(qt.getQuestionType());
-            questionManager.createFromTemplate(qt, savedForm);
+            var questionDetails = questionManager.createFromTemplate(qt, savedForm);
+
+            questions.add(questionDetails);
         });
 
+        var formDetails = new FormDetailsDto(toFormInfo(savedForm), questions);
+
         addFirstInRecentForms(userId, toFormInfo(savedForm));
+        putFormDetails(formDetails);
 
         return savedForm;
     }
 
     private FormInfoDto toFormInfo(Form form) {
+        var defaultSettings = form.getFormDefaultSettings();
+        var generalSettings = form.getFormGeneralSettings();
+        var presentationSettings = form.getFormPresentationSettings();
+        var quizSettings = form.getFormQuizSettings();
+        var responseSettings = form.getFormResponseSettings();
+
         return new FormInfoDto(
                 form.getId(),
                 form.getName(),
                 form.getTitle(),
                 form.getDescription(),
-                form.getPublished(),
-                form.getAcceptingResponse(),
-                form.getNotAcceptingResponseMessage(),
-                form.getStopAcceptingResponseOn(),
-                form.getStopAcceptingResponseAfterResponse(),
-                form.getLastOpenedOn()
+                form.getLastOpenedOn(),
+                new FormDefaultSettingsDto(
+                        defaultSettings.getDefaultEmailCollectionOption(),
+                        defaultSettings.getMakeQuestionsRequiredByDefault()
+                ),
+                new FormGeneralSettingsDto(
+                        generalSettings.getPublished(),
+                        generalSettings.getAcceptingResponse(),
+                        generalSettings.getNotAcceptingResponseMessage(),
+                        generalSettings.getStopAcceptingResponseOn(),
+                        generalSettings.getResponseLimit()
+                ),
+                new FormPresentationSettingsDto(
+                        presentationSettings.getShowProgressBar(),
+                        presentationSettings.getShuffleQuestionOrder(),
+                        presentationSettings.getResponseSavedConfirmationMessage(),
+                        presentationSettings.getShowLinkToSubmitAnotherResponse(),
+                        presentationSettings.getShareResponseSummaryWithResponders(),
+                        presentationSettings.getDisableAutoSaveForAllRespondents()
+                ),
+                new FormQuizSettingsDto(
+                        quizSettings.getIsQuiz(),
+                        quizSettings.getReleaseMarksOption(),
+                        quizSettings.getRespondersCanSeeIncorrectAnswers(),
+                        quizSettings.getRespondersCanSeeCorrectAnswers(),
+                        quizSettings.getRespondersCanSeePointsReceived(),
+                        quizSettings.getQuestionPointValue()
+                ),
+                new FormResponseSettingsDto(
+                        responseSettings.getEmailCollectionOption(),
+                        responseSettings.getResponseCopySendOption(),
+                        responseSettings.getIsResponseEditable(),
+                        responseSettings.getSingleResponseOnly()
+                )
         );
     }
 
     private void addFirstInRecentForms(UUID userId, FormInfoDto formInfo) {
-        var cacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + FormCacheNames.RECENT_FORMS + CommonCacheNames.SEPARATOR + userId;
+        var cacheKey = CacheUtil.buildKey(FormCacheNames.RECENT_FORMS, userId);
+        var formSummaries = (FormSummariesDto) redisTemplate.opsForValue().get(cacheKey);
 
-        if (redisTemplate.hasKey(cacheKey)) {
-            var formSummaries = (FormSummariesDto) redisTemplate.opsForValue().get(cacheKey);
+        if (formSummaries != null) {
 
             formSummaries.getForms().addFirst(new FormSummaryDto(formInfo.getId(), formInfo.getName(), formInfo.getLastOpenedOn()));
 
@@ -352,10 +534,10 @@ public class FormServiceImpl implements FormService {
     }
 
     private void deleteFormFromRecentForms(UUID userId, UUID formId) {
-        var cacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + FormCacheNames.RECENT_FORMS + CommonCacheNames.SEPARATOR + userId;
+        var cacheKey = CacheUtil.buildKey(FormCacheNames.RECENT_FORMS, userId);
+        var formSummaries = (FormSummariesDto) redisTemplate.opsForValue().get(cacheKey);
 
-        if (redisTemplate.hasKey(cacheKey)) {
-            var formSummaries = (FormSummariesDto) redisTemplate.opsForValue().get(cacheKey);
+        if (formSummaries != null) {
 
             formSummaries.getForms().removeIf(f -> f.getId().equals(formId));
 
@@ -363,11 +545,35 @@ public class FormServiceImpl implements FormService {
         }
     }
 
-    private void updateRecentForms(UUID userId, FormInfoDto formInfo) {
-        var cacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + FormCacheNames.RECENT_FORMS + CommonCacheNames.SEPARATOR + userId;
+    private void deleteFormDetailsCache(UUID formId) {
+        var cacheKey = CacheUtil.buildKey(FormCacheNames.FORM_DETAILS, formId);
 
-        if (redisTemplate.hasKey(cacheKey)) {
-            var formSummaries = (FormSummariesDto) redisTemplate.opsForValue().get(cacheKey);
+        redisTemplate.delete(cacheKey);
+    }
+
+    private void deleteFormInfoCache(UUID formId) {
+        var cacheKey = CacheUtil.buildKey(FormCacheNames.FORM_INFO, formId);
+
+        redisTemplate.delete(cacheKey);
+    }
+
+    private void deleteFormQuestionCache(UUID formId) {
+        var questionDetailsKeyPattern = CacheUtil.buildKey(QuestionCacheNames.QUESTION_DETAILS, "formId=" + formId, "*");
+        var questionSummaryKeyPattern = CacheUtil.buildKey(QuestionCacheNames.QUESTION_SUMMARY, "formId=" + formId, "*");
+        var questionSummariesKey = CacheUtil.buildKey(QuestionCacheNames.QUESTION_SUMMARIES, formId);
+
+        var rKeys = redissonClient.getKeys();
+
+        rKeys.delete(questionSummariesKey);
+        rKeys.deleteByPattern(questionDetailsKeyPattern);
+        rKeys.deleteByPattern(questionSummaryKeyPattern);
+    }
+
+    private void updateRecentForms(UUID userId, FormInfoDto formInfo) {
+        var cacheKey = CacheUtil.buildKey(FormCacheNames.RECENT_FORMS, userId);
+        var formSummaries = (FormSummariesDto) redisTemplate.opsForValue().get(cacheKey);
+
+        if (formSummaries != null) {
 
             formSummaries.getForms().forEach(f -> {
                 if (f.getId().equals(formInfo.getId())) {
@@ -380,29 +586,26 @@ public class FormServiceImpl implements FormService {
     }
 
     private void updateFormDetails(FormInfoDto formInfo) {
-        var cacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + FormCacheNames.FORM_DETAILS + CommonCacheNames.SEPARATOR + formInfo.getId();
+        var cacheKey = CacheUtil.buildKey(FormCacheNames.FORM_DETAILS, formInfo.getId());
+        var formDetails = (FormDetailsDto) redisTemplate.opsForValue().get(cacheKey);
 
-        if (redisTemplate.hasKey(cacheKey)) {
-            var formDetails = (FormDetailsDto) redisTemplate.opsForValue().get(cacheKey);
-
-            formDetails.setName(formInfo.getName());
-            formDetails.setTitle(formInfo.getTitle());
-            formDetails.setDescription(formInfo.getDescription());
-            formDetails.setPublished(formInfo.getPublished());
-            formDetails.setAcceptingResponse(formInfo.getAcceptingResponse());
-            formDetails.setNotAcceptingResponseMessage(formInfo.getNotAcceptingResponseMessage());
-            formDetails.setStopAcceptingResponseOn(formInfo.getStopAcceptingResponseOn());
-            formDetails.setStopAcceptingResponseAfterResponse(formInfo.getStopAcceptingResponseAfterResponse());
-            formDetails.setLastOpenedOn(formInfo.getLastOpenedOn());
+        if (formDetails != null) {
+            formDetails.setFormInfo(formInfo);
 
             redisTemplate.opsForValue().set(cacheKey, formDetails, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
         }
     }
 
-    private void updateFormInfo(FormInfoDto formInfo) {
-        var cacheKey = CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR + FormCacheNames.FORM_INFO + CommonCacheNames.SEPARATOR + formInfo.getId();
+    private void putFormInfo(FormInfoDto formInfo) {
+        var cacheKey = CacheUtil.buildKey(FormCacheNames.FORM_INFO, formInfo.getId());
 
         redisTemplate.opsForValue().set(cacheKey, formInfo, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
+    }
+
+    private void putFormDetails(FormDetailsDto formDetails) {
+        var cacheKey = CacheUtil.buildKey(FormCacheNames.FORM_DETAILS, formDetails.getFormInfo().getId());
+
+        redisTemplate.opsForValue().set(cacheKey, formDetails, Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes()));
     }
 
 }

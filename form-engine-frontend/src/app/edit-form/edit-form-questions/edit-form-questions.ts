@@ -50,7 +50,7 @@ export class EditFormQuestions implements OnInit, OnDestroy {
 
       this.editFormService.loadFormRes(this.formId(), (res) => {
 
-        let formTitle = this.formRes()!.title
+        let formTitle = this.formRes()!.formInfo.title
 
         if (formTitle) {
           formTitle += ' - Form engine'

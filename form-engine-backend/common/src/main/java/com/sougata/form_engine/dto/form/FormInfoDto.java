@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 @Getter
@@ -17,10 +18,27 @@ public class FormInfoDto {
     private String name;
     private String title;
     private String description;
-    private Boolean published;
-    private Boolean acceptingResponse;
-    private String notAcceptingResponseMessage;
-    private Instant stopAcceptingResponseOn;
-    private Integer stopAcceptingResponseAfterResponse;
     private Instant lastOpenedOn;
+    private FormDefaultSettingsDto defaultSettings;
+    private FormGeneralSettingsDto generalSettings;
+    private FormPresentationSettingsDto presentationSettings;
+    private FormQuizSettingsDto quizSettings;
+    private FormResponseSettingsDto responseSettings;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        FormInfoDto that = (FormInfoDto) o;
+        return Objects.equals(id, that.id)
+                && Objects.equals(name, that.name)
+                && Objects.equals(title, that.title)
+                && Objects.equals(description, that.description)
+                && Objects.equals(lastOpenedOn, that.lastOpenedOn)
+                && Objects.equals(defaultSettings, that.defaultSettings)
+                && Objects.equals(generalSettings, that.generalSettings)
+                && Objects.equals(presentationSettings, that.presentationSettings)
+                && Objects.equals(quizSettings, that.quizSettings)
+                && Objects.equals(responseSettings, that.responseSettings);
+    }
+
 }

@@ -13,6 +13,7 @@ import com.sougata.form_data_service.service.FormDataService;
 import com.sougata.form_data_service.service.FormDataServiceCached;
 import com.sougata.form_data_service.service.responseManager.ResponseManagerFactory;
 import com.sougata.form_engine.constant.DistributedLockNames;
+import com.sougata.form_engine.constant.FormConstant;
 import com.sougata.form_engine.constant.RedisStreamKeys;
 import com.sougata.form_engine.constant.RedisStreamNames;
 import com.sougata.form_engine.constant.cache.CommonCacheNames;
@@ -59,17 +60,17 @@ public class FormDataServiceImpl implements FormDataService {
 
         var formDetails = formServiceFeignClient.getFormDetails(formId);
 
-        if (!formDetails.getPublished()) {
+        if (!formDetails.getFormInfo().getGeneralSettings().getPublished()) {
             throw new FormSubmitException("This form is not published yet.");
         }
 
-        if (!formDetails.getAcceptingResponse()) {
+        if (!formDetails.getFormInfo().getGeneralSettings().getAcceptingResponse()) {
             throw new FormSubmitException("This form is not accepting response.");
         }
 
         boolean isAcceptingDateExceeded =
-                formDetails.getStopAcceptingResponseOn() != null &&
-                        Instant.now().isAfter(formDetails.getStopAcceptingResponseOn());
+                formDetails.getFormInfo().getGeneralSettings().getStopAcceptingResponseOn() != null &&
+                        Instant.now().isAfter(formDetails.getFormInfo().getGeneralSettings().getStopAcceptingResponseOn());
 
         if (isAcceptingDateExceeded) {
             throw new FormSubmitException("This form is no longer accepting responses.");
@@ -98,8 +99,11 @@ public class FormDataServiceImpl implements FormDataService {
 
         var incrementedFormResponseCount = stringRedisTemplate.opsForValue().increment(formResponseCountRedisKey);
 
-        if (formDetails.getStopAcceptingResponseAfterResponse() != null
-                && incrementedFormResponseCount > formDetails.getStopAcceptingResponseAfterResponse()) {
+        var responseLimit = formDetails.getFormInfo().getGeneralSettings().getResponseLimit() == null
+                ? FormConstant.MAX_FORM_RESPONSE_LIMIT
+                : formDetails.getFormInfo().getGeneralSettings().getResponseLimit();
+
+        if (incrementedFormResponseCount > responseLimit) {
 
             stringRedisTemplate.opsForValue().decrement(formResponseCountRedisKey);
 
@@ -214,5 +218,10 @@ public class FormDataServiceImpl implements FormDataService {
         );
 
         return SuccessMessageDto.create("Response deleted successfully. Form id: " + formId + " Form response ID: " + formResponseId);
+    }
+
+    @Override
+    public boolean getIsResponseAlreadySubmitted(UUID formId, UUID userId) {
+        return formResponseUserRepository.existsById(new FormResponseUser.PartitionKey(formId, userId));
     }
 }

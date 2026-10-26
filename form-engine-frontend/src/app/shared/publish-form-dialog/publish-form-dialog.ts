@@ -1,15 +1,17 @@
-import {Component, inject} from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {
   MatDialogActions,
   MatDialogClose,
   MatDialogContent,
   MatDialogRef,
-  MatDialogTitle
-} from "@angular/material/dialog";
-import {MatDivider} from '@angular/material/list';
-import {MatIcon} from '@angular/material/icon';
-import {MatButton} from '@angular/material/button';
-import {EditFormService} from '../../service/edit-form-service';
+  MatDialogTitle,
+} from '@angular/material/dialog';
+import { MatDivider } from '@angular/material/list';
+import { MatIcon } from '@angular/material/icon';
+import { MatButton } from '@angular/material/button';
+import { EditFormService } from '../../service/edit-form-service';
+import { FormUpdateReq } from '../../model/form/form-update-req';
+import { FormGeneralSettingsUpdateReq } from '../../model/form/form-general-settings-update-req';
 
 @Component({
   selector: 'app-publish-form-dialog',
@@ -20,33 +22,38 @@ import {EditFormService} from '../../service/edit-form-service';
     MatButton,
     MatDialogContent,
     MatDialogActions,
-    MatDialogClose
+    MatDialogClose,
   ],
   templateUrl: './publish-form-dialog.html',
   styleUrl: './publish-form-dialog.scss',
 })
 export class PublishFormDialog {
+  protected editFormService = inject(EditFormService);
+  protected dialogRef = inject(MatDialogRef<PublishFormDialog>);
 
-  protected editFormService = inject(EditFormService)
-  protected dialogRef = inject(MatDialogRef<PublishFormDialog>)
-
-  protected formInfo = this.editFormService.formInfo
+  protected formInfo = this.editFormService.formInfo;
 
   protected onPublishClick() {
-    const prevForm = this.formInfo()!
-
-    this.editFormService.updateFormInfo(prevForm.id, {
-      name: prevForm.name,
-      title: prevForm.title,
-      description: prevForm.description,
-      acceptingResponse: true,
-      notAcceptingResponseMessage: prevForm.notAcceptingResponseMessage,
-      published: true,
-      stopAcceptingResponseOn: null,
-      stopAcceptingResponseAfterResponse: null
-    }, res => {
-      this.dialogRef.close(res)
-    })
+    this.editFormService.updateFormInfo(
+      this.formInfo()!.id,
+      {
+        generalSettingsUpdateReq: {
+          published: true,
+          acceptingResponse: true,
+          stopAcceptingResponseOn: null,
+          responseLimit: null,
+          updateFields: [
+            'published' satisfies keyof FormGeneralSettingsUpdateReq,
+            'acceptingResponse' satisfies keyof FormGeneralSettingsUpdateReq,
+            'stopAcceptingResponseOn' satisfies keyof FormGeneralSettingsUpdateReq,
+            'responseLimit' satisfies keyof FormGeneralSettingsUpdateReq,
+          ],
+        },
+        updateFields: ['generalSettingsUpdateReq' satisfies keyof FormUpdateReq],
+      },
+      (res) => {
+        this.dialogRef.close(res);
+      },
+    );
   }
-
 }

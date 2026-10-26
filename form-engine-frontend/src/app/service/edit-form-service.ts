@@ -3,25 +3,23 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { AnyQuestionRes } from '../type/any-question-res';
 import { AnyQuestionAddReq } from '../type/any-question-add-req';
 import { FormDetails } from '../model/form/form-details';
-import { FormAddUpdateReq } from '../model/form/form-add-update-req';
 import { SuccessMessage } from '../model/common/success-message';
 import { debounce, mergeWith } from 'lodash';
-import { FormInfoRes } from '../model/form/form-info-res';
+import { FormInfo } from '../model/form/form-info';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { QuestionOrderUpdateReq } from '../model/edit-form/question/updatereq/question-order-update-req';
 import { QuestionRes } from '../model/edit-form/question/response/question-res';
 import { AnyQuestionUpdateReq } from '../type/any-question-update-req';
 import { MultipleQuestionUpdateReq } from '../model/edit-form/question/updatereq/multiple-question-update-req';
 import { MultipleQuestionDetailsRes } from '../model/edit-form/question/response/multiple-question-details-res';
-import { QuestionUpdateReq } from '../model/edit-form/question/updatereq/question-update-req';
 import { TaskWeight } from '../type/task-weight';
 import { FileUploadUpdateReq } from '../model/edit-form/question/updatereq/file-upload-update-req';
 import { CheckboxUpdateReq } from '../model/edit-form/question/updatereq/checkbox-update-req';
-import { EditFormDropdown } from '../edit-form/edit-form-questions/question/edit-form-dropdown/edit-form-dropdown';
 import { DropdownUpdateReq } from '../model/edit-form/question/updatereq/dropdown-update-req';
 import { MultipleChoiceUpdateReq } from '../model/edit-form/question/updatereq/multiple-choice-update-req';
 import { MultipleChoiceGridUpdateReq } from '../model/edit-form/question/updatereq/multiple-choice-grid-update-req';
 import { TickBoxGridUpdateReq } from '../model/edit-form/question/updatereq/tick-box-grid-update-req';
+import { FormUpdateReq } from '../model/form/form-update-req';
 
 @Injectable({
   providedIn: 'root',
@@ -29,7 +27,7 @@ import { TickBoxGridUpdateReq } from '../model/edit-form/question/updatereq/tick
 export class EditFormService {
   private http = inject(HttpClient);
 
-  private _formInfo = signal<FormInfoRes | null>(null);
+  private _formInfo = signal<FormInfo | null>(null);
   formInfo = this._formInfo.asReadonly();
 
   private _formRes = signal<FormDetails | null>(null);
@@ -43,10 +41,10 @@ export class EditFormService {
   private updateQuestionDebounceWait: number = 1000;
 
   updateFormInfo = debounce(
-    (formId: string, form: FormAddUpdateReq, onComplete?: (res: FormInfoRes) => void) => {
+    (formId: string, form: FormUpdateReq, onComplete?: (res: FormInfo) => void) => {
       const url = `forms/${formId}`;
 
-      this.http.put<FormInfoRes>(url, form).subscribe((res) => {
+      this.http.patch<FormInfo>(url, form).subscribe((res) => {
         this._formInfo.set(res);
         this._formRes.update((prev) => {
           return { ...prev!, ...res };
@@ -58,10 +56,10 @@ export class EditFormService {
     1000,
   );
 
-  loadFormInfo(formId: string, onComplete: (res: FormInfoRes) => void) {
+  loadFormInfo(formId: string, onComplete: (res: FormInfo) => void) {
     const url = `forms/${formId}/info`;
 
-    this.http.get<FormInfoRes>(url).subscribe((res) => {
+    this.http.get<FormInfo>(url).subscribe((res) => {
       this._formInfo.set(res);
       onComplete(res);
     });
@@ -78,7 +76,7 @@ export class EditFormService {
   }
 
   addQuestion(question: AnyQuestionAddReq, onComplete?: (res: AnyQuestionRes) => void) {
-    const url = `forms/${this._formRes()!.id}/questions`;
+    const url = `forms/${this._formRes()!.formInfo.id}/questions`;
 
     this.http.post<AnyQuestionRes>(url, question).subscribe((res) => {
       this._formRes.update((prev) => {
@@ -105,7 +103,7 @@ export class EditFormService {
         ) {
           return [...new Set([...finalValue, ...srcValue])];
         }
-        
+
         if (
           finalValue &&
           srcValue &&
@@ -142,7 +140,7 @@ export class EditFormService {
     const updateReqFun: () => void = () => {
       const reqMapSnapshot = new Map(this.updateQuestionRequestMap);
 
-      const url = `forms/${this._formRes()!.id}/questions`;
+      const url = `forms/${this._formRes()!.formInfo.id}/questions`;
 
       const req: MultipleQuestionUpdateReq = {
         questions: [...reqMapSnapshot.values()].map((v) => v.req),
@@ -186,7 +184,7 @@ export class EditFormService {
   }
 
   deleteQuestion(question: QuestionRes, onComplete?: () => void) {
-    const url = `forms/${this._formRes()!.id}/questions/${question.id}`;
+    const url = `forms/${this._formRes()!.formInfo.id}/questions/${question.id}`;
 
     this.http.delete<SuccessMessage>(url).subscribe(() => {
       this._formRes.update((prev) => {
@@ -207,7 +205,7 @@ export class EditFormService {
     if (this._formRes()) {
       moveItemInArray(this._formRes()!.questions, prevIndex, currIndex);
 
-      const url = `forms/${this.formRes()!.id}/questions/${questionId}/order`;
+      const url = `forms/${this.formRes()!.formInfo.id}/questions/${questionId}/order`;
       const reqBody: QuestionOrderUpdateReq = {
         currentIndex: currIndex,
       };
@@ -221,5 +219,4 @@ export class EditFormService {
       });
     }
   }
-
 }

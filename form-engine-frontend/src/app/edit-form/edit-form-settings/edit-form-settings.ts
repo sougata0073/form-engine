@@ -54,10 +54,7 @@ export class EditFormSettings {
 
   protected readonly settingsForm = new FormGroup({
 
-    /* ==========================================================
-       QUIZ
-    ========================================================== */
-
+    // Quiz
     isQuiz: new FormControl<boolean>(false, {
       nonNullable: true
     }),
@@ -82,11 +79,7 @@ export class EditFormSettings {
       nonNullable: true
     }),
 
-
-    /* ==========================================================
-       RESPONSES
-    ========================================================== */
-
+    // Responses
     collectEmailAddresses: new FormControl<EmailCollection>(
       'responder-input',
       {
@@ -106,11 +99,7 @@ export class EditFormSettings {
       nonNullable: true
     }),
 
-
-    /* ==========================================================
-       PRESENTATION
-    ========================================================== */
-
+    // Presentation
     showProgressBar: new FormControl<boolean>(false, {
       nonNullable: true
     }),
@@ -126,9 +115,7 @@ export class EditFormSettings {
       }
     ),
 
-    /*
-     * UI state for confirmation editor.
-     */
+    // UI state
     editingConfirmation: new FormControl<boolean>(false, {
       nonNullable: true
     }),
@@ -145,11 +132,7 @@ export class EditFormSettings {
       nonNullable: true
     }),
 
-
-    /* ==========================================================
-       DEFAULTS
-    ========================================================== */
-
+    // Defaults
     collectEmailAddressesByDefault: new FormControl<EmailCollection>(
       'responder-input',
       {
@@ -161,11 +144,7 @@ export class EditFormSettings {
       nonNullable: true
     }),
 
-
-    /* ==========================================================
-       EXPANSION STATES
-    ========================================================== */
-
+    // Section expansion states
     responsesExpanded: new FormControl<boolean>(false, {
       nonNullable: true
     }),
@@ -183,9 +162,7 @@ export class EditFormSettings {
     })
   });
 
-
   protected readonly controls = this.settingsForm.controls;
-
 
   /*
    * Stores the last saved confirmation message so Cancel
@@ -194,14 +171,12 @@ export class EditFormSettings {
   private confirmationMessageBackup =
     this.controls.confirmationMessage.value;
 
-
   protected startConfirmationEdit(): void {
     this.confirmationMessageBackup =
       this.controls.confirmationMessage.value;
 
     this.controls.editingConfirmation.setValue(true);
   }
-
 
   protected saveConfirmation(): void {
     const value =
@@ -214,7 +189,6 @@ export class EditFormSettings {
     this.controls.editingConfirmation.setValue(false);
   }
 
-
   protected cancelConfirmation(): void {
     this.controls.confirmationMessage.setValue(
       this.confirmationMessageBackup
@@ -223,14 +197,12 @@ export class EditFormSettings {
     this.controls.editingConfirmation.setValue(false);
   }
 
-
   protected updateExpansionControl(
     control: FormControl<boolean>,
     expanded: boolean
   ): void {
     control.setValue(expanded);
   }
-
 
   protected submit(): void {
     console.log(

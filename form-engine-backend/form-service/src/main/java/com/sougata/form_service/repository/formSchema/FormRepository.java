@@ -22,9 +22,4 @@ public interface FormRepository extends JpaRepository<Form, UUID> {
     @Query("update Form f set f.lastOpenedOn = :lastOpenedOn where f.id = :formId")
     void updateLastOpenedOn(UUID formId, Instant lastOpenedOn);
 
-    @Modifying
-    @Transactional
-    @Query("update Form f set f.name = :newName where f.id = :formId")
-    void renameForm(UUID formId, String newName);
-
 }

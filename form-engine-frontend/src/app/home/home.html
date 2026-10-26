@@ -1,26 +1,21 @@
 <div class="parent-container">
-
   @if (showLoader()) {
     <div class="loader-overlay">
-      <mat-spinner/>
+      <mat-spinner />
     </div>
   }
 
   <div class="page-content" [class.blur-background]="showLoader()">
-
     <app-home-header
       [isTemplateGalleryOpened]="isTemplateGalleryOpened()"
       (templateGalleryBackButtonClick)="isTemplateGalleryOpened.set(false)"
     />
 
     <div class="content-container">
-
       <div class="new-form-creation-container">
-
-        @let firstTemplate = templates().at(0) ?? {headerTitle: '', templates: []};
+        @let firstTemplate = templates().at(0) ?? { headerTitle: '', templates: [] };
 
         @if (isTemplateGalleryOpened()) {
-
           <app-new-form-creation
             [headerTitle]="firstTemplate.headerTitle"
             [showControlButtons]="false"
@@ -44,9 +39,7 @@
               />
             }
           }
-
         } @else {
-
           <app-new-form-creation
             headerTitle="Start a new form"
             [showControlButtons]="true"
@@ -57,26 +50,19 @@
             [isRecentlyUsedTemplates]="true"
             (openFormClick)="showLoader.set(true)"
           />
-
         }
-
       </div>
 
       @if (!isTemplateGalleryOpened()) {
-
         <div class="recent-form-parent-container">
-
           <div class="recent-form-container">
-
             <div class="controls">
-
               <p class="message">Recent forms</p>
 
               <div class="buttons-container">
-
                 <button matButton [matMenuTriggerFor]="filterMenu">
                   {{ filterMenuTitle() }}
-                  <mat-icon matIconPrefix fontIcon="arrow_drop_down"/>
+                  <mat-icon matIconPrefix fontIcon="arrow_drop_down" />
                 </button>
 
                 <mat-menu #filterMenu="matMenu" class="white-background-menu">
@@ -85,73 +71,57 @@
                       <span>{{ m.title }}</span>
 
                       @if (m.isSelected) {
-                        <mat-icon fontIcon="check"/>
+                        <mat-icon fontIcon="check" />
                       } @else {
-                        <mat-icon/>
+                        <mat-icon />
                       }
                     </button>
                   }
                 </mat-menu>
 
                 <div class="buttons">
-
                   <button matIconButton matTooltip="List view">
-                    <mat-icon fontIcon="view_list"/>
+                    <mat-icon fontIcon="view_list" />
                   </button>
 
-                  <button
-                    matIconButton
-                    matTooltip="Sort options"
-                    [matMenuTriggerFor]="sortMenu">
-
-                    <mat-icon fontIcon="sort_by_alpha"/>
-
+                  <button matIconButton matTooltip="Sort options" [matMenuTriggerFor]="sortMenu">
+                    <mat-icon fontIcon="sort_by_alpha" />
                   </button>
 
                   <mat-menu #sortMenu="matMenu" class="white-background-menu">
-
                     @for (m of sortOptions(); track m.title) {
                       <button mat-menu-item (click)="onSortMenuClick(m.title)">
-
                         <span>{{ m.title }}</span>
 
                         @if (m.isSelected) {
-                          <mat-icon fontIcon="check"/>
+                          <mat-icon fontIcon="check" />
                         } @else {
-                          <mat-icon/>
+                          <mat-icon />
                         }
-
                       </button>
                     }
-
                   </mat-menu>
 
                   <button matIconButton matTooltip="Open file picker">
-                    <mat-icon fontIcon="folder"/>
+                    <mat-icon fontIcon="folder" />
                   </button>
-
                 </div>
-
               </div>
-
             </div>
 
             <div class="recent-form-list">
-
               @for (f of recentForms()?.forms; track f.id) {
-                <app-recent-form [form]="f" (showLoader)="showLoader.set($event)" (deleteForm)="onDeleteForm($event)"/>
+                <app-recent-form
+                  [form]="f"
+                  (renameForm)="onRenameForm($event)"
+                  (showLoader)="showLoader.set($event)"
+                  (deleteForm)="onDeleteForm($event)"
+                />
               }
-
             </div>
-
           </div>
-
         </div>
-
       }
-
     </div>
-
   </div>
-
 </div>

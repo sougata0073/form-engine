@@ -1,6 +1,7 @@
-import {AnyQuestionRes} from '../../type/any-question-res';
-import {FormInfoRes} from './form-info-res';
+import { AnyQuestionRes } from '../../type/any-question-res';
+import { FormInfo } from './form-info';
 
-export interface FormDetails extends FormInfoRes {
-  questions: AnyQuestionRes[]
+export interface FormDetails {
+  formInfo: FormInfo;
+  questions: AnyQuestionRes[];
 }

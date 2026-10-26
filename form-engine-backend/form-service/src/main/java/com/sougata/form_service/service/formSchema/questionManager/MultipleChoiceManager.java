@@ -34,7 +34,7 @@ public class MultipleChoiceManager extends QuestionManager<MultipleChoice, Multi
 
     @Override
     public MultipleChoiceDetailsDto get(UUID formId, Long questionId) {
-        return toQuestionResDto(multipleChoiceRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
+        return toQuestionDetailsDto(multipleChoiceRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
     }
 
     @Override
@@ -48,7 +48,7 @@ public class MultipleChoiceManager extends QuestionManager<MultipleChoice, Multi
 
         var saved = multipleChoiceRepository.save(newMc);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class MultipleChoiceManager extends QuestionManager<MultipleChoice, Multi
 
         var saved = multipleChoiceRepository.save(newMc);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -125,16 +125,16 @@ public class MultipleChoiceManager extends QuestionManager<MultipleChoice, Multi
             });
         }
 
-        return toQuestionResDto(multipleChoiceRepository.save(mc), question);
+        return toQuestionDetailsDto(multipleChoiceRepository.save(mc), question);
     }
 
     @Override
-    public MultipleChoiceDetailsDto toQuestionResDto(MultipleChoice childQuestion) {
-        return toQuestionResDto(childQuestion, childQuestion.getQuestion());
+    public MultipleChoiceDetailsDto toQuestionDetailsDto(MultipleChoice childQuestion) {
+        return toQuestionDetailsDto(childQuestion, childQuestion.getQuestion());
     }
 
     @Override
-    public MultipleChoiceDetailsDto toQuestionResDto(MultipleChoice childQuestion, Question parentQuestion) {
+    public MultipleChoiceDetailsDto toQuestionDetailsDto(MultipleChoice childQuestion, Question parentQuestion) {
         var m = new MultipleChoiceDetailsDto();
 
         populateCommonFields(parentQuestion, m);
@@ -168,10 +168,12 @@ public class MultipleChoiceManager extends QuestionManager<MultipleChoice, Multi
 
     @Override
     @Transactional
-    public MultipleChoice createFromTemplate(MultipleChoiceTemplateDetails template, Form form) {
+    public MultipleChoiceDetailsDto createFromTemplate(MultipleChoiceTemplateDetails template, Form form) {
         var mc = new MultipleChoice();
 
-        mc.setQuestion(createQuestionFromTemplate(template, form));
+        var question = createQuestionFromTemplate(template, form);
+
+        mc.setQuestion(question);
         mc.setOptions(
                 template.getOptions().stream().map(op -> {
                             var res = new MultipleChoiceOption();
@@ -185,7 +187,7 @@ public class MultipleChoiceManager extends QuestionManager<MultipleChoice, Multi
                         .toList()
         );
 
-        return multipleChoiceRepository.save(mc);
+        return toQuestionDetailsDto(multipleChoiceRepository.save(mc), question);
     }
 
     @Override

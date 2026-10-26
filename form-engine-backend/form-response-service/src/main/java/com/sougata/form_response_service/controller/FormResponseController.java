@@ -25,18 +25,6 @@ public class FormResponseController {
 
     private final FormResponseService formResponseService;
 
-    @GetMapping(path = "{formId}/is-response-already-submitted", params = "userId")
-    @Cacheable(
-            cacheNames = {FormResponseCacheNames.IS_RESPONSE_ALREADY_SUBMITTED},
-            key = "'formId=' + #formId + '::userId=' + #userId"
-    )
-    public boolean getIsResponseAlreadySubmitted(
-            @PathVariable("formId") UUID formId,
-            @RequestParam("userId") UUID userId
-    ) {
-        return formResponseService.getIsResponseAlreadySubmitted(formId, userId);
-    }
-
     @GetMapping(path = "{formId}/form-response-count")
     @Cacheable(cacheNames = {FormResponseCacheNames.FORM_RESPONSE_COUNT}, key = "#formId")
     public FormResponseCountDto getFormResponseCount(

@@ -14,18 +14,18 @@
           <mat-slide-toggle formControlName="acceptingResponse"/>
         </form>
       </div>
-      @if (formGroup.value.acceptingResponse && (formInfo()!.stopAcceptingResponseOn || formInfo()!.stopAcceptingResponseAfterResponse !== null)) {
+      @if (formGroup.value.acceptingResponse && (formInfo()!.generalSettings.stopAcceptingResponseOn || formInfo()!.generalSettings.responseLimit !== null)) {
         <div class="accepting-response-config-container">
-          @if (formInfo()!.stopAcceptingResponseOn) {
-            <p>Responses accepted until {{ formInfo()!.stopAcceptingResponseOn | date:'full' }}</p>
-          } @else if (formInfo()!.stopAcceptingResponseAfterResponse !== null) {
-            <p>Responses accepted until {{ formInfo()!.stopAcceptingResponseAfterResponse }} responses have been
+          @if (formInfo()!.generalSettings.stopAcceptingResponseOn) {
+            <p>Responses accepted until {{ formInfo()!.generalSettings.stopAcceptingResponseOn | date:'full' }}</p>
+          } @else if (formInfo()!.generalSettings.responseLimit !== null) {
+            <p>Responses accepted until {{ formInfo()!.generalSettings.responseLimit }} responses have been
               received</p>
           }
           <button matButton (click)="openStopAcceptingResponseDialog()">Manage</button>
         </div>
       }
-      @if (formGroup.value.acceptingResponse && !formInfo()!.stopAcceptingResponseOn && formInfo()!.stopAcceptingResponseAfterResponse === null) {
+      @if (formGroup.value.acceptingResponse && !formInfo()!.generalSettings.stopAcceptingResponseOn && formInfo()!.generalSettings.responseLimit === null) {
         <div class="close-response-limit-button-container">
           <button matButton (click)="openStopAcceptingResponseDialog()">Set close date or response limit</button>
         </div>
@@ -39,7 +39,7 @@
                   <input
                     matInput
                     formControlName="notAcceptingResponseMessage"
-                    [placeholder]="formInfo()!.notAcceptingResponseMessage ?? ''"
+                    [placeholder]="formInfo()!.generalSettings.notAcceptingResponseMessage ?? ''"
                   >
                 </mat-form-field>
               </form>

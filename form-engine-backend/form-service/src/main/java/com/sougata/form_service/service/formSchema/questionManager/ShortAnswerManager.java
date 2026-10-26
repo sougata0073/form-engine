@@ -34,7 +34,7 @@ public class ShortAnswerManager extends QuestionManager<ShortAnswer, ShortAnswer
 
     @Override
     public ShortAnswerDetailsDto get(UUID formId, Long questionId) {
-        return toQuestionResDto(shortAnswerRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
+        return toQuestionDetailsDto(shortAnswerRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
     }
 
     @Override
@@ -48,7 +48,7 @@ public class ShortAnswerManager extends QuestionManager<ShortAnswer, ShortAnswer
 
         var saved = shortAnswerRepository.save(newS);
 
-        return toQuestionResDto(saved);
+        return toQuestionDetailsDto(saved);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class ShortAnswerManager extends QuestionManager<ShortAnswer, ShortAnswer
 
         var saved = shortAnswerRepository.save(newS);
 
-        return toQuestionResDto(saved);
+        return toQuestionDetailsDto(saved);
     }
 
     @Override
@@ -77,16 +77,16 @@ public class ShortAnswerManager extends QuestionManager<ShortAnswer, ShortAnswer
             sa.setValidationConfig(JsonUtil.objectToOldJsonNode(questionUpdateReq.getValidationConfig()));
         }
 
-        return toQuestionResDto(shortAnswerRepository.save(sa), question);
+        return toQuestionDetailsDto(shortAnswerRepository.save(sa), question);
     }
 
     @Override
-    public ShortAnswerDetailsDto toQuestionResDto(ShortAnswer childQuestion) {
-        return toQuestionResDto(childQuestion, childQuestion.getQuestion());
+    public ShortAnswerDetailsDto toQuestionDetailsDto(ShortAnswer childQuestion) {
+        return toQuestionDetailsDto(childQuestion, childQuestion.getQuestion());
     }
 
     @Override
-    public ShortAnswerDetailsDto toQuestionResDto(ShortAnswer childQuestion, Question parentQuestion) {
+    public ShortAnswerDetailsDto toQuestionDetailsDto(ShortAnswer childQuestion, Question parentQuestion) {
         var s = new ShortAnswerDetailsDto();
 
         populateCommonFields(parentQuestion, s);
@@ -113,13 +113,15 @@ public class ShortAnswerManager extends QuestionManager<ShortAnswer, ShortAnswer
 
     @Override
     @Transactional
-    public ShortAnswer createFromTemplate(ShortAnswerTemplateDetails template, Form form) {
+    public ShortAnswerDetailsDto createFromTemplate(ShortAnswerTemplateDetails template, Form form) {
         var sa = new ShortAnswer();
 
-        sa.setQuestion(createQuestionFromTemplate(template, form));
+        var question = createQuestionFromTemplate(template, form);
+
+        sa.setQuestion(question);
         sa.setValidationConfig(JsonUtil.objectToOldJsonNode(template.getValidationConfig()));
 
-        return shortAnswerRepository.save(sa);
+        return toQuestionDetailsDto(shortAnswerRepository.save(sa), question);
     }
 
     @Override

@@ -9,9 +9,7 @@ import com.sougata.form_engine.dto.template.questionTemplate.TickBoxGridTemplate
 import com.sougata.form_service.exception.QuestionNotFoundException;
 import com.sougata.form_service.model.formSchema.*;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
-import com.sougata.form_service.repository.formSchema.TickBoxGridColumnRepository;
 import com.sougata.form_service.repository.formSchema.TickBoxGridRepository;
-import com.sougata.form_service.repository.formSchema.TickBoxGridRowRepository;
 import com.sougata.form_service.service.formSchema.FormService;
 import com.sougata.form_service.service.formSchema.QuestionManager;
 import org.springframework.stereotype.Service;
@@ -25,19 +23,15 @@ import java.util.UUID;
 public class TickBoxGridManager extends QuestionManager<TickBoxGrid, TickBoxGridAddReqDto, TickBoxGridUpdateReqDto, TickBoxGridDetailsDto, TickBoxGridTemplateDetails> {
 
     private final TickBoxGridRepository tickBoxGridRepository;
-    private final TickBoxGridRowRepository tickBoxGridRowRepository;
-    private final TickBoxGridColumnRepository tickBoxGridColumnRepository;
 
-    public TickBoxGridManager(TickBoxGridRepository tickBoxGridRepository, FormService formService, QuestionRepository questionRepository, TickBoxGridRowRepository tickBoxGridRowRepository, TickBoxGridColumnRepository tickBoxGridColumnRepository) {
+    public TickBoxGridManager(TickBoxGridRepository tickBoxGridRepository, FormService formService, QuestionRepository questionRepository) {
         super(questionRepository, formService);
         this.tickBoxGridRepository = tickBoxGridRepository;
-        this.tickBoxGridRowRepository = tickBoxGridRowRepository;
-        this.tickBoxGridColumnRepository = tickBoxGridColumnRepository;
     }
 
     @Override
     public TickBoxGridDetailsDto get(UUID formId, Long questionId) {
-        return toQuestionResDto(tickBoxGridRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
+        return toQuestionDetailsDto(tickBoxGridRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
     }
 
     @Override
@@ -51,7 +45,7 @@ public class TickBoxGridManager extends QuestionManager<TickBoxGrid, TickBoxGrid
 
         var savedTbg = tickBoxGridRepository.save(newTbg);
 
-        return toQuestionResDto(savedTbg, question);
+        return toQuestionDetailsDto(savedTbg, question);
     }
 
     @Override
@@ -65,7 +59,7 @@ public class TickBoxGridManager extends QuestionManager<TickBoxGrid, TickBoxGrid
 
         var savedTbg = tickBoxGridRepository.save(newTbg);
 
-        return toQuestionResDto(savedTbg, question);
+        return toQuestionDetailsDto(savedTbg, question);
     }
 
     @Override
@@ -189,16 +183,16 @@ public class TickBoxGridManager extends QuestionManager<TickBoxGrid, TickBoxGrid
 
         });
 
-        return toQuestionResDto(tickBoxGridRepository.save(tbg), question);
+        return toQuestionDetailsDto(tickBoxGridRepository.save(tbg), question);
     }
 
     @Override
-    public TickBoxGridDetailsDto toQuestionResDto(TickBoxGrid childQuestion) {
-        return toQuestionResDto(childQuestion, childQuestion.getQuestion());
+    public TickBoxGridDetailsDto toQuestionDetailsDto(TickBoxGrid childQuestion) {
+        return toQuestionDetailsDto(childQuestion, childQuestion.getQuestion());
     }
 
     @Override
-    public TickBoxGridDetailsDto toQuestionResDto(TickBoxGrid childQuestion, Question parentQuestion) {
+    public TickBoxGridDetailsDto toQuestionDetailsDto(TickBoxGrid childQuestion, Question parentQuestion) {
         var t = new TickBoxGridDetailsDto();
 
         populateCommonFields(parentQuestion, t);
@@ -247,10 +241,12 @@ public class TickBoxGridManager extends QuestionManager<TickBoxGrid, TickBoxGrid
 
     @Override
     @Transactional
-    public TickBoxGrid createFromTemplate(TickBoxGridTemplateDetails template, Form form) {
+    public TickBoxGridDetailsDto createFromTemplate(TickBoxGridTemplateDetails template, Form form) {
         var tbg = new TickBoxGrid();
 
-        tbg.setQuestion(createQuestionFromTemplate(template, form));
+        var question = createQuestionFromTemplate(template, form);
+
+        tbg.setQuestion(question);
         tbg.setEachRowRequired(template.getEachRowRequired());
 
         var rows = template.getRows().stream()
@@ -280,7 +276,7 @@ public class TickBoxGridManager extends QuestionManager<TickBoxGrid, TickBoxGrid
         tbg.setRows(rows);
         tbg.setColumns(columns);
 
-        return tickBoxGridRepository.save(tbg);
+        return toQuestionDetailsDto(tickBoxGridRepository.save(tbg), question);
     }
 
     @Override

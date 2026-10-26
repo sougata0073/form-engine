@@ -37,7 +37,7 @@ public class DropdownManager extends QuestionManager<Dropdown, DropdownAddReqDto
 
     @Override
     public DropdownDetailsDto get(UUID formId, Long questionId) {
-        return toQuestionResDto(dropdownRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
+        return toQuestionDetailsDto(dropdownRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
     }
 
     @Override
@@ -51,7 +51,7 @@ public class DropdownManager extends QuestionManager<Dropdown, DropdownAddReqDto
 
         var saved = dropdownRepository.save(newDd);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -65,7 +65,7 @@ public class DropdownManager extends QuestionManager<Dropdown, DropdownAddReqDto
 
         var saved = dropdownRepository.save(newDd);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -128,7 +128,7 @@ public class DropdownManager extends QuestionManager<Dropdown, DropdownAddReqDto
             });
         }
 
-        return toQuestionResDto(dropdownRepository.save(dd), question);
+        return toQuestionDetailsDto(dropdownRepository.save(dd), question);
     }
 
     @Override
@@ -143,12 +143,12 @@ public class DropdownManager extends QuestionManager<Dropdown, DropdownAddReqDto
     }
 
     @Override
-    public DropdownDetailsDto toQuestionResDto(Dropdown childQuestion) {
-        return toQuestionResDto(childQuestion, childQuestion.getQuestion());
+    public DropdownDetailsDto toQuestionDetailsDto(Dropdown childQuestion) {
+        return toQuestionDetailsDto(childQuestion, childQuestion.getQuestion());
     }
 
     @Override
-    public DropdownDetailsDto toQuestionResDto(Dropdown childQuestion, Question parentQuestion) {
+    public DropdownDetailsDto toQuestionDetailsDto(Dropdown childQuestion, Question parentQuestion) {
         var dd = new DropdownDetailsDto();
 
         populateCommonFields(parentQuestion, dd);
@@ -180,10 +180,12 @@ public class DropdownManager extends QuestionManager<Dropdown, DropdownAddReqDto
 
     @Override
     @Transactional
-    public Dropdown createFromTemplate(DropdownTemplateDetails template, Form form) {
+    public DropdownDetailsDto createFromTemplate(DropdownTemplateDetails template, Form form) {
         var d = new Dropdown();
 
-        d.setQuestion(createQuestionFromTemplate(template, form));
+        var question = createQuestionFromTemplate(template, form);
+
+        d.setQuestion(question);
         d.setOptions(
                 template.getOptions().stream().map(op -> {
                             var res = new DropdownOption();
@@ -197,7 +199,7 @@ public class DropdownManager extends QuestionManager<Dropdown, DropdownAddReqDto
                         .toList()
         );
 
-        return dropdownRepository.save(d);
+        return toQuestionDetailsDto(dropdownRepository.save(d), question);
     }
 
     private void setPropertiesForNew(DropdownAddReqDto source, Dropdown target, Question question) {

@@ -30,7 +30,7 @@ public class DurationManager extends QuestionManager<Duration, DurationAddReqDto
 
     @Override
     public DurationDetailsDto get(UUID formId, Long questionId) {
-        return toQuestionResDto(durationRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
+        return toQuestionDetailsDto(durationRepository.findByQuestionId(questionId).orElseThrow(() -> new QuestionNotFoundException(questionId)));
     }
 
     @Override
@@ -44,7 +44,7 @@ public class DurationManager extends QuestionManager<Duration, DurationAddReqDto
 
         var saved = durationRepository.save(newD);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class DurationManager extends QuestionManager<Duration, DurationAddReqDto
 
         var saved = durationRepository.save(newD);
 
-        return toQuestionResDto(saved, question);
+        return toQuestionDetailsDto(saved, question);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class DurationManager extends QuestionManager<Duration, DurationAddReqDto
 
         var question = updateQuestion(questionId, questionUpdateReq);
 
-        return toQuestionResDto(durationRepository.save(dur), question);
+        return toQuestionDetailsDto(durationRepository.save(dur), question);
     }
 
     @Override
@@ -83,12 +83,12 @@ public class DurationManager extends QuestionManager<Duration, DurationAddReqDto
     }
 
     @Override
-    public DurationDetailsDto toQuestionResDto(Duration childQuestion) {
-        return toQuestionResDto(childQuestion, childQuestion.getQuestion());
+    public DurationDetailsDto toQuestionDetailsDto(Duration childQuestion) {
+        return toQuestionDetailsDto(childQuestion, childQuestion.getQuestion());
     }
 
     @Override
-    public DurationDetailsDto toQuestionResDto(Duration childQuestion, Question parentQuestion) {
+    public DurationDetailsDto toQuestionDetailsDto(Duration childQuestion, Question parentQuestion) {
         var d = new DurationDetailsDto();
 
         populateCommonFields(parentQuestion, d);
@@ -107,11 +107,13 @@ public class DurationManager extends QuestionManager<Duration, DurationAddReqDto
 
     @Override
     @Transactional
-    public Duration createFromTemplate(DurationTemplateDetails template, Form form) {
+    public DurationDetailsDto createFromTemplate(DurationTemplateDetails template, Form form) {
         var d = new Duration();
 
-        d.setQuestion(createQuestionFromTemplate(template, form));
+        var question = createQuestionFromTemplate(template, form);
 
-        return durationRepository.save(d);
+        d.setQuestion(question);
+
+        return toQuestionDetailsDto(durationRepository.save(d), question);
     }
 }
