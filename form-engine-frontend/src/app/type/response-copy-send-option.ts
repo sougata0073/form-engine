@@ -1,1 +1,1 @@
-export type ResponseCopySendOption = 'OFF' | 'WHEN_REQUIRED' | 'ALWAYS';
+export type ResponseCopySendOption = 'OFF' | 'WHEN_REQUESTED' | 'ALWAYS';

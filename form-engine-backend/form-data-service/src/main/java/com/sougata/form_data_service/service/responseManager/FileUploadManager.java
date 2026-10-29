@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -26,12 +27,14 @@ public class FileUploadManager extends ResponseManager<FileUploadResponsePutReqD
 
     @Override
     @Async
-    public CompletableFuture<Void> create(FileUploadResponsePutReqDto response, UUID formResponseId) {
+    public CompletableFuture<Void> create(UUID formId, UUID formResponseId, FileUploadResponsePutReqDto response) {
         FileUpload fileUpload = new FileUpload();
 
-        var key = new AnyTypeQuestionResponse.PartitionKey();
-        key.setQuestionId(response.getQuestionId());
-        key.setFormResponseId(formResponseId);
+        var key = new AnyTypeQuestionResponse.PartitionKey(
+                formId,
+                formResponseId,
+                response.getQuestionId()
+        );
 
         fileUpload.setKey(key);
         fileUpload.setFileName(response.getFileName());
@@ -46,8 +49,8 @@ public class FileUploadManager extends ResponseManager<FileUploadResponsePutReqD
 
     @Override
     @Async
-    public CompletableFuture<List<FileUploadResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
-        var responses = fileUploadRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+    public CompletableFuture<List<FileUploadResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
+        var responses = fileUploadRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -66,8 +69,16 @@ public class FileUploadManager extends ResponseManager<FileUploadResponsePutReqD
 
     @Override
     @Async
-    public CompletableFuture<Void> deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId) {
-        fileUploadRepository.deleteAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+    public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
+        fileUploadRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<Void> deleteAllByFormId(UUID formId) {
+        fileUploadRepository.deleteAllByFormId(formId);
 
         return CompletableFuture.completedFuture(null);
     }

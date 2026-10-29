@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -26,12 +27,14 @@ public class MultipleChoiceManager extends ResponseManager<MultipleChoiceRespons
 
     @Override
     @Async
-    public CompletableFuture<Void> create(MultipleChoiceResponsePutReqDto response, UUID formResponseId) {
+    public CompletableFuture<Void> create(UUID formId, UUID formResponseId, MultipleChoiceResponsePutReqDto response) {
         MultipleChoice multipleChoice = new MultipleChoice();
 
-        var key = new AnyTypeQuestionResponse.PartitionKey();
-        key.setQuestionId(response.getQuestionId());
-        key.setFormResponseId(formResponseId);
+        var key = new AnyTypeQuestionResponse.PartitionKey(
+                formId,
+                formResponseId,
+                response.getQuestionId()
+        );
 
         multipleChoice.setKey(key);
         multipleChoice.setResponseOptionId(response.getResponseOptionId());
@@ -43,8 +46,8 @@ public class MultipleChoiceManager extends ResponseManager<MultipleChoiceRespons
 
     @Override
     @Async
-    public CompletableFuture<List<MultipleChoiceResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
-        var responses = multipleChoiceRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+    public CompletableFuture<List<MultipleChoiceResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
+        var responses = multipleChoiceRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -61,8 +64,16 @@ public class MultipleChoiceManager extends ResponseManager<MultipleChoiceRespons
 
     @Override
     @Async
-    public CompletableFuture<Void> deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId) {
-        multipleChoiceRepository.deleteAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+    public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
+        multipleChoiceRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<Void> deleteAllByFormId(UUID formId) {
+        multipleChoiceRepository.deleteAllByFormId(formId);
 
         return CompletableFuture.completedFuture(null);
     }

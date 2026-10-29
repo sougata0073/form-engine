@@ -23,6 +23,7 @@ import com.sougata.form_service.service.formSchema.QuestionService;
 import com.sougata.form_service.service.formSchema.questionManager.QuestionManagerFactory;
 import com.sougata.form_service.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -89,9 +90,12 @@ public class QuestionServiceImpl implements QuestionService {
 
                 prevManager.delete(questionId);
 
-                redisTemplate.convertAndSend(MessagingChannelNames.QUESTION_DELETED, new QuestionDeleteMessage(formId, questionId));
-
                 updatedQuestionDetails = newManager.create(formId, questionId, question.getAddReqForQuestionTypeUpdate());
+
+                redisTemplate.convertAndSend(
+                        MessagingChannelNames.QUESTION_DELETED,
+                        new QuestionDeleteMessage(formId, questionId, prevQType)
+                );
             }
 
             updateQuestionInFormDetails(formId, updatedQuestionDetails);
@@ -124,14 +128,17 @@ public class QuestionServiceImpl implements QuestionService {
         deleteQuestionInFormDetails(formId, questionId);
         deleteQuestionInQuestionSummaries(formId, questionId);
 
-        redisTemplate.convertAndSend(MessagingChannelNames.QUESTION_DELETED, new QuestionDeleteMessage(formId, questionId));
+        redisTemplate.convertAndSend(
+                MessagingChannelNames.QUESTION_DELETED,
+                new QuestionDeleteMessage(formId, questionId, question.getQuestionType())
+        );
 
         return SuccessMessageDto.create("Question deleted successfully with question ID: " + questionId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public QuestionDetailsDto getQuestion(UUID formId, Long questionId) {
+    public QuestionDetailsDto getQuestionDetails(UUID formId, Long questionId) {
 
         var qType = questionRepository.findQuestionTypeById(questionId)
                 .orElseThrow(() -> new QuestionNotFoundException(questionId))
@@ -143,6 +150,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
+    @Cacheable(cacheNames = {QuestionCacheNames.QUESTION_SUMMARIES}, key = "#formId")
     public QuestionSummariesDto getQuestionSummaries(UUID formId) {
         var questionProjections = new ArrayList<>(
                 questionRepository.findQuestionSummariesByFormId(formId)

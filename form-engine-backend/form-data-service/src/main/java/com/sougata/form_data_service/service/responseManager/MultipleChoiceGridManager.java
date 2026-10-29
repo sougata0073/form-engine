@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -27,12 +28,14 @@ public class MultipleChoiceGridManager extends ResponseManager<MultipleChoiceGri
 
     @Override
     @Async
-    public CompletableFuture<Void> create(MultipleChoiceGridResponsePutReqDto response, UUID formResponseId) {
+    public CompletableFuture<Void> create(UUID formId, UUID formResponseId, MultipleChoiceGridResponsePutReqDto response) {
         MultipleChoiceGrid multipleChoiceGrid = new MultipleChoiceGrid();
 
-        var key = new AnyTypeQuestionResponse.PartitionKey();
-        key.setQuestionId(response.getQuestionId());
-        key.setFormResponseId(formResponseId);
+        var key = new AnyTypeQuestionResponse.PartitionKey(
+                formId,
+                formResponseId,
+                response.getQuestionId()
+        );
 
         multipleChoiceGrid.setKey(key);
         multipleChoiceGrid.setResponses(
@@ -53,8 +56,8 @@ public class MultipleChoiceGridManager extends ResponseManager<MultipleChoiceGri
 
     @Override
     @Async
-    public CompletableFuture<List<MultipleChoiceGridResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
-        var responses = multipleChoiceGridRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+    public CompletableFuture<List<MultipleChoiceGridResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
+        var responses = multipleChoiceGridRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -79,8 +82,16 @@ public class MultipleChoiceGridManager extends ResponseManager<MultipleChoiceGri
 
     @Override
     @Async
-    public CompletableFuture<Void> deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId) {
-        multipleChoiceGridRepository.deleteAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+    public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
+        multipleChoiceGridRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<Void> deleteAllByFormId(UUID formId) {
+        multipleChoiceGridRepository.deleteAllByFormId(formId);
 
         return CompletableFuture.completedFuture(null);
     }

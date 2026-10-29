@@ -152,7 +152,11 @@ public class FormDataServiceImpl implements FormDataService {
                 var responseManager = responseManagerFactory.get(
                         response.getQuestionType()
                 );
-                var future = responseManager.create(response, savedFormResponse.getKey().getFormResponseId());
+                var future = responseManager.create(
+                        savedFormResponse.getKey().getFormId(),
+                        savedFormResponse.getKey().getFormResponseId(),
+                        response
+                );
 
                 questionResponseFutures.add(future);
             });
@@ -202,10 +206,10 @@ public class FormDataServiceImpl implements FormDataService {
                 .stream()
                 .collect(Collectors.groupingBy(Map.Entry::getValue))
                 .forEach(((questionType, entries) -> {
-                    var questionIds = entries.stream().map(Map.Entry::getKey).toList();
+                    var questionIds = entries.stream().map(Map.Entry::getKey).collect(Collectors.toSet());
                     var manager = responseManagerFactory.get(questionType);
 
-                    var future = manager.deleteAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+                    var future = manager.deleteAllByQuestionIds(formId, formResponseId, questionIds);
 
                     questionResponseDeleteFutures.add(future);
                 }));

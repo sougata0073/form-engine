@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -28,12 +29,14 @@ public class TickBoxGridManager extends ResponseManager<TickBoxGridResponsePutRe
 
     @Override
     @Async
-    public CompletableFuture<Void> create(TickBoxGridResponsePutReqDto response, UUID formResponseId) {
+    public CompletableFuture<Void> create(UUID formId, UUID formResponseId, TickBoxGridResponsePutReqDto response) {
         TickBoxGrid tickBoxGrid = new TickBoxGrid();
 
-        var key = new AnyTypeQuestionResponse.PartitionKey();
-        key.setQuestionId(response.getQuestionId());
-        key.setFormResponseId(formResponseId);
+        var key = new AnyTypeQuestionResponse.PartitionKey(
+                formId,
+                formResponseId,
+                response.getQuestionId()
+        );
 
         tickBoxGrid.setKey(key);
         tickBoxGrid.setResponses(
@@ -51,8 +54,8 @@ public class TickBoxGridManager extends ResponseManager<TickBoxGridResponsePutRe
 
     @Override
     @Async
-    public CompletableFuture<List<TickBoxGridResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
-        var responses = tickBoxGridRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+    public CompletableFuture<List<TickBoxGridResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
+        var responses = tickBoxGridRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -77,8 +80,16 @@ public class TickBoxGridManager extends ResponseManager<TickBoxGridResponsePutRe
 
     @Override
     @Async
-    public CompletableFuture<Void> deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId) {
-        tickBoxGridRepository.deleteAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+    public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
+        tickBoxGridRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<Void> deleteAllByFormId(UUID formId) {
+        tickBoxGridRepository.deleteAllByFormId(formId);
 
         return CompletableFuture.completedFuture(null);
     }

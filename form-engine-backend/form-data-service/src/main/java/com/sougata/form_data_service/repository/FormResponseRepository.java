@@ -11,6 +11,6 @@ import java.util.UUID;
 public interface FormResponseRepository extends CassandraRepository<FormResponse, FormResponse.PartitionKey> {
 
     @Query("delete from form_responses where form_id = :formId")
-    void deleteByFormId(UUID formId);
+    void deleteAllByFormId(UUID formId);
 
 }

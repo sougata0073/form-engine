@@ -27,11 +27,14 @@ public class AnyTypeQuestionResponse {
     @PrimaryKeyClass
     public static class PartitionKey {
 
-        @PrimaryKeyColumn(name = "question_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
-        private Long questionId;
+        @PrimaryKeyColumn(name = "form_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
+        private UUID formId;
 
         @PrimaryKeyColumn(name = "form_response_id", ordinal = 1, type = PrimaryKeyType.CLUSTERED)
         private UUID formResponseId;
+
+        @PrimaryKeyColumn(name = "question_id", ordinal = 2, type = PrimaryKeyType.CLUSTERED)
+        private Long questionId;
 
     }
 

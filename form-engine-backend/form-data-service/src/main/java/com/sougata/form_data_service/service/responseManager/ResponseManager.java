@@ -5,16 +5,19 @@ import com.sougata.form_engine.dto.formResponse.individual.QuestionResponseIndiv
 import com.sougata.form_engine.dto.question.responseputrequest.QuestionResponsePutReqDto;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class ResponseManager<QR extends QuestionResponsePutReqDto, QRID extends QuestionResponseIndividualDto> {
 
-    public abstract CompletableFuture<Void> create(QR response, UUID formResponseId);
+    public abstract CompletableFuture<Void> create(UUID formId, UUID formResponseId, QR response);
 
-    public abstract CompletableFuture<List<QRID>> getResponses(UUID formResponseId, List<Long> questionIds);
+    public abstract CompletableFuture<List<QRID>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds);
 
-    public abstract CompletableFuture<Void> deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId);
+    public abstract CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds);
+
+    public abstract CompletableFuture<Void> deleteAllByFormId(UUID formId);
 
     public abstract QuestionType getQuestionType();
 

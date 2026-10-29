@@ -1,21 +1,20 @@
-import {Component} from '@angular/core';
-import {MatCard, MatCardModule} from "@angular/material/card";
-import {MatCheckboxModule} from '@angular/material/checkbox';
-import {MatSlideToggle, MatSlideToggleModule} from '@angular/material/slide-toggle';
-import {MatDivider} from '@angular/material/list';
-import {MatExpansionModule, MatExpansionPanel, MatExpansionPanelHeader} from '@angular/material/expansion';
-import {MatFormField, MatInputModule} from '@angular/material/input';
-import {MatOption, MatSelect, MatSelectModule} from '@angular/material/select';
-import {MatRadioButton, MatRadioGroup, MatRadioModule} from '@angular/material/radio';
-import {MatIcon, MatIconModule} from '@angular/material/icon';
-import {MatDividerModule} from '@angular/material/divider';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatButtonModule} from '@angular/material/button';
-import {FormControl, FormGroup, FormsModule, ReactiveFormsModule} from '@angular/forms';
-
-type ReleaseMarks = 'immediately' | 'later';
-
-type EmailCollection = 'responder-input' | 'verified' | 'off';
+import { Component, OnInit, Type } from '@angular/core';
+import { MatCard, MatCardModule } from "@angular/material/card";
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatDivider } from '@angular/material/list';
+import { MatExpansionModule, MatExpansionPanel, MatExpansionPanelHeader } from '@angular/material/expansion';
+import { MatFormField, MatInputModule } from '@angular/material/input';
+import { MatOption, MatSelect, MatSelectModule } from '@angular/material/select';
+import { MatRadioButton, MatRadioGroup, MatRadioModule } from '@angular/material/radio';
+import { MatIcon, MatIconModule } from '@angular/material/icon';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatButtonModule } from '@angular/material/button';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormEmailCollectionOption } from '../../type/form-email-collection-option';
+import { FormQuizReleaseMarksOption } from '../../type/form-quiz-release-marks.option';
+import { ResponseCopySendOption } from '../../type/response-copy-send-option';
 
 type ResponseCopy = 'off' | 'when-requested' | 'always';
 
@@ -46,11 +45,11 @@ type ResponseCopy = 'off' | 'when-requested' | 'always';
     MatCheckboxModule,
     FormsModule,
     ReactiveFormsModule
-],
+  ],
   templateUrl: './edit-form-settings.html',
   styleUrl: './edit-form-settings.scss',
 })
-export class EditFormSettings {
+export class EditFormSettings implements OnInit {
 
   protected readonly settingsForm = new FormGroup({
 
@@ -59,7 +58,7 @@ export class EditFormSettings {
       nonNullable: true
     }),
 
-    releaseMarks: new FormControl<ReleaseMarks>('immediately', {
+    releaseMarks: new FormControl<FormQuizReleaseMarksOption>('IMMEDIATELY', {
       nonNullable: true
     }),
 
@@ -80,14 +79,14 @@ export class EditFormSettings {
     }),
 
     // Responses
-    collectEmailAddresses: new FormControl<EmailCollection>(
-      'responder-input',
+    collectEmailAddresses: new FormControl<FormEmailCollectionOption>(
+      'RESPONDER_INPUT',
       {
         nonNullable: true
       }
     ),
 
-    sendRespondersCopy: new FormControl<ResponseCopy>('off', {
+    sendRespondersCopy: new FormControl<ResponseCopySendOption>('OFF', {
       nonNullable: true
     }),
 
@@ -133,8 +132,8 @@ export class EditFormSettings {
     }),
 
     // Defaults
-    collectEmailAddressesByDefault: new FormControl<EmailCollection>(
-      'responder-input',
+    collectEmailAddressesByDefault: new FormControl<FormEmailCollectionOption>(
+      'RESPONDER_INPUT',
       {
         nonNullable: true
       }
@@ -164,10 +163,34 @@ export class EditFormSettings {
 
   protected readonly controls = this.settingsForm.controls;
 
-  /*
-   * Stores the last saved confirmation message so Cancel
-   * can restore it.
-   */
+  private readonly uiStateFormControlNames = [
+    'responsesExpanded',
+    'presentationExpanded',
+    'formDefaultsExpanded',
+    'questionDefaultsExpanded'
+  ]
+
+  private prevSettingsFormValues: typeof this.settingsForm.value = {}
+
+  ngOnInit(): void {
+    this.prevSettingsFormValues = this.settingsForm.value
+
+    this.settingsForm.valueChanges.subscribe(val => {
+      Object.keys(val).forEach(key => {
+        if (this.uiStateFormControlNames.includes(key)) return
+
+        const prevVal = (this.prevSettingsFormValues as any)[key]
+        const currVal = (val as any)[key]
+
+        if (prevVal !== currVal) {
+          console.log('Key', key, 'Prev value', prevVal, 'Curr value', currVal)
+        }
+      })
+
+      this.prevSettingsFormValues = val
+    })
+  }
+
   private confirmationMessageBackup =
     this.controls.confirmationMessage.value;
 

@@ -43,10 +43,10 @@ public class FormDataServiceCachedImpl implements FormDataServiceCached {
                 .stream()
                 .collect(Collectors.groupingBy(Map.Entry::getValue))
                 .forEach(((questionType, entries) -> {
-                    var questionIds = entries.stream().map(Map.Entry::getKey).toList();
+                    var questionIds = entries.stream().map(Map.Entry::getKey).collect(Collectors.toSet());
                     var manager = responseManagerFactory.get(questionType);
 
-                    responseFutures.add(manager.getResponses(formResponseId, questionIds));
+                    responseFutures.add(manager.getResponses(formId, formResponseId, questionIds));
                 }));
 
         var responses = CompletableFuture.allOf(responseFutures.toArray(CompletableFuture[]::new))

@@ -18,7 +18,7 @@ public interface QuestionService {
 
     SuccessMessageDto deleteQuestion(UUID formId, Long questionId);
 
-    QuestionDetailsDto getQuestion(UUID formId, Long questionId);
+    QuestionDetailsDto getQuestionDetails(UUID formId, Long questionId);
 
     QuestionSummariesDto getQuestionSummaries(UUID formId);
 

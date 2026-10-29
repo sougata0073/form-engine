@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -26,12 +27,14 @@ public class LinearScaleManager extends ResponseManager<LinearScaleResponsePutRe
 
     @Override
     @Async
-    public CompletableFuture<Void> create(LinearScaleResponsePutReqDto response, UUID formResponseId) {
+    public CompletableFuture<Void> create(UUID formId, UUID formResponseId, LinearScaleResponsePutReqDto response) {
         LinearScale linearScale = new LinearScale();
 
-        var key = new AnyTypeQuestionResponse.PartitionKey();
-        key.setQuestionId(response.getQuestionId());
-        key.setFormResponseId(formResponseId);
+        var key = new AnyTypeQuestionResponse.PartitionKey(
+                formId,
+                formResponseId,
+                response.getQuestionId()
+        );
 
         linearScale.setKey(key);
         linearScale.setScale(response.getScale());
@@ -43,8 +46,8 @@ public class LinearScaleManager extends ResponseManager<LinearScaleResponsePutRe
 
     @Override
     @Async
-    public CompletableFuture<List<LinearScaleResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
-        var responses = linearScaleRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+    public CompletableFuture<List<LinearScaleResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
+        var responses = linearScaleRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -61,8 +64,16 @@ public class LinearScaleManager extends ResponseManager<LinearScaleResponsePutRe
 
     @Override
     @Async
-    public CompletableFuture<Void> deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId) {
-        linearScaleRepository.deleteAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+    public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
+        linearScaleRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<Void> deleteAllByFormId(UUID formId) {
+        linearScaleRepository.deleteAllByFormId(formId);
 
         return CompletableFuture.completedFuture(null);
     }

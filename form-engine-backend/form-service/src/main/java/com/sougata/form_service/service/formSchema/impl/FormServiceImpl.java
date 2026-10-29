@@ -20,6 +20,7 @@ import com.sougata.form_service.model.formSchema.*;
 import com.sougata.form_service.repository.formSchema.FormRepository;
 import com.sougata.form_service.service.formSchema.FormService;
 import com.sougata.form_service.service.formSchema.FormServiceCached;
+import com.sougata.form_service.service.formSchema.QuestionService;
 import com.sougata.form_service.service.formSchema.questionManager.QuestionManagerFactory;
 import com.sougata.form_service.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,7 @@ public class FormServiceImpl implements FormService {
     private final StringRedisTemplate stringRedisTemplate;
     private final AppConfiguration appConfiguration;
     private final RedissonClient redissonClient;
+    private final QuestionService questionService;
 
     @Override
     public FormInfoDto createForm(UUID userId) {
@@ -409,6 +411,8 @@ public class FormServiceImpl implements FormService {
     @Override
     @Transactional
     public SuccessMessageDto deleteForm(UUID formId, UUID userId) {
+        var questionSummaries = questionService.getQuestionSummaries(formId);
+
         formRepo.deleteById(formId);
 
         deleteFormFromRecentForms(userId, formId);
@@ -418,7 +422,7 @@ public class FormServiceImpl implements FormService {
 
         redisTemplate.convertAndSend(
                 MessagingChannelNames.FORM_DELETED,
-                new FormDeletedMessage(formId)
+                new FormDeletedMessage(formId, questionSummaries.getQuestions())
         );
 
         return new SuccessMessageDto("Form deleted successfully with ID: " + formId);

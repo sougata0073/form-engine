@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -26,12 +27,14 @@ public class TimeManager extends ResponseManager<TimeResponsePutReqDto, TimeResp
 
     @Override
     @Async
-    public CompletableFuture<Void> create(TimeResponsePutReqDto response, UUID formResponseId) {
+    public CompletableFuture<Void> create(UUID formId, UUID formResponseId, TimeResponsePutReqDto response) {
         Time time = new Time();
 
-        var key = new AnyTypeQuestionResponse.PartitionKey();
-        key.setQuestionId(response.getQuestionId());
-        key.setFormResponseId(formResponseId);
+        var key = new AnyTypeQuestionResponse.PartitionKey(
+                formId,
+                formResponseId,
+                response.getQuestionId()
+        );
 
         time.setKey(key);
         time.setTime(response.getTime());
@@ -43,8 +46,8 @@ public class TimeManager extends ResponseManager<TimeResponsePutReqDto, TimeResp
 
     @Override
     @Async
-    public CompletableFuture<List<TimeResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
-        var responses = timeRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+    public CompletableFuture<List<TimeResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
+        var responses = timeRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -61,8 +64,16 @@ public class TimeManager extends ResponseManager<TimeResponsePutReqDto, TimeResp
 
     @Override
     @Async
-    public CompletableFuture<Void> deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId) {
-        timeRepository.deleteAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+    public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
+        timeRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<Void> deleteAllByFormId(UUID formId) {
+        timeRepository.deleteAllByFormId(formId);
 
         return CompletableFuture.completedFuture(null);
     }

@@ -25,41 +25,6 @@ public class QuestionDeletedMessageHandler implements MessageListener {
 
         var messageData = redisSerializer.deserialize(message.getBody(), QuestionDeleteMessage.class);
 
-//        questionResponseSummaryRepository.deleteByQuestionId(messageData.getQuestionId());
-//
-//        var responseSummariesCacheKey = CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_SUMMARIES, messageData.getFormId());
-//        var cachedResponseSummaries = (ResponseSummaryResDto) redisTemplate.opsForValue().get(responseSummariesCacheKey);
-//
-//        if (cachedResponseSummaries != null) {
-//            cachedResponseSummaries
-//                    .getResponses()
-//                    .removeIf(res ->
-//                            Objects.equals(res.getQuestionId(), messageData.getQuestionId())
-//                    );
-//
-//            redisTemplate.opsForValue().set(
-//                    responseSummariesCacheKey,
-//                    cachedResponseSummaries,
-//                    Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes())
-//            );
-//        }
-//
-//        var redissonKeys = redissonClient.getKeys();
-//
-//        redissonKeys.deleteByPattern(
-//                CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_BY_QUESTION, "formId=" + messageData.getFormId(), "questionId=" + messageData.getQuestionId()) + "::*"
-//        );
-//        redissonKeys.deleteByPattern(
-//                CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_SUMMARIES, "formId=" + messageData.getFormId(), "questionId=" + messageData.getQuestionId()) + "::*"
-//        );
-//        redissonKeys.deleteByPattern(
-//                CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_SUMMARY, "formId=" + messageData.getFormId(), "questionId=" + messageData.getQuestionId()) + "::*"
-//        );
-//        redissonKeys.deleteByPattern(
-//                CacheUtil.buildKey(FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE, "formId=" + messageData.getFormId()) + "::*"
-//        );
-//        redissonKeys.deleteByPattern(
-//                CacheUtil.buildKey(FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE_BY_PAGE, "formId=" + messageData.getFormId()) + "::*"
-//        );
+
     }
 }

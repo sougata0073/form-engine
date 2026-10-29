@@ -7,11 +7,11 @@ import com.sougata.form_engine.constant.QuestionType;
 import com.sougata.form_engine.dto.formResponse.individual.DateResponseIndividualDto;
 import com.sougata.form_engine.dto.question.responseputrequest.DateResponsePutReqDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -23,12 +23,14 @@ public class DateManager extends ResponseManager<DateResponsePutReqDto, DateResp
 
     @Override
     @Async
-    public CompletableFuture<Void> create(DateResponsePutReqDto response, UUID formResponseId) {
+    public CompletableFuture<Void> create(UUID formId, UUID formResponseId, DateResponsePutReqDto response) {
         Date date = new Date();
 
-        var key = new AnyTypeQuestionResponse.PartitionKey();
-        key.setQuestionId(response.getQuestionId());
-        key.setFormResponseId(formResponseId);
+        var key = new AnyTypeQuestionResponse.PartitionKey(
+                formId,
+                formResponseId,
+                response.getQuestionId()
+        );
 
         date.setKey(key);
         date.setDate(response.getDate());
@@ -40,8 +42,8 @@ public class DateManager extends ResponseManager<DateResponsePutReqDto, DateResp
 
     @Override
     @Async
-    public CompletableFuture<List<DateResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
-        var responses = dateRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+    public CompletableFuture<List<DateResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
+        var responses = dateRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -58,8 +60,16 @@ public class DateManager extends ResponseManager<DateResponsePutReqDto, DateResp
 
     @Override
     @Async
-    public CompletableFuture<Void> deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId) {
-        dateRepository.deleteAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+    public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
+        dateRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<Void> deleteAllByFormId(UUID formId) {
+        dateRepository.deleteAllByFormId(formId);
 
         return CompletableFuture.completedFuture(null);
     }

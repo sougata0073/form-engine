@@ -1,5 +1,6 @@
 package com.sougata.form_engine.dto.messaging;
 
+import com.sougata.form_engine.constant.QuestionType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,4 +15,5 @@ import java.util.UUID;
 public class QuestionDeleteMessage {
     private UUID formId;
     private Long questionId;
+    private QuestionType questionType;
 }

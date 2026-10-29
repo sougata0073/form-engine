@@ -110,7 +110,6 @@ public class FormController {
     }
 
     @GetMapping(path = "{formId}/question-summaries")
-    @Cacheable(cacheNames = {QuestionCacheNames.QUESTION_SUMMARIES}, key = "#formId")
     public QuestionSummariesDto getQuestionSummaries(@PathVariable("formId") UUID formId) {
         return questionService.getQuestionSummaries(formId);
     }
@@ -132,11 +131,11 @@ public class FormController {
             cacheNames = {QuestionCacheNames.QUESTION_DETAILS},
             key = "'formId=' + #formId + '::questionId=' + #questionId"
     )
-    public QuestionDetailsDto getQuestion(
+    public QuestionDetailsDto getQuestionDetails(
             @PathVariable("formId") UUID formId,
             @PathVariable("questionId") Long questionId
     ) {
-        return questionService.getQuestion(formId, questionId);
+        return questionService.getQuestionDetails(formId, questionId);
     }
 
     @PostMapping(path = "{formId}/questions")

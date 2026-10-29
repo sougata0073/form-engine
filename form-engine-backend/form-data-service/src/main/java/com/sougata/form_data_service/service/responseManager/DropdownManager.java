@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -26,12 +27,14 @@ public class DropdownManager extends ResponseManager<DropdownResponsePutReqDto, 
 
     @Override
     @Async
-    public CompletableFuture<Void> create(DropdownResponsePutReqDto response, UUID formResponseId) {
+    public CompletableFuture<Void> create(UUID formId, UUID formResponseId, DropdownResponsePutReqDto response) {
         Dropdown dropdown = new Dropdown();
 
-        var key = new AnyTypeQuestionResponse.PartitionKey();
-        key.setQuestionId(response.getQuestionId());
-        key.setFormResponseId(formResponseId);
+        var key = new AnyTypeQuestionResponse.PartitionKey(
+                formId,
+                formResponseId,
+                response.getQuestionId()
+        );
 
         dropdown.setKey(key);
         dropdown.setResponseOptionId(response.getResponseOptionId());
@@ -43,8 +46,8 @@ public class DropdownManager extends ResponseManager<DropdownResponsePutReqDto, 
 
     @Override
     @Async
-    public CompletableFuture<List<DropdownResponseIndividualDto>> getResponses(UUID formResponseId, List<Long> questionIds) {
-        var responses = dropdownRepository.findAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+    public CompletableFuture<List<DropdownResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
+        var responses = dropdownRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -61,8 +64,16 @@ public class DropdownManager extends ResponseManager<DropdownResponsePutReqDto, 
 
     @Override
     @Async
-    public CompletableFuture<Void> deleteAllByQuestionIdsAndFormResponseId(List<Long> questionIds, UUID formResponseId) {
-        dropdownRepository.deleteAllByQuestionIdsAndFormResponseId(questionIds, formResponseId);
+    public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
+        dropdownRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<Void> deleteAllByFormId(UUID formId) {
+        dropdownRepository.deleteAllByFormId(formId);
 
         return CompletableFuture.completedFuture(null);
     }
