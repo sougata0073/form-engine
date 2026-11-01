@@ -7,7 +7,7 @@ import { FocusableComponent } from '../../../type/focusable-component';
 import { EditFormService } from '../../../service/edit-form-service';
 import { FormDetails } from '../../../model/form/form-details';
 import { CdkTextareaAutosize } from '@angular/cdk/text-field';
-import { FormUpdateReq } from '../../../model/form/form-update-req';
+import { FormInfoUpdateReq } from '../../../model/form/form-info-update-req';
 
 @Component({
   selector: 'app-edit-form-info',
@@ -45,19 +45,31 @@ export class EditFormInfo implements OnInit, FocusableComponent {
     this.formGroup.controls.title.valueChanges.subscribe(() => {
       if (this.formGroup.invalid) return;
 
-      this.editFormService.updateFormInfo(this.formRes().formInfo.id, {
-        title: this.formGroup.getRawValue().title,
-        updateFields: ['title' satisfies keyof FormUpdateReq],
-      });
+      this.editFormStateService.isFormGettingModified.set(true);
+
+      this.editFormService.updateFormInfo(
+        this.formRes().formInfo.id,
+        {
+          title: this.formGroup.getRawValue().title,
+          updateFields: ['title' satisfies keyof FormInfoUpdateReq],
+        },
+        () => this.editFormStateService.isFormGettingModified.set(false),
+      );
     });
 
     this.formGroup.controls.description.valueChanges.subscribe(() => {
       if (this.formGroup.invalid) return;
 
-      this.editFormService.updateFormInfo(this.formRes().formInfo.id, {
-        description: this.formGroup.getRawValue().description,
-        updateFields: ['description' satisfies keyof FormUpdateReq],
-      });
+      this.editFormStateService.isFormGettingModified.set(true);
+
+      this.editFormService.updateFormInfo(
+        this.formRes().formInfo.id,
+        {
+          description: this.formGroup.getRawValue().description,
+          updateFields: ['description' satisfies keyof FormInfoUpdateReq],
+        },
+        () => this.editFormStateService.isFormGettingModified.set(false),
+      );
     });
 
     this.editFormStateService.changeFocus(this.componentId());

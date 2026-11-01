@@ -26,7 +26,7 @@ public class FormDefaultSettings {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private FormEmailCollectionOption defaultEmailCollectionOption = FormEmailCollectionOption.RESPONDER_INPUT;
+    private FormEmailCollectionOption defaultEmailCollectionOption = FormEmailCollectionOption.OFF;
 
     @Column(nullable = false)
     private Boolean makeQuestionsRequiredByDefault = false;

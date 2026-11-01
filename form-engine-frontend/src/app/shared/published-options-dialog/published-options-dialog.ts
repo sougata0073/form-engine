@@ -18,8 +18,9 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatFormField, MatInput } from '@angular/material/input';
 import { StopAcceptingResponseDialog } from '../stop-accepting-response-dialog/stop-accepting-response-dialog';
 import { DatePipe } from '@angular/common';
-import { FormUpdateReq } from '../../model/form/form-update-req';
+import { FormInfoUpdateReq } from '../../model/form/form-info-update-req';
 import { FormGeneralSettingsUpdateReq } from '../../model/form/form-general-settings-update-req';
+import { EditFormStateService } from '../../service/edit-form-state-service';
 
 @Component({
   selector: 'app-published-options-dialog',
@@ -47,6 +48,7 @@ export class PublishedOptionsDialog implements OnInit {
   protected editFormService = inject(EditFormService);
   protected dialogRef = inject(MatDialogRef<PublishedOptionsDialog>);
   protected dialog = inject(MatDialog);
+  private editFormStateService = inject(EditFormStateService);
 
   protected formInfo = this.editFormService.formInfo;
 
@@ -81,6 +83,8 @@ export class PublishedOptionsDialog implements OnInit {
   protected onSaveClick() {
     if (!this.canSave()) return;
 
+    this.editFormStateService.isFormGettingModified.set(true);
+
     const acceptingResponse = this.formGroup.getRawValue().acceptingResponse;
     const notAcceptingResponseMessage = this.formGroup.getRawValue().notAcceptingResponseMessage;
 
@@ -95,9 +99,10 @@ export class PublishedOptionsDialog implements OnInit {
             'notAcceptingResponseMessage' satisfies keyof FormGeneralSettingsUpdateReq,
           ],
         },
-        updateFields: ['generalSettingsUpdateReq' satisfies keyof FormUpdateReq],
+        updateFields: ['generalSettingsUpdateReq' satisfies keyof FormInfoUpdateReq],
       },
       () => {
+        this.editFormStateService.isFormGettingModified.set(false);
         this.dialogRef.close();
       },
     );

@@ -146,7 +146,7 @@ services:
       args:
         - SERVER_PORT=${FORM_DATA_SERVICE_CONTAINER_PORT}
     deploy:
-      replicas: 2
+      replicas: 1
     env_file:
       - ./form-engine-backend/env-docker/form-data-service.env
     depends_on:
@@ -179,7 +179,7 @@ services:
       args:
         - SERVER_PORT=${FORM_RESPONSE_SERVICE_CONTAINER_PORT}
     deploy:
-      replicas: 2
+      replicas: 1
     env_file:
       - ./form-engine-backend/env-docker/form-response-service.env
     depends_on:
@@ -210,7 +210,7 @@ services:
       args:
         - SERVER_PORT=${FORM_SERVICE_CONTAINER_PORT}
     deploy:
-      replicas: 2
+      replicas: 1
     env_file:
       - ./form-engine-backend/env-docker/form-service.env
     depends_on:

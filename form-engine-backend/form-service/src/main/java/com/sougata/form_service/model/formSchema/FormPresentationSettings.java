@@ -29,11 +29,11 @@ public class FormPresentationSettings {
     @Column(nullable = false)
     private Boolean shuffleQuestionOrder = false;
 
-    @Column(columnDefinition = "text")
+    @Column(nullable = false, columnDefinition = "text")
     private String responseSavedConfirmationMessage = "Your response has been recorded";
 
     @Column(nullable = false)
-    private Boolean showLinkToSubmitAnotherResponse = false;
+    private Boolean showLinkToSubmitAnotherResponse = true;
 
     @Column(nullable = false)
     private Boolean shareResponseSummaryWithResponders = false;

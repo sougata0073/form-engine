@@ -10,8 +10,9 @@ import { MatDivider } from '@angular/material/list';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
 import { EditFormService } from '../../service/edit-form-service';
-import { FormUpdateReq } from '../../model/form/form-update-req';
+import { FormInfoUpdateReq } from '../../model/form/form-info-update-req';
 import { FormGeneralSettingsUpdateReq } from '../../model/form/form-general-settings-update-req';
+import { EditFormStateService } from '../../service/edit-form-state-service';
 
 @Component({
   selector: 'app-publish-form-dialog',
@@ -29,11 +30,14 @@ import { FormGeneralSettingsUpdateReq } from '../../model/form/form-general-sett
 })
 export class PublishFormDialog {
   protected editFormService = inject(EditFormService);
+  protected editFormStateService = inject(EditFormStateService);
   protected dialogRef = inject(MatDialogRef<PublishFormDialog>);
 
   protected formInfo = this.editFormService.formInfo;
 
   protected onPublishClick() {
+    this.editFormStateService.isFormGettingModified.set(true)
+
     this.editFormService.updateFormInfo(
       this.formInfo()!.id,
       {
@@ -49,9 +53,10 @@ export class PublishFormDialog {
             'responseLimit' satisfies keyof FormGeneralSettingsUpdateReq,
           ],
         },
-        updateFields: ['generalSettingsUpdateReq' satisfies keyof FormUpdateReq],
+        updateFields: ['generalSettingsUpdateReq' satisfies keyof FormInfoUpdateReq],
       },
       (res) => {
+        this.editFormStateService.isFormGettingModified.set(false)
         this.dialogRef.close(res);
       },
     );

@@ -19,7 +19,7 @@ import { DropdownUpdateReq } from '../model/edit-form/question/updatereq/dropdow
 import { MultipleChoiceUpdateReq } from '../model/edit-form/question/updatereq/multiple-choice-update-req';
 import { MultipleChoiceGridUpdateReq } from '../model/edit-form/question/updatereq/multiple-choice-grid-update-req';
 import { TickBoxGridUpdateReq } from '../model/edit-form/question/updatereq/tick-box-grid-update-req';
-import { FormUpdateReq } from '../model/form/form-update-req';
+import { FormInfoUpdateReq } from '../model/form/form-info-update-req';
 
 @Injectable({
   providedIn: 'root',
@@ -40,51 +40,72 @@ export class EditFormService {
   private updateQuestionTimer?: ReturnType<typeof setTimeout>;
   private updateQuestionDebounceWait: number = 1000;
 
-  updateFormInfo = debounce(
-    (formId: string, form: FormUpdateReq, onComplete?: (res: FormInfo) => void) => {
+  private updateFormInfoRequestStore: {
+    req: FormInfoUpdateReq;
+    onCompleteCallbacks: (((res: FormInfo) => void) | undefined)[];
+  } | null = null;
+  private updateFormInfoTimer?: ReturnType<typeof setTimeout>;
+  private updateFormInfoDebounceWait: number = 1000;
+
+  updateFormInfo(
+    formId: string,
+    formInfoUpdateReq: FormInfoUpdateReq,
+    onComplete?: (res: FormInfo) => void,
+  ) {
+    if (this.updateFormInfoRequestStore !== null) {
+      const prevReq = this.updateFormInfoRequestStore.req;
+
+      const newReq = mergeWith({}, prevReq, formInfoUpdateReq, (finalValue, srcValue, key) => {
+        if (
+          finalValue &&
+          srcValue &&
+          key === ('updateFields' satisfies keyof AnyQuestionUpdateReq)
+        ) {
+          return [...new Set([...finalValue, ...srcValue])];
+        }
+
+        return undefined;
+      });
+
+      const newOnCompleteCallbacks = this.updateFormInfoRequestStore.onCompleteCallbacks;
+      newOnCompleteCallbacks.push(onComplete);
+
+      this.updateFormInfoRequestStore = {
+        req: newReq,
+        onCompleteCallbacks: newOnCompleteCallbacks,
+      };
+    } else {
+      this.updateFormInfoRequestStore = {
+        req: formInfoUpdateReq,
+        onCompleteCallbacks: [onComplete],
+      };
+    }
+
+    const updateReqFun: () => void = () => {
+      const onCompleteCallbacksSnapshot = this.updateFormInfoRequestStore?.onCompleteCallbacks;
       const url = `forms/${formId}`;
 
-      this.http.patch<FormInfo>(url, form).subscribe((res) => {
+      this.http.patch<FormInfo>(url, this.updateFormInfoRequestStore?.req).subscribe((res) => {
         this._formInfo.set(res);
         this._formRes.update((prev) => {
-          return { ...prev!, ...res };
+          if (prev) {
+            return { ...prev, formInfo: res };
+          }
+
+          return null;
         });
 
-        onComplete?.(res);
-      });
-    },
-    1000,
-  );
-
-  loadFormInfo(formId: string, onComplete: (res: FormInfo) => void) {
-    const url = `forms/${formId}/info`;
-
-    this.http.get<FormInfo>(url).subscribe((res) => {
-      this._formInfo.set(res);
-      onComplete(res);
-    });
-  }
-
-  loadFormRes(formId: string, onComplete?: (res: FormDetails) => void) {
-    const url = `forms/${formId}`;
-
-    this.http.get<FormDetails>(url).subscribe((res) => {
-      this._formRes.set(res);
-
-      onComplete?.(res);
-    });
-  }
-
-  addQuestion(question: AnyQuestionAddReq, onComplete?: (res: AnyQuestionRes) => void) {
-    const url = `forms/${this._formRes()!.formInfo.id}/questions`;
-
-    this.http.post<AnyQuestionRes>(url, question).subscribe((res) => {
-      this._formRes.update((prev) => {
-        return { ...prev!, questions: [...prev!.questions, res] };
+        onCompleteCallbacksSnapshot?.forEach((callBack) => callBack?.(res));
       });
 
-      onComplete?.(res);
-    });
+      this.updateFormInfoRequestStore = null;
+    };
+
+    if (this.updateFormInfoTimer) {
+      clearTimeout(this.updateFormInfoTimer);
+    }
+
+    this.updateFormInfoTimer = setTimeout(updateReqFun, this.updateFormInfoDebounceWait);
   }
 
   updateQuestion(
@@ -181,6 +202,37 @@ export class EditFormService {
     } else {
       this.updateQuestionTimer = setTimeout(updateReqFun, this.updateQuestionDebounceWait);
     }
+  }
+
+  loadFormInfo(formId: string, onComplete: (res: FormInfo) => void) {
+    const url = `forms/${formId}/info`;
+
+    this.http.get<FormInfo>(url).subscribe((res) => {
+      this._formInfo.set(res);
+      onComplete(res);
+    });
+  }
+
+  loadFormRes(formId: string, onComplete?: (res: FormDetails) => void) {
+    const url = `forms/${formId}`;
+
+    this.http.get<FormDetails>(url).subscribe((res) => {
+      this._formRes.set(res);
+
+      onComplete?.(res);
+    });
+  }
+
+  addQuestion(question: AnyQuestionAddReq, onComplete?: (res: AnyQuestionRes) => void) {
+    const url = `forms/${this._formRes()!.formInfo.id}/questions`;
+
+    this.http.post<AnyQuestionRes>(url, question).subscribe((res) => {
+      this._formRes.update((prev) => {
+        return { ...prev!, questions: [...prev!.questions, res] };
+      });
+
+      onComplete?.(res);
+    });
   }
 
   deleteQuestion(question: QuestionRes, onComplete?: () => void) {

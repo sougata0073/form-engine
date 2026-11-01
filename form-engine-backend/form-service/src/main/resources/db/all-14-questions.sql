@@ -21,13 +21,15 @@ VALUES ('8e48be64-1f98-43ab-bda1-b80c6f0c5f76',
 INSERT INTO form_schema.form_presentation_settings (form_id, show_progress_bar, shuffle_question_order,
                                                     show_link_to_submit_another_response,
                                                     share_response_summary_with_responders,
-                                                    disable_auto_save_for_all_respondents)
+                                                    disable_auto_save_for_all_respondents,
+                                                    response_saved_confirmation_message)
 VALUES ('8e48be64-1f98-43ab-bda1-b80c6f0c5f76',
         FALSE,
         FALSE,
         FALSE,
         FALSE,
-        FALSE) ON CONFLICT (form_id) DO NOTHING;
+        FALSE,
+        'Your response has been recorded') ON CONFLICT (form_id) DO NOTHING;
 
 INSERT INTO form_schema.form_quiz_settings (form_id, is_quiz, release_marks_option,
                                             responders_can_see_incorrect_answers, responders_can_see_correct_answers,

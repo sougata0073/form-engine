@@ -27,7 +27,7 @@ public class FormResponseSettings {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private FormEmailCollectionOption emailCollectionOption = FormEmailCollectionOption.RESPONDER_INPUT;
+    private FormEmailCollectionOption emailCollectionOption = FormEmailCollectionOption.OFF;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

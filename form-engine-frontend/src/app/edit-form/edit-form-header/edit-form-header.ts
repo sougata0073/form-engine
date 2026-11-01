@@ -20,7 +20,7 @@ import { filter } from 'rxjs';
 import { EditFormStateService } from '../../service/edit-form-state-service';
 import { InputDialog } from '../../shared/input-dialog/input-dialog';
 import { FormService } from '../../service/form-service';
-import { FormUpdateReq } from '../../model/form/form-update-req';
+import { FormInfoUpdateReq } from '../../model/form/form-info-update-req';
 import { FormGeneralSettingsUpdateReq } from '../../model/form/form-general-settings-update-req';
 
 type TabLink = 'questions' | 'responses' | 'settings';
@@ -67,7 +67,12 @@ export class EditFormHeader implements OnInit {
   protected authJwtData = signal(this.authService.getJwtData());
 
   ngOnInit() {
+    this.editFormStateService.showGlobalLoader.set(true);
+    
     this.editFormService.loadFormInfo(this.formId(), () => {
+
+      this.editFormStateService.showGlobalLoader.set(false);
+
       this.activatedRoute.queryParams.subscribe((val) => {
         if (val['publishedOptions']) {
           if (this.formInfo()?.generalSettings.published) {
@@ -166,6 +171,7 @@ export class EditFormHeader implements OnInit {
         () => dialogRef.close(),
         'Unpublish',
         () => {
+          this.editFormStateService.isFormGettingModified.set(true)
           this.editFormService.updateFormInfo(
             this.formInfo()!.id,
             {
@@ -181,9 +187,10 @@ export class EditFormHeader implements OnInit {
                   'stopAcceptingResponseOn' satisfies keyof FormGeneralSettingsUpdateReq,
                 ],
               },
-              updateFields: ['generalSettingsUpdateReq' satisfies keyof FormUpdateReq],
+              updateFields: ['generalSettingsUpdateReq' satisfies keyof FormInfoUpdateReq],
             },
             () => {
+              this.editFormStateService.isFormGettingModified.set(false)
               dialogRef.close();
             },
           );

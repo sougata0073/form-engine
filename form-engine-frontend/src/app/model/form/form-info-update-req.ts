@@ -5,7 +5,7 @@ import { FormPresentationSettingsUpdateReq } from './form-presentation-settings-
 import { FormQuizSettingsUpdateReq } from './form-quiz-settings-update-req';
 import { FormResponseSettingsUpdateReq } from './form-response-settings-update-req';
 
-export interface FormUpdateReq extends PatchReq {
+export interface FormInfoUpdateReq extends PatchReq {
   name?: string | null;
   title?: string | null;
   description?: string | null;

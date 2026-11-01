@@ -9,8 +9,9 @@ import { InputDialog } from '../../shared/input-dialog/input-dialog';
 import { HomeService } from '../../service/home-service';
 import { SimpleDialog } from '../../shared/simple-dialog/simple-dialog';
 import { EditFormService } from '../../service/edit-form-service';
-import { FormUpdateReq } from '../../model/form/form-update-req';
+import { FormInfoUpdateReq } from '../../model/form/form-info-update-req';
 import { FormInfo } from '../../model/form/form-info';
+import { EditFormStateService } from '../../service/edit-form-state-service';
 
 @Component({
   selector: 'app-recent-form',
@@ -29,6 +30,7 @@ export class RecentForm implements OnInit {
 
   private homeService = inject(HomeService);
   private editFormService = inject(EditFormService);
+  private editFormStateService = inject(EditFormStateService);
   private router = inject(Router);
   private dialog = inject(MatDialog);
 
@@ -72,15 +74,18 @@ export class RecentForm implements OnInit {
     dialogRef.afterClosed().subscribe((result) => {
       if (result !== undefined && this.form().name !== result) {
         this.showLoader.emit(true);
+        this.editFormStateService.isFormGettingModified.set(true);
+
         this.editFormService.updateFormInfo(
           this.form().id,
           {
             name: result,
-            updateFields: ['name' satisfies keyof FormUpdateReq],
+            updateFields: ['name' satisfies keyof FormInfoUpdateReq],
           },
           (res) => {
-            this.renameForm.emit(res)
+            this.renameForm.emit(res);
             this.showLoader.emit(false);
+            this.editFormStateService.isFormGettingModified.set(false);
           },
         );
       }

@@ -4,6 +4,7 @@ import {RouterOutlet} from '@angular/router';
 import {MatProgressSpinner} from '@angular/material/progress-spinner';
 import {EditFormStateService} from '../service/edit-form-state-service';
 import {CdkScrollable} from '@angular/cdk/overlay';
+import { EditFormService } from '../service/edit-form-service';
 
 @Component({
   selector: 'app-edit-form',
@@ -16,14 +17,11 @@ import {CdkScrollable} from '@angular/cdk/overlay';
   templateUrl: './edit-form.html',
   styleUrl: './edit-form.scss',
 })
-export class EditForm implements OnInit {
+export class EditForm {
 
   formId = input.required<string>()
 
+  protected editFormService = inject(EditFormService)
   protected editFormStateService = inject(EditFormStateService)
-
-  ngOnInit() {
-
-  }
 
 }

@@ -24,8 +24,9 @@ import {
 } from '@angular/material/timepicker';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { MatCard } from '@angular/material/card';
-import { FormUpdateReq } from '../../model/form/form-update-req';
+import { FormInfoUpdateReq } from '../../model/form/form-info-update-req';
 import { FormGeneralSettingsUpdateReq } from '../../model/form/form-general-settings-update-req';
+import { EditFormStateService } from '../../service/edit-form-state-service';
 
 @Component({
   selector: 'app-stop-accepting-response-dialog',
@@ -62,6 +63,7 @@ import { FormGeneralSettingsUpdateReq } from '../../model/form/form-general-sett
 })
 export class StopAcceptingResponseDialog implements OnInit, OnDestroy {
   protected editFormService = inject(EditFormService);
+  protected editFormStateService = inject(EditFormStateService);
   protected dialogRef = inject(MatDialogRef<StopAcceptingResponseDialog>);
 
   protected formInfo = this.editFormService.formInfo;
@@ -148,6 +150,8 @@ export class StopAcceptingResponseDialog implements OnInit, OnDestroy {
   protected onSaveClick() {
     if (!this.canSave()) return;
 
+    this.editFormStateService.isFormGettingModified.set(true);
+
     const generalSettingsUpdateFields: string[] = [
       'acceptingResponse' satisfies keyof FormGeneralSettingsUpdateReq,
       'responseLimit' satisfies keyof FormGeneralSettingsUpdateReq,
@@ -177,7 +181,7 @@ export class StopAcceptingResponseDialog implements OnInit, OnDestroy {
       responseLimit = null;
     }
 
-    const updateReq: FormUpdateReq = {
+    const updateReq: FormInfoUpdateReq = {
       generalSettingsUpdateReq: {
         acceptingResponse: true,
         notAcceptingResponseMessage: notAcceptingResponseMessage,
@@ -185,12 +189,13 @@ export class StopAcceptingResponseDialog implements OnInit, OnDestroy {
         stopAcceptingResponseOn: stopAcceptingResponseOn,
         updateFields: generalSettingsUpdateFields,
       },
-      updateFields: ['generalSettingsUpdateReq' satisfies keyof FormUpdateReq],
+      updateFields: ['generalSettingsUpdateReq' satisfies keyof FormInfoUpdateReq],
     };
 
-    this.editFormService.updateFormInfo(this.formInfo()!.id, updateReq, () =>
-      this.dialogRef.close(),
-    );
+    this.editFormService.updateFormInfo(this.formInfo()!.id, updateReq, () => {
+      this.editFormStateService.isFormGettingModified.set(false);
+      this.dialogRef.close();
+    });
   }
 
   protected setCanSave() {

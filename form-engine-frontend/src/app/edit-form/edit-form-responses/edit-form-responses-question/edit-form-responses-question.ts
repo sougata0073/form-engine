@@ -1,19 +1,15 @@
 import { Component, inject, input, OnInit, signal } from '@angular/core';
-import { FormResponseService } from '../../../service/form-response-service';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   EditFormResponseQuestionWrapper
 } from './edit-form-response-question-wrapper/edit-form-response-question-wrapper';
-import { AnyResponseQuestionSummary } from '../../../type/any-response-question-summary';
 import { MatFormField } from '@angular/material/input';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatOption, MatSelect } from '@angular/material/select';
-import { QuestionSummariesRes } from '../../../model/question/question-summaries-res';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatCard, MatCardContent } from '@angular/material/card';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { AnyQuestionRes } from '../../../type/any-question-res';
-import { QuestionService } from '../../../service/question-service';
 import { FormDetails } from '../../../model/form/form-details';
 import { FormService } from '../../../service/form-service';
 import { FormResponseServiceShared } from '../../../service/form-response-service-shared';
