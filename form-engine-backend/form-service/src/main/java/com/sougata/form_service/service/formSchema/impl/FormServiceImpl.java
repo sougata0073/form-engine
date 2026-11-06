@@ -1,5 +1,7 @@
 package com.sougata.form_service.service.formSchema.impl;
 
+import com.sougata.form_engine.constant.FormEmailCollectionOption;
+import com.sougata.form_engine.constant.ResponseCopySendOption;
 import com.sougata.form_engine.constant.ViewFormErrorReason;
 import com.sougata.form_engine.constant.cache.CommonCacheNames;
 import com.sougata.form_engine.constant.cache.FormCacheNames;
@@ -32,9 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -256,8 +256,18 @@ public class FormServiceImpl implements FormService {
                             switch (settingsField) {
                                 case FormResponseSettingsUpdateReqDto.Fields.emailCollectionOption ->
                                         formToUpdateResponseSettings.setEmailCollectionOption(dtoResponseSettings.getEmailCollectionOption());
-                                case FormResponseSettingsUpdateReqDto.Fields.responseCopySendOption ->
-                                        formToUpdateResponseSettings.setResponseCopySendOption(dtoResponseSettings.getResponseCopySendOption());
+                                case FormResponseSettingsUpdateReqDto.Fields.responseCopySendOption -> {
+
+                                    var emailCollectionOption = dtoResponseSettings.getUpdateFields().contains(FormResponseSettingsUpdateReqDto.Fields.emailCollectionOption)
+                                            ? dtoResponseSettings.getEmailCollectionOption()
+                                            : formToUpdateResponseSettings.getEmailCollectionOption();
+
+                                    if (emailCollectionOption == FormEmailCollectionOption.OFF && dtoResponseSettings.getResponseCopySendOption() != ResponseCopySendOption.OFF) {
+                                        throw new RuntimeException("Enable email collection to allow sending response copies.");
+                                    }
+
+                                    formToUpdateResponseSettings.setResponseCopySendOption(dtoResponseSettings.getResponseCopySendOption());
+                                }
                                 case FormResponseSettingsUpdateReqDto.Fields.isResponseEditable ->
                                         formToUpdateResponseSettings.setIsResponseEditable(dtoResponseSettings.getIsResponseEditable());
                                 case FormResponseSettingsUpdateReqDto.Fields.singleResponseOnly ->
@@ -372,7 +382,9 @@ public class FormServiceImpl implements FormService {
             );
         }
 
-        if (formDataServiceFeignClient.getIsResponseAlreadySubmitted(formId, userId)) {
+        if (formDetails.getFormInfo().getResponseSettings().getSingleResponseOnly()
+                && formDataServiceFeignClient.getIsResponseAlreadySubmitted(formId, userId).getIsSubmitted()
+        ) {
             throw new FormResponseAlreadySubmittedException(
                     new ViewFormErrorResDto(
                             formDetails.getFormInfo().getTitle(),
@@ -380,6 +392,10 @@ public class FormServiceImpl implements FormService {
                             "You have already submitted a response for this form."
                     )
             );
+        }
+
+        if (formDetails.getFormInfo().getPresentationSettings().getShuffleQuestionOrder()) {
+            Collections.shuffle(formDetails.getQuestions());
         }
 
         return formDetails;

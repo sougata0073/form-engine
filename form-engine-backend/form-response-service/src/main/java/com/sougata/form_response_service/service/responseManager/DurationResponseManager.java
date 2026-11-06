@@ -158,30 +158,6 @@ public class DurationResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<DurationResponseIndividualDto> getIndividualResponses(UUID formId, Long formResponseId) {
-//        var responses = durationRepository.getDurationsByFormResponse(formResponseId);
-//
-//        return responses.stream().map(tuple -> {
-//            var qId = tuple.get("questionId", Long.class);
-//            var hours = tuple.get("hours", Integer.class);
-//            var minutes = tuple.get("minutes", Integer.class);
-//            var seconds = tuple.get("seconds", Integer.class);
-//
-//            var res = new DurationResponseIndividualDto();
-//
-//            res.setQuestionId(qId);
-//            res.setQuestionType(getQuestionType());
-//            res.setHours(hours);
-//            res.setMinutes(minutes);
-//            res.setSeconds(seconds);
-//
-//            return res;
-//        }).toList();
-
-        return null;
-    }
-
-    @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
         var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 

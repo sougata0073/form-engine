@@ -12,7 +12,15 @@
             matTooltip="Form home"
             (click)="onFormsHomeClick()"
           />
-          <p class="title">{{ formInfo()!.name }}</p>
+          <div class="title-input-container" [formGroup]="formGroup">
+            <input
+              class="title-input"
+              (click)="isFormNameEditing.set(true)"
+              (blur)="isFormNameEditing.set(false)"
+              formControlName="formName"
+            />
+            <div class="title-input-underline" [class.show]="isFormNameEditing()"></div>
+          </div>
           @if (editFormStateService.isFormGettingModified()) {
             <p class="save-message">Saving...</p>
           } @else {

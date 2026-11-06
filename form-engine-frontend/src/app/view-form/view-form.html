@@ -2,13 +2,17 @@
   <div class="content-wrapper">
     @if (!isFormSubmitted()) {
       @if (formRes() && !formError()) {
-        <div
-          class="main-content"
-          [class.loading]="isFormSubmitInProgress()">
-
-          <app-view-form-info [formRes]="formRes()!"/>
-
+        <div class="main-content" [class.loading]="isFormSubmitInProgress()">
+          <app-view-form-info [formRes]="formRes()!" />
           <ul class="question-list">
+            @if (
+              formRes()?.formInfo?.responseSettings?.emailCollectionOption !== 'OFF' ||
+              formRes()?.formInfo?.defaultSettings?.defaultEmailCollectionOption !== 'OFF'
+            ) {
+              <li>
+                <app-view-form-collect-email [formRes]="formRes()!" />
+              </li>
+            }
             @for (q of formRes()!.questions; track `${q.id}_${q.questionType}`) {
               <li>
                 <app-view-form-question-wrapper
@@ -21,30 +25,48 @@
             }
           </ul>
 
+          @if (formRes()?.formInfo?.responseSettings?.responseCopySendOption === 'ALWAYS') {
+            <p class="always-response-copy-send-message">
+              A copy of your responses will be emailed to {{ authService.getJwtData()?.email }}.
+            </p>
+          } @else if (
+            formRes()?.formInfo?.responseSettings?.responseCopySendOption === 'WHEN_REQUESTED'
+          ) {
+            <div class="response-copy-send-confirmation-container" [formGroup]="formGroup">
+              <mat-slide-toggle formControlName="sendResponseCopy" />
+              <p class="response-copy-send-message">Send me a copy of my responses.</p>
+            </div>
+          }
+
           <div class="buttons-container" [class.no-questions]="formRes()!.questions.length === 0">
             <button
               class="submit-button"
               matButton="filled"
               #submitBtn
-              (click)="onFormSubmit(submitBtn)">
+              (click)="onFormSubmit(submitBtn)"
+            >
               Submit
             </button>
 
-            <button
-              class="clear-button"
-              matButton
-              (click)="onClearClick()">
-              Clear form
-            </button>
+            @if (formRes()?.formInfo?.presentationSettings?.showProgressBar) {
+              <div class="progress-bar-container">
+                <mat-progress-bar
+                  class="progress-bar"
+                  [class.progress-full]="formProgress() === 100"
+                  mode="determinate"
+                  [value]="formProgress()"
+                ></mat-progress-bar>
+                <p class="progress-info">Page 1 of 1</p>
+              </div>
+            }
+
+            <button class="clear-button" matButton (click)="onClearClick()">Clear form</button>
           </div>
 
           <div class="footer-container">
-
             <p class="never-submit-password-warning">Never submit passwords through Form Engine.</p>
-            <app-view-form-footer/>
-
+            <app-view-form-footer />
           </div>
-
         </div>
       } @else if (formError()?.reason === 'NOT_ACCEPTING_RESPONSE') {
         <div class="not-accepting-response-message-container">
@@ -55,17 +77,12 @@
             </div>
           </app-question-card>
 
-          <app-view-form-footer/>
-
+          <app-view-form-footer />
         </div>
       } @else if (formError()?.reason === 'NOT_PUBLISHED') {
         <div class="not-published-container">
           <div class="app-title-container">
-            <img
-              ngSrc="assets/images/app-logo.png"
-              height="48"
-              width="48"
-              alt="Form engine logo">
+            <img ngSrc="assets/images/app-logo.png" height="48" width="48" alt="Form engine logo" />
 
             <p class="app-title">Form Engine</p>
           </div>
@@ -81,12 +98,11 @@
             </div>
           </app-question-card>
 
-          <app-view-form-footer/>
-
+          <app-view-form-footer />
         </div>
       } @else {
         <div class="loader-container">
-          <mat-spinner/>
+          <mat-spinner />
         </div>
       }
     } @else {
@@ -94,18 +110,22 @@
         <app-question-card [isTopItem]="true">
           <div class="form-submitted-content-container">
             <p class="form-title">{{ formRes()?.formInfo?.title }}</p>
-            <p>Your response has been recorded.</p>
+            <p>{{ formRes()?.formInfo?.presentationSettings?.responseSavedConfirmationMessage }}</p>
+            @if (formRes()?.formInfo?.presentationSettings?.showLinkToSubmitAnotherResponse) {
+              <p class="another-form-submission-link" (click)="onSubmitAnotherResponseClick()">
+                Submit another response
+              </p>
+            }
           </div>
         </app-question-card>
 
-        <app-view-form-footer/>
-
+        <app-view-form-footer />
       </div>
     }
 
     @if (isFormSubmitInProgress()) {
       <div class="loader-overlay">
-        <mat-spinner/>
+        <mat-spinner />
       </div>
     }
   </div>

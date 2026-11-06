@@ -4,11 +4,10 @@ import { loggedInGuard } from './guard/logged-in-guard';
 export const routes: Routes = [
   {
     path: 'forms',
-    canActivate: [loggedInGuard],
-    canActivateChild: [loggedInGuard],
     children: [
       {
         path: ':formId',
+        canActivateChild: [loggedInGuard],
         children: [
           {
             path: 'edit',
@@ -61,14 +60,14 @@ export const routes: Routes = [
             ],
           },
           {
-            path: 'view',
-            loadComponent: () => import('./view-form/view-form').then((m) => m.ViewForm),
-          },
-          {
             path: 'preview',
             loadComponent: () => import('./preview-form/preview-form').then((m) => m.PreviewForm),
           },
         ],
+      },
+      {
+        path: ':formId/view',
+        loadComponent: () => import('./view-form/view-form').then((m) => m.ViewForm),
       },
     ],
   },

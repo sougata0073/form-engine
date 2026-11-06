@@ -148,26 +148,6 @@ public class LinearScaleResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<LinearScaleResponseIndividualDto> getIndividualResponses(UUID formId, Long formResponseId) {
-//        var responses = linearScaleRepository.getScalesByFormResponse(formResponseId);
-//
-//        return responses.stream().map(tuple -> {
-//            var qId = tuple.get("questionId", Long.class);
-//            var scale = tuple.get("scale", Integer.class);
-//
-//            var res = new LinearScaleResponseIndividualDto();
-//
-//            res.setQuestionId(qId);
-//            res.setQuestionType(getQuestionType());
-//            res.setScale(scale);
-//
-//            return res;
-//        }).toList();
-
-        return null;
-    }
-
-    @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
         var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 

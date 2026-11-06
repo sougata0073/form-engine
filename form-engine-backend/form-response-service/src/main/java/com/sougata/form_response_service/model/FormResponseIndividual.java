@@ -15,18 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(
-        name = "form_response_individuals",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uk_form_id_user_id",
-                        columnNames = {
-                                "form_response_summary_form_id",
-                                "user_id"
-                        }
-                )
-        }
-)
+@Table(name = "form_response_individuals")
 @Getter
 @Setter
 @AllArgsConstructor

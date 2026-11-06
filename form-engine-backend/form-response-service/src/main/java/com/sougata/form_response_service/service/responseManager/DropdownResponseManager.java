@@ -149,26 +149,6 @@ public class DropdownResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<DropdownResponseIndividualDto> getIndividualResponses(UUID formId, Long formResponseId) {
-//        var responses = dropdownRepository.getOptionIdsByFormResponse(formResponseId);
-//
-//        return responses.stream().map(tuple -> {
-//            var qId = tuple.get("questionId", Long.class);
-//            var optionId = tuple.get("optionId", Long.class);
-//
-//            var res = new DropdownResponseIndividualDto();
-//
-//            res.setQuestionId(qId);
-//            res.setQuestionType(getQuestionType());
-//            res.setOptionId(optionId);
-//
-//            return res;
-//        }).toList();
-
-        return null;
-    }
-
-    @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
         var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 

@@ -1,10 +1,12 @@
-import {Injectable} from '@angular/core';
-import {JwtData, JwtUtil} from '../util/jwt-util';
+import { Injectable } from '@angular/core';
+import { JwtData, JwtUtil } from '../util/jwt-util';
+import { CommonConstant } from '../constant/common-contant';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
+  static GOOGLE_AUTH_URL = `${CommonConstant.SERVER_URL}oauth2/authorization/google`;
 
   getJwt(): string | null {
     return localStorage.getItem('jwt');
@@ -13,11 +15,11 @@ export class AuthService {
   getJwtData(): JwtData | null {
     const jwtToken = localStorage.getItem('jwt');
 
-    return jwtToken === null ? null : JwtUtil.decodeJwt(jwtToken)
+    return jwtToken === null ? null : JwtUtil.decodeJwt(jwtToken);
   }
 
   isLoggedIn(): boolean {
-    return localStorage.getItem('jwt') !== null && !this.isJwtExpired()
+    return localStorage.getItem('jwt') !== null && !this.isJwtExpired();
   }
 
   isJwtExpired(): boolean {
@@ -38,5 +40,4 @@ export class AuthService {
   saveJwt(jwt: string): void {
     localStorage.setItem('jwt', jwt);
   }
-
 }

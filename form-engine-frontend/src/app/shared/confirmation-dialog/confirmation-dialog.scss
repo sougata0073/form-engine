@@ -1,0 +1,10 @@
+@use 'index' as *;
+@use '@angular/material' as mat;
+
+button {
+  @include mat.button-overrides(
+    (
+      text-container-shape: $space-xs,
+    )
+  );
+}

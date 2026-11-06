@@ -1,5 +1,5 @@
 import { Component, inject, input, OnInit, signal, viewChild } from '@angular/core';
-import { JsonPipe, NgOptimizedImage } from '@angular/common';
+import { NgOptimizedImage } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
@@ -9,7 +9,7 @@ import { MatCard, MatCardContent } from '@angular/material/card';
 import { EditFormService } from '../../service/edit-form-service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { PublishFormDialog } from '../../shared/publish-form-dialog/publish-form-dialog';
 import { CopyResponderLinkMenuContent } from '../../shared/copy-responder-link-menu-content/copy-responder-link-menu-content';
 import { PublishedOptionsDialog } from '../../shared/published-options-dialog/published-options-dialog';
@@ -22,6 +22,7 @@ import { InputDialog } from '../../shared/input-dialog/input-dialog';
 import { FormService } from '../../service/form-service';
 import { FormInfoUpdateReq } from '../../model/form/form-info-update-req';
 import { FormGeneralSettingsUpdateReq } from '../../model/form/form-general-settings-update-req';
+import { A11yModule } from '@angular/cdk/a11y';
 
 type TabLink = 'questions' | 'responses' | 'settings';
 
@@ -42,7 +43,8 @@ type TabLink = 'questions' | 'responses' | 'settings';
     MatMenuTrigger,
     ReactiveFormsModule,
     CopyResponderLinkMenuContent,
-    MatMenuItem
+    MatMenuItem,
+    A11yModule,
   ],
   templateUrl: './edit-form-header.html',
   styleUrl: './edit-form-header.scss',
@@ -66,12 +68,33 @@ export class EditFormHeader implements OnInit {
   protected formInfo = this.editFormService.formInfo;
   protected authJwtData = signal(this.authService.getJwtData());
 
+  protected isFormNameEditing = signal<boolean>(false);
+
+  protected formGroup = new FormGroup({
+    formName: new FormControl<string | null>(null),
+  });
+
   ngOnInit() {
     this.editFormStateService.showGlobalLoader.set(true);
-    
-    this.editFormService.loadFormInfo(this.formId(), () => {
 
+    this.editFormService.loadFormInfo(this.formId(), (res) => {
       this.editFormStateService.showGlobalLoader.set(false);
+
+      this.formGroup.patchValue({
+        formName: res.name,
+      });
+
+      this.formGroup.controls.formName.valueChanges.subscribe((val) => {
+        this.editFormStateService.isFormGettingModified.set(true);
+
+        const req: FormInfoUpdateReq = {
+          name: val,
+          updateFields: ['name' satisfies keyof FormInfoUpdateReq],
+        };
+        this.editFormService.updateFormInfo(this.formId(), req, (res) => {
+          this.editFormStateService.isFormGettingModified.set(false);
+        });
+      });
 
       this.activatedRoute.queryParams.subscribe((val) => {
         if (val['publishedOptions']) {
@@ -171,7 +194,7 @@ export class EditFormHeader implements OnInit {
         () => dialogRef.close(),
         'Unpublish',
         () => {
-          this.editFormStateService.isFormGettingModified.set(true)
+          this.editFormStateService.isFormGettingModified.set(true);
           this.editFormService.updateFormInfo(
             this.formInfo()!.id,
             {
@@ -190,7 +213,7 @@ export class EditFormHeader implements OnInit {
               updateFields: ['generalSettingsUpdateReq' satisfies keyof FormInfoUpdateReq],
             },
             () => {
-              this.editFormStateService.isFormGettingModified.set(false)
+              this.editFormStateService.isFormGettingModified.set(false);
               dialogRef.close();
             },
           );

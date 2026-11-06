@@ -157,26 +157,6 @@ public class RatingResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<RatingResponseIndividualDto> getIndividualResponses(UUID formId, Long formResponseId) {
-//        var responses = ratingRepository.getRatingsByFormResponse(formResponseId);
-//
-//        return responses.stream().map(tuple -> {
-//            var qId = tuple.get("questionId", Long.class);
-//            var rating = tuple.get("rating", Integer.class);
-//
-//            var res = new RatingResponseIndividualDto();
-//
-//            res.setQuestionId(qId);
-//            res.setQuestionType(getQuestionType());
-//            res.setRating(rating);
-//
-//            return res;
-//        }).toList();
-
-        return null;
-    }
-
-    @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
         var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 

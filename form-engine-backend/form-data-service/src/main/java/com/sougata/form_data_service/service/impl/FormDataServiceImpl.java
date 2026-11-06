@@ -12,16 +12,19 @@ import com.sougata.form_data_service.repository.FormResponseUserRepository;
 import com.sougata.form_data_service.service.FormDataService;
 import com.sougata.form_data_service.service.FormDataServiceCached;
 import com.sougata.form_data_service.service.responseManager.ResponseManagerFactory;
+import com.sougata.form_data_service.util.CacheUtil;
 import com.sougata.form_engine.constant.DistributedLockNames;
 import com.sougata.form_engine.constant.FormConstant;
 import com.sougata.form_engine.constant.RedisStreamKeys;
 import com.sougata.form_engine.constant.RedisStreamNames;
 import com.sougata.form_engine.constant.cache.CommonCacheNames;
+import com.sougata.form_engine.constant.cache.FormDataCacheNames;
 import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
 import com.sougata.form_engine.dto.form.FormResponsePutReqDto;
 import com.sougata.form_engine.dto.form.FormResponsePutResDto;
 import com.sougata.form_engine.dto.messaging.FormResponseDeleteMessage;
 import com.sougata.form_engine.dto.messaging.FormResponseSavedMessage;
+import com.sougata.form_engine.dto.others.IsResponseSubmittedDto;
 import com.sougata.form_engine.dto.others.SuccessMessageDto;
 import com.sougata.form_engine.dto.question.responseputrequest.QuestionResponsePutReqDto;
 import com.sougata.form_engine.dto.validation.request.ResponseValidationRequestDto;
@@ -76,14 +79,9 @@ public class FormDataServiceImpl implements FormDataService {
             throw new FormSubmitException("This form is no longer accepting responses.");
         }
 
-//        TODO: Not working
         if (!Objects.equals(formDetails, req.getFormDetailsResponseSubmittedOn())) {
             throw new FormDetailsMayChangedException();
         }
-
-//        if (!JsonUtil.toJson(formDetails).equals(JsonUtil.toJson(req.getFormDetailsResponseSubmittedOn()))) {
-//            throw new FormDetailsMayChangedException();
-//        }
 
         var formResponseCountRedisKey = CommonCacheNames.FORM_RESPONSE_COUNT + "::" + formId;
 
@@ -121,11 +119,9 @@ public class FormDataServiceImpl implements FormDataService {
 
             formResponseUserRedisLock.lock();
 
-            var formResponseUserPartitionKey = new FormResponseUser.PartitionKey();
-            formResponseUserPartitionKey.setFormId(formId);
-            formResponseUserPartitionKey.setUserId(responderId);
-
-            if (formResponseUserRepository.existsById(formResponseUserPartitionKey)) {
+            if (formDetails.getFormInfo().getResponseSettings().getSingleResponseOnly()
+                    && formDataServiceCached.getIsResponseAlreadySubmitted(formId, responderId).getIsSubmitted()
+            ) {
                 throw new FormSubmitException("You have already submitted a response for this form.");
             }
 
@@ -142,6 +138,10 @@ public class FormDataServiceImpl implements FormDataService {
             );
 
             var savedFormResponse = formResponseRepository.save(formResponse);
+
+            var formResponseUserPartitionKey = new FormResponseUser.PartitionKey();
+            formResponseUserPartitionKey.setFormId(formId);
+            formResponseUserPartitionKey.setUserId(responderId);
 
             var formResponseUser = new FormResponseUser(formResponseUserPartitionKey);
             var savedFormResponseUser = formResponseUserRepository.save(formResponseUser);
@@ -172,6 +172,18 @@ public class FormDataServiceImpl implements FormDataService {
                                     req.getResponses()
                             )))
                             .withStreamKey(RedisStreamNames.FORM_RESPONSE_STREAM)
+            );
+
+            var isResponseAlreadySubmittedCacheKey = CacheUtil.buildKey(
+                    FormDataCacheNames.IS_RESPONSE_ALREADY_SUBMITTED,
+                    "formId=" + formId,
+                    "userId=" + responderId
+            );
+
+            redisTemplate.opsForValue().set(
+                    isResponseAlreadySubmittedCacheKey,
+                    new IsResponseSubmittedDto(true),
+                    Duration.ofMinutes(appConfiguration.getCacheDefaultTtlMinutes())
             );
 
             return new FormResponsePutResDto(savedFormResponse.getKey().getFormResponseId());
@@ -222,10 +234,5 @@ public class FormDataServiceImpl implements FormDataService {
         );
 
         return SuccessMessageDto.create("Response deleted successfully. Form id: " + formId + " Form response ID: " + formResponseId);
-    }
-
-    @Override
-    public boolean getIsResponseAlreadySubmitted(UUID formId, UUID userId) {
-        return formResponseUserRepository.existsById(new FormResponseUser.PartitionKey(formId, userId));
     }
 }

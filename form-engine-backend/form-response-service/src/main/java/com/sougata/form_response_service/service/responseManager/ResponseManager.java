@@ -35,8 +35,6 @@ public abstract class ResponseManager<
 
     public abstract ResByQ getResponseByQuestion(UUID formId, Long questionId, Map<String, String> extraParams, Pageable pageable);
 
-    public abstract List<ResIndi> getIndividualResponses(UUID formId, Long formResponseId);
-
     public abstract List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable);
 
     public abstract QResBatch mapToBatchResponse(List<FormResponseInfoQuestionResponse<TQuestionResponsePutReq>> questionResponsePutReqs);

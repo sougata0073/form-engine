@@ -1,33 +1,31 @@
-import {Injectable} from '@angular/core';
-import {ArrayUtil} from '../util/array-util';
+import { Injectable } from '@angular/core';
+import { ArrayUtil } from '../util/array-util';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ViewFormStateService {
+  private formSubmitCallbacks: Map<string, () => void> = new Map();
+  private questionErrorMap = new Map<string, boolean>();
 
-  private formSubmitCallbacks: (() => void)[] = []
-  private questionErrorMap = new Map<string, boolean>()
-
-  addFormSubmitCallback(callbackFn: () => void) {
-    this.formSubmitCallbacks.push(callbackFn)
+  setFormSubmitCallback(questionId: string, callbackFn: () => void) {
+    this.formSubmitCallbacks.set(questionId, callbackFn);
   }
 
   executeAllFormSubmitCallbacks() {
-    this.formSubmitCallbacks.forEach(cb => cb())
+    this.formSubmitCallbacks.forEach((callback, questionId) => callback());
   }
 
   removeAllFormSubmitCallback() {
-    this.formSubmitCallbacks.length = 0
+    this.formSubmitCallbacks.clear();
   }
 
   putToQuestionErrorMap(questionId: string, hasError: boolean) {
-    this.questionErrorMap.set(questionId, hasError)
+    this.questionErrorMap.set(questionId, hasError);
   }
 
   ifAnyQuestionHasError() {
-    const values = ArrayUtil.toArray(this.questionErrorMap.values())
-    return values.some(val => val)
+    const values = ArrayUtil.toArray(this.questionErrorMap.values());
+    return values.some((val) => val);
   }
-
 }

@@ -12,5 +12,4 @@ public interface FormDataService {
 
     SuccessMessageDto deleteFormResponse(UUID formId, UUID formResponseId);
 
-    boolean getIsResponseAlreadySubmitted(UUID formId, UUID userId);
 }

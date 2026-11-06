@@ -1,4 +1,4 @@
-import { Component, inject, input, OnDestroy, OnInit, Signal, signal } from '@angular/core';
+import { Component, inject, input, OnDestroy, OnInit, signal } from '@angular/core';
 import { ViewFormInfo } from './view-form-info/view-form-info';
 import { ViewFormService } from '../service/view-form-service';
 import { ViewFormQuestionWrapper } from './view-form-question-wrapper/view-form-question-wrapper';
@@ -17,6 +17,17 @@ import { AnyQuestionResponsePutReq } from '../type/any-question-response-put-req
 import { FunctionalDialog } from '../shared/functional-dialog/functional-dialog';
 import { ViewFormFooter } from '../shared/view-form-footer/view-form-footer';
 import { FormDetails } from '../model/form/form-details';
+import { AuthService } from '../service/auth-service';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ɵInternalFormsSharedModule,
+} from '@angular/forms';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { ViewFormCollectEmail } from './view-form-collect-email/view-form-collect-email';
+import { ConfirmationDialog } from '../shared/confirmation-dialog/confirmation-dialog';
 
 @Component({
   selector: 'app-view-form',
@@ -28,6 +39,11 @@ import { FormDetails } from '../model/form/form-details';
     QuestionCard,
     NgOptimizedImage,
     ViewFormFooter,
+    MatSlideToggle,
+    ɵInternalFormsSharedModule,
+    ReactiveFormsModule,
+    MatProgressBarModule,
+    ViewFormCollectEmail,
   ],
   templateUrl: './view-form.html',
   styleUrl: './view-form.scss',
@@ -38,13 +54,14 @@ export class ViewForm implements OnInit, OnDestroy {
   protected formError = signal<ViewFormErrorRes | null>(null);
   protected questionResponses = signal<AnyQuestionResponsePutReq[]>([]);
 
-  protected _submitClick = new BehaviorSubject<boolean>(false);
+  private _submitClick = new BehaviorSubject<boolean>(false);
   protected submitClick = this._submitClick.asObservable();
-  protected _clearClick = new BehaviorSubject<boolean>(false);
+  private _clearClick = new BehaviorSubject<boolean>(false);
   protected clearClick = this._clearClick.asObservable();
 
   protected viewFormService = inject(ViewFormService);
   protected viewFormStateService = inject(ViewFormStateService);
+  protected authService = inject(AuthService);
   protected dialog = inject(MatDialog);
   protected title = inject(Title);
 
@@ -52,6 +69,11 @@ export class ViewForm implements OnInit, OnDestroy {
 
   protected isFormSubmitInProgress = signal<boolean>(false);
   protected isFormSubmitted = signal<boolean>(false);
+  protected formProgress = signal(100);
+
+  protected formGroup = new FormGroup({
+    sendResponseCopy: new FormControl<boolean>(false, { nonNullable: true }),
+  });
 
   ngOnInit() {
     this.viewFormService.loadFormRes(
@@ -59,6 +81,23 @@ export class ViewForm implements OnInit, OnDestroy {
       (res) => {
         this.formRes.set(res);
         this.title.setTitle(res.formInfo.title ?? 'Form engine');
+
+        if (
+          res.formInfo.responseSettings.emailCollectionOption !== 'OFF' &&
+          !this.authService.isLoggedIn()
+        ) {
+          this.dialog.open(ConfirmationDialog, {
+            disableClose: true,
+            data: ConfirmationDialog.configure(
+              'Sign in to continue',
+              'To fill out this form, you must be signed in.',
+              'SIGN IN',
+              () => {
+                location.assign(AuthService.GOOGLE_AUTH_URL);
+              },
+            ),
+          });
+        }
       },
       (error) => this.formError.set(error),
     );
@@ -109,9 +148,15 @@ export class ViewForm implements OnInit, OnDestroy {
     this.questionResponses.set([]);
     this._submitClick.next(true);
 
+    const emailCollectionOption = this.formRes()?.formInfo.responseSettings?.emailCollectionOption;
+
+    const email = emailCollectionOption === 'OFF' ? null : this.authService.getJwtData()!.email;
+
     const req: FormResponsePutReq = {
       formDetailsResponseSubmittedOn: this.formRes()!,
       responses: this.questionResponses(),
+      sendResponseCopy: this.formGroup.getRawValue().sendResponseCopy,
+      email: email,
     };
 
     this.viewFormService.submitResponse(
@@ -163,5 +208,10 @@ export class ViewForm implements OnInit, OnDestroy {
         },
       ),
     });
+  }
+
+  protected onSubmitAnotherResponseClick() {
+    const url = `${window.origin}/forms/${this.formId()}/view`;
+    window.open(url, '_blank');
   }
 }

@@ -1,5 +1,5 @@
-@use "index" as *;
-@use "@angular/material" as mat;
+@use 'index' as *;
+@use '@angular/material' as mat;
 
 .parent-container {
   height: 100%;
@@ -39,15 +39,60 @@
       justify-content: space-between;
 
       .submit-button {
-        @include mat.button-overrides((
-          filled-container-shape: $space-xs,
-        ));
+        @include mat.button-overrides(
+          (
+            filled-container-shape: $space-xs,
+          )
+        );
       }
 
       .clear-button {
-        @include mat.button-overrides((
-          text-container-shape: $space-xs
-        ));
+        @include mat.button-overrides(
+          (
+            text-container-shape: $space-xs,
+          )
+        );
+      }
+
+      .progress-bar-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        flex: 1;
+        min-width: 0;
+        justify-content: center;
+
+        .progress-bar {
+          width: 184px;
+
+          @include mat.progress-bar-overrides(
+            (
+              active-indicator-color: #4285f4,
+              track-color: rgb(100, 105, 111),
+              active-indicator-height: 10px,
+              track-height: 10px,
+            )
+          );
+        }
+
+        .progress-bar.progress-full {
+          @include mat.progress-bar-overrides(
+            (
+              active-indicator-color: #34a853,
+            )
+          );
+        }
+
+        .progress-info {
+          margin-left: $space-sm;
+          font-family: Roboto, Arial, sans-serif;
+          font-size: 14px;
+          font-weight: 400;
+          letter-spacing: 0.2px;
+          line-height: 20px;
+          color: #1f1f1f;
+          display: inline-block;
+        }
       }
     }
 
@@ -63,6 +108,29 @@
 
       .never-submit-password-warning {
         color: rgba(0, 0, 0, 0.66);
+      }
+    }
+
+    .always-response-copy-send-message,
+    .response-copy-send-confirmation-container {
+      margin: $space-md 0 $space-xl 0;
+    }
+
+    .always-response-copy-send-message {
+      color: rgba(0, 0, 0, 0.54);
+      font-size: $space-md;
+    }
+
+    .response-copy-send-confirmation-container {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+
+      .response-copy-send-message {
+        color: #1f1f1f;
+        margin-left: $space-sm;
+        word-wrap: break-word;
+        font-size: $space-md;
       }
     }
   }
@@ -87,6 +155,19 @@
       .form-title {
         font-size: $space-xl;
         line-height: normal;
+      }
+
+      .another-form-submission-link {
+        color: var(--gm3-sys-color-primary, #0b57d0);
+        text-decoration: underline;
+        margin-top: $space-xs;
+        cursor: pointer;
+        font:
+          400 14px / 20px Roboto,
+          RobotoDraft,
+          Helvetica,
+          Arial,
+          sans-serif;
       }
     }
   }

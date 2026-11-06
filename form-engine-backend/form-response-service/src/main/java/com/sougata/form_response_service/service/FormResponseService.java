@@ -28,5 +28,4 @@ public interface FormResponseService {
 
     FormResponseCountDto getFormResponseCount(UUID formId);
 
-    boolean getIsResponseAlreadySubmitted(UUID formId, UUID userId);
 }

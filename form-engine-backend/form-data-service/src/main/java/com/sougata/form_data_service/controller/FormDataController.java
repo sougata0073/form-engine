@@ -7,11 +7,11 @@ import com.sougata.form_engine.constant.cache.FormDataCacheNames;
 import com.sougata.form_engine.dto.form.FormResponsePutReqDto;
 import com.sougata.form_engine.dto.form.FormResponsePutResDto;
 import com.sougata.form_engine.dto.formResponse.individual.FormResponseIndividualDtoNoPage;
+import com.sougata.form_engine.dto.others.IsResponseSubmittedDto;
 import com.sougata.form_engine.dto.others.SuccessMessageDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +36,6 @@ public class FormDataController {
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
-    // Cached in service
     @GetMapping(path = "{formId}/responses/{formResponseId}")
     public FormResponseIndividualDtoNoPage getFormResponse(
             @PathVariable("formId") UUID formId,
@@ -58,15 +57,11 @@ public class FormDataController {
     }
 
     @GetMapping(path = "{formId}/responders/{userId}/is-response-submitted")
-    @Cacheable(
-            cacheNames = {FormDataCacheNames.IS_RESPONSE_ALREADY_SUBMITTED},
-            key = "'formId=' + #formId + '::userId=' + #userId"
-    )
-    public boolean getIsResponseAlreadySubmitted(
+    public IsResponseSubmittedDto getIsResponseAlreadySubmitted(
             @PathVariable("formId") UUID formId,
             @PathVariable("userId") UUID userId
     ) {
-        return formDataService.getIsResponseAlreadySubmitted(formId, userId);
+        return formDataServiceCached.getIsResponseAlreadySubmitted(formId, userId);
     }
 
 }

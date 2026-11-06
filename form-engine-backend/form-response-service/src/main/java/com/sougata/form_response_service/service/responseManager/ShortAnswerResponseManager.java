@@ -122,26 +122,6 @@ public class ShortAnswerResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<ShortAnswerResponseIndividualDto> getIndividualResponses(UUID formId, Long formResponseId) {
-//        var responses = shortAnswerRepository.getTextsByFormResponse(formResponseId);
-//
-//        return responses.stream().map(tuple -> {
-//            var qId = tuple.get("questionId", Long.class);
-//            var text = tuple.get("text", String.class);
-//
-//            var res = new ShortAnswerResponseIndividualDto();
-//
-//            res.setQuestionId(qId);
-//            res.setQuestionType(getQuestionType());
-//            res.setText(text);
-//
-//            return res;
-//        }).toList();
-
-        return null;
-    }
-
-    @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
         var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 

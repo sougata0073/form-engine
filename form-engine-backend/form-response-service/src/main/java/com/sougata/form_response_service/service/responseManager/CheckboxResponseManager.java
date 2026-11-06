@@ -152,26 +152,6 @@ public class CheckboxResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<CheckboxResponseIndividualDto> getIndividualResponses(UUID formId, Long formResponseId) {
-//        var responses = checkboxRepository.getOptionIdsByFormResponse(formResponseId);
-//
-//        return responses.stream().map(tuple -> {
-//            var qId = tuple.get("questionId", Long.class);
-//            var optionIds = Arrays.stream(tuple.get("optionIds", Long[].class)).map(Object::toString).toList();
-//
-//            var res = new CheckboxResponseIndividualDto();
-//
-//            res.setQuestionId(qId);
-//            res.setQuestionType(getQuestionType());
-//            res.setOptionIds(optionIds);
-//
-//            return res;
-//        }).toList();
-
-        return null;
-    }
-
-    @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
         var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 

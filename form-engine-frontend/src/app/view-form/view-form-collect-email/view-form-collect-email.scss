@@ -1,0 +1,46 @@
+@use 'index' as *;
+
+.parent-container {
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+}
+
+.question-info-container {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+
+  p {
+    line-height: 1;
+    font-size: $space-md;
+  }
+
+  .question {
+    font-size: $space-md * 1.2;
+  }
+
+  .required {
+    color: red;
+  }
+}
+
+.verified-email-container {
+  display: flex;
+  flex-direction: column;
+
+  .confirmation-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .verified-email-collection-message {
+    font-family: Roboto, Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.2px;
+    line-height: 20px;
+    color: #1f1f1f;
+  }
+}

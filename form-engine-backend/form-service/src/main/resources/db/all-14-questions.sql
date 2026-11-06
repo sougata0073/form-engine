@@ -26,7 +26,7 @@ INSERT INTO form_schema.form_presentation_settings (form_id, show_progress_bar, 
 VALUES ('8e48be64-1f98-43ab-bda1-b80c6f0c5f76',
         FALSE,
         FALSE,
-        FALSE,
+        TRUE,
         FALSE,
         FALSE,
         'Your response has been recorded') ON CONFLICT (form_id) DO NOTHING;

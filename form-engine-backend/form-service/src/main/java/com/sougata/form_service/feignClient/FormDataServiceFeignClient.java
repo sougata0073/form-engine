@@ -1,5 +1,6 @@
 package com.sougata.form_service.feignClient;
 
+import com.sougata.form_engine.dto.others.IsResponseSubmittedDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,7 +11,7 @@ import java.util.UUID;
 public interface FormDataServiceFeignClient {
 
     @GetMapping(path = "{formId}/responders/{userId}/is-response-submitted")
-    boolean getIsResponseAlreadySubmitted(
+    IsResponseSubmittedDto getIsResponseAlreadySubmitted(
             @PathVariable("formId") UUID formId,
             @PathVariable("userId") UUID userId
     );

@@ -121,26 +121,6 @@ public class ParagraphResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<ParagraphResponseIndividualDto> getIndividualResponses(UUID formId, Long formResponseId) {
-//        var responses = paragraphRepository.getTextsByFormResponse(formResponseId);
-//
-//        return responses.stream().map(tuple -> {
-//            var qId = tuple.get("questionId", Long.class);
-//            var text = tuple.get("text", String.class);
-//
-//            var res = new ParagraphResponseIndividualDto();
-//
-//            res.setQuestionId(qId);
-//            res.setQuestionType(getQuestionType());
-//            res.setText(text);
-//
-//            return res;
-//        }).toList();
-
-        return null;
-    }
-
-    @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
         var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 

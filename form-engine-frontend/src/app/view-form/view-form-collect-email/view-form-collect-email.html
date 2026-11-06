@@ -1,0 +1,41 @@
+<app-question-card [hasError]="hasError()">
+  <div class="parent-container" [formGroup]="formGroup">
+    <div class="question-info-container">
+      <p class="question">
+        Email
+        <span class="required">*</span>
+      </p>
+    </div>
+    @if (formRes().formInfo.responseSettings.emailCollectionOption === 'RESPONDER_INPUT') {
+      <form class="horizontal">
+        <mat-form-field class="decorated-mat-input form-field" hideRequiredMarker>
+          <mat-label>Your email address</mat-label>
+          <input matInput formControlName="email" />
+          @if (formGroup.controls.email.touched && formGroup.controls.email.hasError('required')) {
+            <mat-error>This is a required question</mat-error>
+          } @else if (
+            formGroup.controls.email.touched && formGroup.controls.email.hasError('email')
+          ) {
+            <mat-error>Must be a valid email address</mat-error>
+          }
+        </mat-form-field>
+      </form>
+    } @else if (formRes().formInfo.responseSettings.emailCollectionOption === 'VERIFIED') {
+      <div class="verified-email-container">
+        <div class="confirmation-container">
+          <mat-checkbox formControlName="verifiedEmailConfirmation"></mat-checkbox>
+          <p class="verified-email-collection-message">
+            Record <b>{{ authService.getJwtData()?.email }}</b> as the email to be included with my
+            response
+          </p>
+        </div>
+        @if (
+          formGroup.controls.verifiedEmailConfirmation.touched &&
+          formGroup.controls.verifiedEmailConfirmation.hasError('required')
+        ) {
+          <mat-error>This is a required question</mat-error>
+        }
+      </div>
+    }
+  </div>
+</app-question-card>

@@ -153,26 +153,6 @@ public class DateResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<DateResponseIndividualDto> getIndividualResponses(UUID formId, Long formResponseId) {
-//        var responses = dateRepository.getDatesByFormResponse(formResponseId);
-//
-//        return responses.stream().map(tuple -> {
-//            var qId = tuple.get("questionId", Long.class);
-//            var date = tuple.get("date", Instant.class);
-//
-//            var res = new DateResponseIndividualDto();
-//
-//            res.setQuestionId(qId);
-//            res.setQuestionType(getQuestionType());
-//            res.setDate(date);
-//
-//            return res;
-//        }).toList();
-
-        return null;
-    }
-
-    @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
         var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 

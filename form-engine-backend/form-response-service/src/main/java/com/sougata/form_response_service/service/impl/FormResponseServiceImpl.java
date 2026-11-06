@@ -48,11 +48,6 @@ public class FormResponseServiceImpl implements FormResponseService {
     private final AppConfiguration appConfiguration;
 
     @Override
-    public boolean getIsResponseAlreadySubmitted(UUID formId, UUID userId) {
-        return formResponseIndividualRepository.existsByFormIdAndUserId(formId, userId);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public ResponseSummaryResDto getResponseSummaries(UUID formId) {
         var questions = formServiceFeignClient.getFormDetails(formId).getQuestions();

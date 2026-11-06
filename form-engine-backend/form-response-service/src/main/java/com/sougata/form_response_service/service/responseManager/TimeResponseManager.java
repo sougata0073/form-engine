@@ -150,26 +150,6 @@ public class TimeResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<TimeResponseIndividualDto> getIndividualResponses(UUID formId, Long formResponseId) {
-//        var responses = timeRepository.getTimesByFormResponse(formResponseId);
-//
-//        return responses.stream().map(tuple -> {
-//            var qId = tuple.get("questionId", Long.class);
-//            var time = tuple.get("time", Instant.class);
-//
-//            var res = new TimeResponseIndividualDto();
-//
-//            res.setQuestionId(qId);
-//            res.setQuestionType(getQuestionType());
-//            res.setTime(time);
-//
-//            return res;
-//        }).toList();
-
-        return null;
-    }
-
-    @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
         var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 

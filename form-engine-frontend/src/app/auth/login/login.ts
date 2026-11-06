@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonConstant } from '../../constant/common-contant';
+import { AuthService } from '../../service/auth-service';
 
 @Component({
   selector: 'app-login',
@@ -9,6 +10,6 @@ import { CommonConstant } from '../../constant/common-contant';
 })
 export class Login implements OnInit {
   ngOnInit(): void {
-    location.assign(`${CommonConstant.SERVER_URL}oauth2/authorization/google`);
+    location.assign(AuthService.GOOGLE_AUTH_URL);
   }
 }

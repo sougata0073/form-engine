@@ -133,6 +133,10 @@ export class EditFormSettings implements OnInit {
       },
     });
 
+    if (responseSettings.emailCollectionOption === 'OFF') {
+      this.formGroup.controls.responseSettings.controls.responseCopySendOption.disable()
+    }
+
     this.prevFormValues = this.formGroup.getRawValue();
 
     this.formGroup.controls.quizSettings.valueChanges.subscribe(() => {

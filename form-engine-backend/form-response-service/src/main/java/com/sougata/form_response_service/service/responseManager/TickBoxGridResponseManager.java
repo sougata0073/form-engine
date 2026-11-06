@@ -185,44 +185,6 @@ public class TickBoxGridResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<TickBoxGridResponseIndividualDto> getIndividualResponses(UUID formId, Long formResponseId) {
-//        var responses = tickBoxGridRepository.getRowColumnIdsByFormResponse(formResponseId);
-//
-//        var questionIdMap = responses.stream().collect(
-//                Collectors.groupingBy(tuple -> tuple.get("questionId", Long.class))
-//        );
-//
-//        return questionIdMap.entrySet().stream().map(entry -> {
-//            var qId = entry.getKey();
-//            var rowIds = entry.getValue().stream().map(tuple -> tuple.get("rowId", Long.class)).toList();
-//            var columnIds = entry.getValue().stream().map(tuple -> tuple.get("columnIds", Long[].class)).toList();
-//
-//            var res = new TickBoxGridResponseIndividualDto();
-//
-//            res.setQuestionId(qId);
-//            res.setQuestionType(getQuestionType());
-//
-//            var rows = new ArrayList<TickBoxGridResponseIndividualDto.Row>();
-//
-//            for (int i = 0; i < rowIds.size(); i++) {
-//                var rowId = rowIds.get(i);
-//                var colIds = columnIds.get(i);
-//                rows.add(
-//                        new TickBoxGridResponseIndividualDto.Row(
-//                                rowId, Arrays.stream(colIds).map(Object::toString).toList()
-//                        )
-//                );
-//            }
-//
-//            res.setRows(rows);
-//
-//            return res;
-//        }).toList();
-
-        return null;
-    }
-
-    @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
         var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 

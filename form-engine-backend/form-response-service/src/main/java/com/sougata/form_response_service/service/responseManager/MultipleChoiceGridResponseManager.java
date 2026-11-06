@@ -189,38 +189,6 @@ public class MultipleChoiceGridResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<MultipleChoiceGridResponseIndividualDto> getIndividualResponses(UUID formId, Long formResponseId) {
-//        var responses = multipleChoiceGridRepository.getRowColumnIdsByFormResponse(formResponseId);
-//
-//        return responses.stream().map(tuple -> {
-//            var qId = tuple.get("questionId", Long.class);
-//            var rowIds = tuple.get("rowIds", Long[].class);
-//            var columnIds = tuple.get("columnIds", Long[].class);
-//
-//            var res = new MultipleChoiceGridResponseIndividualDto();
-//
-//            res.setQuestionId(qId);
-//            res.setQuestionType(getQuestionType());
-//
-//            var rows = new ArrayList<MultipleChoiceGridResponseIndividualDto.Row>();
-//
-//            for (int i = 0; i < rowIds.length; i++) {
-//                rows.add(
-//                        new MultipleChoiceGridResponseIndividualDto.Row(
-//                                rowIds[i], columnIds[i]
-//                        )
-//                );
-//            }
-//
-//            res.setRows(rows);
-//
-//            return res;
-//        }).toList();
-
-        return null;
-    }
-
-    @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
         var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 

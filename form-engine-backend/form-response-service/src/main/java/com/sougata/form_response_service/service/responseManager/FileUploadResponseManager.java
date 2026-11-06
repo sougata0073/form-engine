@@ -132,30 +132,6 @@ public class FileUploadResponseManager extends ResponseManager<
     }
 
     @Override
-    public List<FileUploadResponseIndividualDto> getIndividualResponses(UUID formId, Long formResponseId) {
-//        var responses = fileUploadRepository.getFileUploadsByFormResponse(formResponseId);
-//
-//        return responses.stream().map(tuple -> {
-//            var qId = tuple.get("questionId", Long.class);
-//            var fileName = tuple.get("fileName", String.class);
-//            var fileUrl = tuple.get("fileUrl", String.class);
-//            var fileMimeType = tuple.get("fileMimeType", String.class);
-//
-//            var res = new FileUploadResponseIndividualDto();
-//
-//            res.setQuestionId(qId);
-//            res.setQuestionType(getQuestionType());
-//            res.setFileName(fileName);
-//            res.setFileUrl(fileUrl);
-//            res.setFileMimeType(fileMimeType);
-//
-//            return res;
-//        }).toList();
-
-        return null;
-    }
-
-    @Override
     public List<Tuple> getFormResponseAndUserIds(UUID formId, Long questionId, String formResponsesIdentifier, Pageable pageable) {
         var map = IdUtil.reconstructCompressedEncodedId(formResponsesIdentifier);
 

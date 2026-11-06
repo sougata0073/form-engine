@@ -1,12 +1,15 @@
 package com.sougata.form_data_service.service.impl;
 
 import com.sougata.form_data_service.model.FormResponse;
+import com.sougata.form_data_service.model.FormResponseUser;
 import com.sougata.form_data_service.repository.FormResponseRepository;
+import com.sougata.form_data_service.repository.FormResponseUserRepository;
 import com.sougata.form_data_service.service.FormDataServiceCached;
 import com.sougata.form_data_service.service.responseManager.ResponseManagerFactory;
 import com.sougata.form_engine.constant.cache.FormDataCacheNames;
 import com.sougata.form_engine.dto.formResponse.individual.FormResponseIndividualDtoNoPage;
 import com.sougata.form_engine.dto.formResponse.individual.QuestionResponseIndividualDto;
+import com.sougata.form_engine.dto.others.IsResponseSubmittedDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,7 @@ public class FormDataServiceCachedImpl implements FormDataServiceCached {
 
     private final FormResponseRepository formResponseRepository;
     private final ResponseManagerFactory responseManagerFactory;
+    private final FormResponseUserRepository formResponseUserRepository;
 
     @Override
     @Cacheable(
@@ -60,6 +64,17 @@ public class FormDataServiceCachedImpl implements FormDataServiceCached {
                 formResponse.getKey().getFormResponseId(),
                 formResponse.getUserId(),
                 responses
+        );
+    }
+
+    @Override
+    @Cacheable(
+            cacheNames = {FormDataCacheNames.IS_RESPONSE_ALREADY_SUBMITTED},
+            key = "'formId=' + #formId + '::userId=' + #userId"
+    )
+    public IsResponseSubmittedDto getIsResponseAlreadySubmitted(UUID formId, UUID userId) {
+        return new IsResponseSubmittedDto(
+                formResponseUserRepository.existsById(new FormResponseUser.PartitionKey(formId, userId))
         );
     }
 

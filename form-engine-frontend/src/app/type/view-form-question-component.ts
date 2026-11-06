@@ -1,74 +1,83 @@
-import {Directive, inject, input, OnChanges, OnInit, output, signal, SimpleChanges} from '@angular/core';
-import {QuestionRes} from '../model/edit-form/question/response/question-res';
-import {FormArray, FormControl, FormGroup, Validators} from '@angular/forms';
-import {ViewFormStateService} from '../service/view-form-state-service';
+import {
+  Directive,
+  inject,
+  input,
+  OnChanges,
+  OnInit,
+  output,
+  signal,
+  SimpleChanges,
+} from '@angular/core';
+import { QuestionRes } from '../model/edit-form/question/response/question-res';
+import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
+import { ViewFormStateService } from '../service/view-form-state-service';
 
 @Directive()
-export abstract class ViewFormQuestionComponent<QR extends QuestionRes, OnlyQuestionResponsePutReq> implements OnInit, OnChanges {
-
+export abstract class ViewFormQuestionComponent<QR extends QuestionRes, TOnlyQuestionResponsePutReq>
+  implements OnInit, OnChanges
+{
   question = input.required<QR>();
-  parentComponentId = input.required<string>()
+  parentComponentId = input.required<string>();
 
-  hasError = output<boolean>()
+  hasError = output<boolean>();
 
-  showError = signal<boolean>(false)
+  showError = signal<boolean>(false);
 
-  abstract formGroup: FormGroup
+  abstract formGroup: FormGroup;
 
-  protected viewFormStateService = inject(ViewFormStateService)
+  protected viewFormStateService = inject(ViewFormStateService);
 
-  abstract getOnlyQuestionResponsePutReq(): OnlyQuestionResponsePutReq | null
-  abstract onQuestionInputChange(): void
+  abstract getOnlyQuestionResponsePutReq(): TOnlyQuestionResponsePutReq | null;
+  abstract onQuestionInputChange(): void;
 
   clearForm() {
-    Object.values(this.formGroup.controls).forEach(control => {
-      control.patchValue(null)
-    })
+    Object.values(this.formGroup.controls).forEach((control) => {
+      control.patchValue(null);
+    });
   }
 
   ngOnInit() {
-    this.viewFormStateService.addFormSubmitCallback(this.formSubmitCallback)
+    this.viewFormStateService.setFormSubmitCallback(this.question().id, this.formSubmitCallback);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if(changes['question']) {
-      this.onQuestionInputChange()
-      this.viewFormStateService.addFormSubmitCallback(this.formSubmitCallback)
+    if (changes['question']) {
+      this.onQuestionInputChange();
+      this.viewFormStateService.setFormSubmitCallback(this.question().id, this.formSubmitCallback);
     }
   }
 
   protected formSubmitCallback = () => {
-    this.viewFormStateService.putToQuestionErrorMap(
-      this.question().id, this.formGroup.invalid
-    )
-    this.formGroup.markAllAsTouched()
-    this.showError.set(this.formGroup.invalid)
-    this.hasError.emit(this.formGroup.invalid)
-  }
+    this.viewFormStateService.putToQuestionErrorMap(this.question().id, this.formGroup.invalid);
+    this.formGroup.markAllAsTouched();
+    this.showError.set(this.formGroup.invalid);
+    this.hasError.emit(this.formGroup.invalid);
+  };
 
   protected onFocusOut(formControl: FormControl) {
-    this.showError.set(formControl.invalid)
-    this.hasError.emit(formControl.invalid)
+    this.showError.set(formControl.invalid);
+    this.hasError.emit(formControl.invalid);
   }
 
   protected formControlError(
-    control: FormControl | FormArray, errors: { errorCode: string, message: string }[]
+    control: FormControl | FormArray,
+    errors: { errorCode: string; message: string }[],
   ): string | null {
-    if (!control.touched) return null
+    if (!control.touched) return null;
 
-    let errorMessage: string | null = null
+    let errorMessage: string | null = null;
 
-    errors.forEach(error => {
+    errors.forEach((error) => {
       if (control.hasError(error.errorCode)) {
-        errorMessage = error.message
-        return
+        errorMessage = error.message;
+        return;
       }
-    })
+    });
 
     if (control.hasError('required') && errorMessage === null) {
-      errorMessage = 'This is a required question'
+      errorMessage = 'This is a required question';
     }
 
-    return errorMessage
+    return errorMessage;
   }
 }

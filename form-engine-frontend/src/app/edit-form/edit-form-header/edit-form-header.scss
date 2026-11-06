@@ -2,10 +2,12 @@
 @use '@angular/material' as mat;
 
 .parent-container {
-  @include mat.card-overrides((
-    elevated-container-shape: 0,
-    elevated-container-color: white
-  ));
+  @include mat.card-overrides(
+    (
+      elevated-container-shape: 0,
+      elevated-container-color: white,
+    )
+  );
 }
 
 .info-action-container {
@@ -29,7 +31,7 @@
   font-family: Roboto, Arial, sans-serif;
   font-size: 12px;
   font-weight: 400;
-  letter-spacing: .3px;
+  letter-spacing: 0.3px;
   line-height: 16px;
   color: #5e5e5e;
   cursor: default;
@@ -54,12 +56,48 @@
   }
 }
 
-.title {
+.title-input-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.title-input {
   font-size: $space-lg;
-  max-width: 30ch;
+  font-family: inherit;
+  font-weight: inherit;
+  color: inherit;
+  margin-right: $space-xs;
+  margin-top: 2px;
+
+  width: auto;
+  max-width: 20ch;
+  min-width: 0;
+  field-sizing: content;
+  box-sizing: border-box;
+
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+}
+
+.title-input-underline {
+  height: 2px;
+  width: 100%;
+  background-color: #1f1f1f;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform .3s cubic-bezier(.4, 0, .2, 1);
+}
+
+.title-input-underline.show {
+  transform: scaleX(1);
+  transform-origin: left;
 }
 
 .app-logo {
@@ -69,17 +107,21 @@
 .published-button {
   margin: 0 $space-sm 0 $space-sm;
 
-  @include mat.button-overrides((
-    outlined-container-shape: $space-xs,
-  ));
+  @include mat.button-overrides(
+    (
+      outlined-container-shape: $space-xs,
+    )
+  );
 }
 
 .publish-button {
   margin: 0 $space-sm 0 $space-sm;
 
-  @include mat.button-overrides((
-    filled-container-shape: $space-xs
-  ))
+  @include mat.button-overrides(
+    (
+      filled-container-shape: $space-xs,
+    )
+  );
 }
 
 .not-accepting-response-container {
@@ -102,19 +144,23 @@
     }
 
     .edit-off-icon {
-      @include mat.icon-overrides((
-        color: #DA883F,
-      ));
+      @include mat.icon-overrides(
+        (
+          color: #da883f,
+        )
+      );
     }
   }
 
   button {
-    @include mat.button-overrides((
-      text-container-shape: $space-xs,
-      text-label-text-color: rgb(95, 99, 104),
-      text-ripple-color: #DBD7BF,
-      text-state-layer-color: #DBD7BF,
-      text-hover-state-layer-opacity: 0.3
-    ))
+    @include mat.button-overrides(
+      (
+        text-container-shape: $space-xs,
+        text-label-text-color: rgb(95, 99, 104),
+        text-ripple-color: #dbd7bf,
+        text-state-layer-color: #dbd7bf,
+        text-hover-state-layer-opacity: 0.3,
+      )
+    );
   }
 }
