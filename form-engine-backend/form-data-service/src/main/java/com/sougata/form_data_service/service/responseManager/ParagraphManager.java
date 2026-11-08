@@ -47,7 +47,7 @@ public class ParagraphManager extends ResponseManager<ParagraphResponsePutReqDto
     @Override
     @Async
     public CompletableFuture<List<ParagraphResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        var responses = paragraphRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
+        var responses = paragraphRepository.findAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -65,7 +65,7 @@ public class ParagraphManager extends ResponseManager<ParagraphResponsePutReqDto
     @Override
     @Async
     public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        paragraphRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+        paragraphRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(null);
     }

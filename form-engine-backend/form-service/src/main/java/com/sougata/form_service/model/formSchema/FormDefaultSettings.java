@@ -7,8 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.DynamicUpdate;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Persistable;
 
 import java.util.UUID;
 
@@ -19,10 +19,10 @@ import java.util.UUID;
 @Getter
 @Setter
 @DynamicUpdate
-public class FormDefaultSettings {
+public class FormDefaultSettings implements Persistable<UUID> {
 
     @Id
-    private UUID formId;
+    private UUID userId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -31,10 +31,22 @@ public class FormDefaultSettings {
     @Column(nullable = false)
     private Boolean makeQuestionsRequiredByDefault = false;
 
-    @MapsId
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false, unique = true)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private Form form;
+    @Transient
+    private boolean isNew = true;
 
+    @Override
+    public @Nullable UUID getId() {
+        return userId;
+    }
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    @PostLoad
+    @PostPersist
+    void markNotNew() {
+        isNew = false;
+    }
 }

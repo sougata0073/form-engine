@@ -19,12 +19,14 @@ import com.sougata.form_service.exception.FormResponseAlreadySubmittedException;
 import com.sougata.form_service.feignClient.FormDataServiceFeignClient;
 import com.sougata.form_service.feignClient.FormResponseServiceFeignClient;
 import com.sougata.form_service.model.formSchema.*;
+import com.sougata.form_service.repository.formSchema.FormDefaultSettingsRepository;
 import com.sougata.form_service.repository.formSchema.FormRepository;
 import com.sougata.form_service.service.formSchema.FormService;
 import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.QuestionService;
 import com.sougata.form_service.service.formSchema.questionManager.QuestionManagerFactory;
 import com.sougata.form_service.util.CacheUtil;
+import com.sougata.form_service.util.MappingUtil;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -50,28 +52,31 @@ public class FormServiceImpl implements FormService {
     private final AppConfiguration appConfiguration;
     private final RedissonClient redissonClient;
     private final QuestionService questionService;
+    private final FormDefaultSettingsRepository formDefaultSettingsRepository;
 
     @Override
+    @Transactional
     public FormInfoDto createForm(UUID userId) {
         var newForm = new Form();
 
-        var newFormDefaultSettings = new FormDefaultSettings();
+        var defaultSettings = formServiceCached.getDefaultFormSettings(userId);
+
         var newFormGeneralSettings = new FormGeneralSettings();
         var newFormPresentationSettings = new FormPresentationSettings();
         var newFormQuizSettings = new FormQuizSettings();
         var newFormResponseSettings = new FormResponseSettings();
 
-        newFormDefaultSettings.setForm(newForm);
         newFormGeneralSettings.setForm(newForm);
         newFormPresentationSettings.setForm(newForm);
         newFormQuizSettings.setForm(newForm);
         newFormResponseSettings.setForm(newForm);
 
+        newFormResponseSettings.setEmailCollectionOption(defaultSettings.getDefaultEmailCollectionOption());
+
         newForm.setUserId(userId);
         newForm.setName("Untitled form");
         newForm.setLastOpenedOn(Instant.now());
 
-        newForm.setFormDefaultSettings(newFormDefaultSettings);
         newForm.setFormGeneralSettings(newFormGeneralSettings);
         newForm.setFormPresentationSettings(newFormPresentationSettings);
         newForm.setFormQuizSettings(newFormQuizSettings);
@@ -79,7 +84,7 @@ public class FormServiceImpl implements FormService {
 
         var savedForm = formRepo.save(newForm);
 
-        var formInfo = toFormInfo(savedForm);
+        var formInfo = MappingUtil.toFormInfo(savedForm);
 
         addFirstInRecentForms(userId, formInfo);
         putFormInfo(formInfo);
@@ -92,7 +97,6 @@ public class FormServiceImpl implements FormService {
     public FormInfoDto copyForm(UUID formId, CopyFormReqDto req, UUID userId) {
         var referenceFormDetails = formServiceCached.getFormDetails(formId);
 
-        var referenceFormDefaultSettings = referenceFormDetails.getFormInfo().getDefaultSettings();
         var referenceFormGeneralSettings = referenceFormDetails.getFormInfo().getGeneralSettings();
         var referenceFormPresentationSettings = referenceFormDetails.getFormInfo().getPresentationSettings();
         var referenceFormQuizSettings = referenceFormDetails.getFormInfo().getQuizSettings();
@@ -100,15 +104,10 @@ public class FormServiceImpl implements FormService {
 
         var newForm = new Form();
 
-        var newFormDefaultSettings = new FormDefaultSettings();
         var newFormGeneralSettings = new FormGeneralSettings();
         var newFormPresentationSettings = new FormPresentationSettings();
         var newFormQuizSettings = new FormQuizSettings();
         var newFormResponseSettings = new FormResponseSettings();
-
-        newFormDefaultSettings.setForm(newForm);
-        newFormDefaultSettings.setDefaultEmailCollectionOption(referenceFormDefaultSettings.getDefaultEmailCollectionOption());
-        newFormDefaultSettings.setMakeQuestionsRequiredByDefault(referenceFormDefaultSettings.getMakeQuestionsRequiredByDefault());
 
         newFormGeneralSettings.setForm(newForm);
         newFormGeneralSettings.setPublished(referenceFormGeneralSettings.getPublished());
@@ -145,7 +144,6 @@ public class FormServiceImpl implements FormService {
         newForm.setDescription(referenceFormDetails.getFormInfo().getDescription());
         newForm.setLastOpenedOn(Instant.now());
 
-        newForm.setFormDefaultSettings(newFormDefaultSettings);
         newForm.setFormGeneralSettings(newFormGeneralSettings);
         newForm.setFormPresentationSettings(newFormPresentationSettings);
         newForm.setFormQuizSettings(newFormQuizSettings);
@@ -153,16 +151,24 @@ public class FormServiceImpl implements FormService {
 
         var savedForm = formRepo.save(newForm);
 
+        var questions = new ArrayList<QuestionDetailsDto>();
+
         referenceFormDetails.getQuestions().forEach(q -> {
             var manager = questionManagerFactory.get(q.getQuestionType());
-            var addUpdateReq = manager.toQuestionAddUpdateReq(q);
-            manager.create(savedForm.getId(), addUpdateReq);
+            var addUpdateReq = manager.toQuestionAddReq(q);
+            var qDetails = manager.create(savedForm.getId(), userId, addUpdateReq);
+
+            questions.add(qDetails);
         });
 
-        var formInfo = toFormInfo(savedForm);
+        questions.sort(Comparator.comparingInt(QuestionDetailsDto::getOrderIndex));
+
+        var formInfo = MappingUtil.toFormInfo(savedForm);
+        var formDetails = new FormDetailsDto(formInfo, questions);
 
         addFirstInRecentForms(userId, formInfo);
         putFormInfo(formInfo);
+        putFormDetails(formDetails);
 
         return formInfo;
     }
@@ -171,13 +177,11 @@ public class FormServiceImpl implements FormService {
     public FormInfoDto updateForm(UUID formId, FormUpdateReqDto dto, UUID userId) {
         var formToUpdate = getFormById(formId);
 
-        var formToUpdateDefaultSettings = formToUpdate.getFormDefaultSettings();
         var formToUpdateGeneralSettings = formToUpdate.getFormGeneralSettings();
         var formToUpdatePresentationSettings = formToUpdate.getFormPresentationSettings();
         var formToUpdateQuizSettings = formToUpdate.getFormQuizSettings();
         var formToUpdateResponseSettings = formToUpdate.getFormResponseSettings();
 
-        var dtoDefaultSettings = dto.getDefaultSettingsUpdateReq();
         var dtoGeneralSettings = dto.getGeneralSettingsUpdateReq();
         var dtoPresentationSettings = dto.getPresentationSettingsUpdateReq();
         var dtoQuizSettings = dto.getQuizSettingsUpdateReq();
@@ -188,16 +192,6 @@ public class FormServiceImpl implements FormService {
                 case FormUpdateReqDto.Fields.name -> formToUpdate.setName(dto.getName());
                 case FormUpdateReqDto.Fields.title -> formToUpdate.setTitle(dto.getTitle());
                 case FormUpdateReqDto.Fields.description -> formToUpdate.setDescription(dto.getDescription());
-
-                case FormUpdateReqDto.Fields.defaultSettingsUpdateReq ->
-                        dto.getDefaultSettingsUpdateReq().getUpdateFields().forEach(settingsField -> {
-                            switch (settingsField) {
-                                case FormDefaultSettingsUpdateReqDto.Fields.defaultEmailCollectionOption ->
-                                        formToUpdateDefaultSettings.setDefaultEmailCollectionOption(dtoDefaultSettings.getDefaultEmailCollectionOption());
-                                case FormDefaultSettingsUpdateReqDto.Fields.makeQuestionsRequiredByDefault ->
-                                        formToUpdateDefaultSettings.setMakeQuestionsRequiredByDefault(dtoDefaultSettings.getMakeQuestionsRequiredByDefault());
-                            }
-                        });
 
                 case FormUpdateReqDto.Fields.generalSettingsUpdateReq ->
                         dtoGeneralSettings.getUpdateFields().forEach(settingsField -> {
@@ -279,7 +273,7 @@ public class FormServiceImpl implements FormService {
 
         var savedForm = formRepo.save(formToUpdate);
 
-        var formInfo = toFormInfo(savedForm);
+        var formInfo = MappingUtil.toFormInfo(savedForm);
 
         updateRecentForms(userId, formInfo);
         updateFormDetails(formInfo);
@@ -421,7 +415,7 @@ public class FormServiceImpl implements FormService {
     public FormInfoDto getFormInfo(UUID formId) {
         Form f = getFormById(formId);
 
-        return toFormInfo(f);
+        return MappingUtil.toFormInfo(f);
     }
 
     @Override
@@ -449,13 +443,11 @@ public class FormServiceImpl implements FormService {
     public Form createFromTemplate(TemplateDetails template, UUID userId) {
         var newForm = new Form();
 
-        var newFormDefaultSettings = new FormDefaultSettings();
         var newFormGeneralSettings = new FormGeneralSettings();
         var newFormPresentationSettings = new FormPresentationSettings();
         var newFormQuizSettings = new FormQuizSettings();
         var newFormResponseSettings = new FormResponseSettings();
 
-        newFormDefaultSettings.setForm(newForm);
         newFormGeneralSettings.setForm(newForm);
         newFormPresentationSettings.setForm(newForm);
         newFormQuizSettings.setForm(newForm);
@@ -467,7 +459,6 @@ public class FormServiceImpl implements FormService {
         newForm.setDescription(template.getDescription());
         newForm.setLastOpenedOn(Instant.now());
 
-        newForm.setFormDefaultSettings(newFormDefaultSettings);
         newForm.setFormGeneralSettings(newFormGeneralSettings);
         newForm.setFormPresentationSettings(newFormPresentationSettings);
         newForm.setFormQuizSettings(newFormQuizSettings);
@@ -484,60 +475,33 @@ public class FormServiceImpl implements FormService {
             questions.add(questionDetails);
         });
 
-        var formDetails = new FormDetailsDto(toFormInfo(savedForm), questions);
+        var formDetails = new FormDetailsDto(MappingUtil.toFormInfo(savedForm), questions);
 
-        addFirstInRecentForms(userId, toFormInfo(savedForm));
+        addFirstInRecentForms(userId, MappingUtil.toFormInfo(savedForm));
         putFormDetails(formDetails);
 
         return savedForm;
     }
 
-    private FormInfoDto toFormInfo(Form form) {
-        var defaultSettings = form.getFormDefaultSettings();
-        var generalSettings = form.getFormGeneralSettings();
-        var presentationSettings = form.getFormPresentationSettings();
-        var quizSettings = form.getFormQuizSettings();
-        var responseSettings = form.getFormResponseSettings();
+    @Override
+    public FormDefaultSettingsDto updateDefaultFormSettings(UUID userId, FormDefaultSettingsUpdateReqDto req) {
+        var defaultSettings = formDefaultSettingsRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Form default settings not found for user ID: " + userId));
 
-        return new FormInfoDto(
-                form.getId(),
-                form.getName(),
-                form.getTitle(),
-                form.getDescription(),
-                form.getLastOpenedOn(),
-                new FormDefaultSettingsDto(
-                        defaultSettings.getDefaultEmailCollectionOption(),
-                        defaultSettings.getMakeQuestionsRequiredByDefault()
-                ),
-                new FormGeneralSettingsDto(
-                        generalSettings.getPublished(),
-                        generalSettings.getAcceptingResponse(),
-                        generalSettings.getNotAcceptingResponseMessage(),
-                        generalSettings.getStopAcceptingResponseOn(),
-                        generalSettings.getResponseLimit()
-                ),
-                new FormPresentationSettingsDto(
-                        presentationSettings.getShowProgressBar(),
-                        presentationSettings.getShuffleQuestionOrder(),
-                        presentationSettings.getResponseSavedConfirmationMessage(),
-                        presentationSettings.getShowLinkToSubmitAnotherResponse(),
-                        presentationSettings.getShareResponseSummaryWithResponders(),
-                        presentationSettings.getDisableAutoSaveForAllRespondents()
-                ),
-                new FormQuizSettingsDto(
-                        quizSettings.getIsQuiz(),
-                        quizSettings.getReleaseMarksOption(),
-                        quizSettings.getRespondersCanSeeIncorrectAnswers(),
-                        quizSettings.getRespondersCanSeeCorrectAnswers(),
-                        quizSettings.getRespondersCanSeePointsReceived(),
-                        quizSettings.getQuestionPointValue()
-                ),
-                new FormResponseSettingsDto(
-                        responseSettings.getEmailCollectionOption(),
-                        responseSettings.getResponseCopySendOption(),
-                        responseSettings.getIsResponseEditable(),
-                        responseSettings.getSingleResponseOnly()
-                )
+        req.getUpdateFields().forEach(field -> {
+            switch (field) {
+                case FormDefaultSettingsUpdateReqDto.Fields.defaultEmailCollectionOption ->
+                        defaultSettings.setDefaultEmailCollectionOption(req.getDefaultEmailCollectionOption());
+                case FormDefaultSettingsUpdateReqDto.Fields.makeQuestionsRequiredByDefault ->
+                        defaultSettings.setMakeQuestionsRequiredByDefault(req.getMakeQuestionsRequiredByDefault());
+            }
+        });
+
+        var updatedDefaultSettings = formDefaultSettingsRepository.save(defaultSettings);
+
+        return new FormDefaultSettingsDto(
+                updatedDefaultSettings.getDefaultEmailCollectionOption(),
+                updatedDefaultSettings.getMakeQuestionsRequiredByDefault()
         );
     }
 

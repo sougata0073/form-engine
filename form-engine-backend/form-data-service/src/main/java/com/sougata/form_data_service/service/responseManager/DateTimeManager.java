@@ -47,7 +47,7 @@ public class DateTimeManager extends ResponseManager<DateTimeResponsePutReqDto, 
     @Override
     @Async
     public CompletableFuture<List<DateTimeResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        var responses = dateTimeRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
+        var responses = dateTimeRepository.findAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -65,7 +65,7 @@ public class DateTimeManager extends ResponseManager<DateTimeResponsePutReqDto, 
     @Override
     @Async
     public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        dateTimeRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+        dateTimeRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(null);
     }

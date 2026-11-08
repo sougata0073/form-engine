@@ -24,15 +24,17 @@ QuestionManager<
 
     private final QuestionRepository questionRepository;
     private final FormService formService;
+    private final FormServiceCached formServiceCached;
 
-    protected QuestionManager(QuestionRepository questionRepository, FormService formService) {
+    protected QuestionManager(QuestionRepository questionRepository, FormService formService, FormServiceCached formServiceCached) {
         this.questionRepository = questionRepository;
         this.formService = formService;
+        this.formServiceCached = formServiceCached;
     }
 
     public abstract QDetails get(UUID formId, Long questionId);
 
-    public abstract QDetails create(UUID formId, QAR crudDto);
+    public abstract QDetails create(UUID formId, UUID userId, QAR questionAddReq);
 
     public abstract QDetails create(UUID formId, Long questionId, QAR questionAddReq);
 
@@ -46,7 +48,7 @@ QuestionManager<
 
     public abstract QDetails toQuestionDetailsDto(Q childQuestion, Question parentQuestion);
 
-    public abstract QAR toQuestionAddUpdateReq(QDetails questionRes);
+    public abstract QAR toQuestionAddReq(QDetails questionRes);
 
     public abstract QDetails createFromTemplate(QTD template, Form form);
 
@@ -72,17 +74,17 @@ QuestionManager<
         questionAddUpdateRequest.setQuestion(questionRes.getQuestion());
         questionAddUpdateRequest.setQuestionType(getQuestionType());
         questionAddUpdateRequest.setDescription(questionRes.getDescription());
-        questionAddUpdateRequest.setRequired(questionRes.getRequired());
     }
 
-    public Question createQuestion(QAR source, UUID formId) {
+    public Question createQuestion(QAR source, UUID formId, UUID userId) {
         var newQ = new Question();
+        var formDefaultSettings = formServiceCached.getDefaultFormSettings(userId);
 
         newQ.setForm(formService.getFormById(formId));
 
         newQ.setQuestion(source.getQuestion());
         newQ.setDescription(source.getDescription());
-        newQ.setRequired(source.getRequired());
+        newQ.setRequired(formDefaultSettings.getMakeQuestionsRequiredByDefault());
         newQ.setOrderIndex(questionRepository.getNextQuestionIndex(formId));
         newQ.setQuestionType(getQuestionType());
 
@@ -95,7 +97,6 @@ QuestionManager<
 
         q.setQuestion(source.getQuestion());
         q.setDescription(source.getDescription());
-        q.setRequired(source.getRequired());
         q.setQuestionType(getQuestionType());
 
         return questionRepository.save(q);

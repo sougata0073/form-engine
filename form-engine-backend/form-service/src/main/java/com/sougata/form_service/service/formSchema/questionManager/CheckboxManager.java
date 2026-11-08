@@ -18,6 +18,7 @@ import com.sougata.form_service.model.formSchema.Question;
 import com.sougata.form_service.repository.formSchema.CheckboxRepository;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.service.formSchema.FormService;
+import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.QuestionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,8 +34,8 @@ public class CheckboxManager extends QuestionManager<Checkbox, CheckboxAddReqDto
     private final CheckboxRepository checkboxRepository;
 
     @Autowired
-    public CheckboxManager(CheckboxRepository checkboxRepository, FormService formService, QuestionRepository questionRepository) {
-        super(questionRepository, formService);
+    public CheckboxManager(CheckboxRepository checkboxRepository, FormService formService, QuestionRepository questionRepository, FormServiceCached formServiceCached) {
+        super(questionRepository, formService, formServiceCached);
         this.checkboxRepository = checkboxRepository;
     }
 
@@ -48,12 +49,12 @@ public class CheckboxManager extends QuestionManager<Checkbox, CheckboxAddReqDto
 
     @Override
     @Transactional
-    public CheckboxDetailsDto create(UUID formId, CheckboxAddReqDto crudDto) {
+    public CheckboxDetailsDto create(UUID formId, UUID userId, CheckboxAddReqDto questionAddReq) {
         var newCb = new Checkbox();
 
-        var question = createQuestion(crudDto, formId);
+        var question = createQuestion(questionAddReq, formId, userId);
 
-        setPropertiesForNew(crudDto, newCb, question);
+        setPropertiesForNew(questionAddReq, newCb, question);
 
         var savedCb = checkboxRepository.save(newCb);
 
@@ -175,7 +176,7 @@ public class CheckboxManager extends QuestionManager<Checkbox, CheckboxAddReqDto
     }
 
     @Override
-    public CheckboxAddReqDto toQuestionAddUpdateReq(CheckboxDetailsDto questionRes) {
+    public CheckboxAddReqDto toQuestionAddReq(CheckboxDetailsDto questionRes) {
         var cb = new CheckboxAddReqDto();
 
         populateCommonFields(questionRes, cb);

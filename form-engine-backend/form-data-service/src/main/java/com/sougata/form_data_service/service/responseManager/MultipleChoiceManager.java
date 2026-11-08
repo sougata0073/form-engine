@@ -47,7 +47,7 @@ public class MultipleChoiceManager extends ResponseManager<MultipleChoiceRespons
     @Override
     @Async
     public CompletableFuture<List<MultipleChoiceResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        var responses = multipleChoiceRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
+        var responses = multipleChoiceRepository.findAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -65,7 +65,7 @@ public class MultipleChoiceManager extends ResponseManager<MultipleChoiceRespons
     @Override
     @Async
     public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        multipleChoiceRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+        multipleChoiceRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(null);
     }

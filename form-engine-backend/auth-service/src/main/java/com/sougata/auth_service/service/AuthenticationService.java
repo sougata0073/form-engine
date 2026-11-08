@@ -9,7 +9,10 @@ import com.sougata.auth_service.exception.WrongUsernameException;
 import com.sougata.auth_service.model.User;
 import com.sougata.auth_service.model.UserPrincipal;
 import com.sougata.auth_service.repository.UserRepository;
+import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
+import com.sougata.form_engine.dto.messaging.UserCreatedMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -24,6 +27,7 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     public JwtTokenResponseDto registerUser(RegisterRequestDto dto) {
 
@@ -45,6 +49,8 @@ public class AuthenticationService {
         String jwt = jwtService.generateJwtToken(
                 savedUser.getId().toString(), savedUser.getUsername(), savedUser.getEmail(), savedUser.getAvatarUrl()
         );
+
+        redisTemplate.convertAndSend(MessagingChannelNames.USER_CREATED, new UserCreatedMessage(savedUser.getId()));
 
         return new JwtTokenResponseDto(jwt);
     }

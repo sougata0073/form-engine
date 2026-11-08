@@ -46,9 +46,9 @@ public class QuestionServiceImpl implements QuestionService {
     private final AppConfiguration appConfiguration;
 
     @Override
-    public QuestionDetailsDto createQuestion(UUID formId, QuestionAddReqDto dto) {
+    public QuestionDetailsDto createQuestion(UUID formId, UUID userId, QuestionAddReqDto dto) {
         var questionManager = questionManagerFactory.get(dto.getQuestionType());
-        var questionDetails = questionManager.create(formId, dto);
+        var questionDetails = questionManager.create(formId, userId, dto);
 
         addQuestionInQuestionSummaries(formId, questionDetails);
         addQuestionInFormDetails(formId, questionDetails);

@@ -41,9 +41,6 @@ public class QuestionAddReqDto {
     private String description;
 
     @NotNull
-    private Boolean required;
-
-    @NotNull
     private QuestionType questionType;
 
     @JsonProperty(value = "@class")

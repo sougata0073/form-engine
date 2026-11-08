@@ -47,7 +47,7 @@ public class DropdownManager extends ResponseManager<DropdownResponsePutReqDto, 
     @Override
     @Async
     public CompletableFuture<List<DropdownResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        var responses = dropdownRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
+        var responses = dropdownRepository.findAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -65,7 +65,7 @@ public class DropdownManager extends ResponseManager<DropdownResponsePutReqDto, 
     @Override
     @Async
     public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        dropdownRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+        dropdownRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(null);
     }

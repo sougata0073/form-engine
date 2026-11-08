@@ -47,7 +47,7 @@ public class CheckboxManager extends ResponseManager<CheckboxResponsePutReqDto, 
     @Override
     @Async
     public CompletableFuture<List<CheckboxResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        var responses = checkboxRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
+        var responses = checkboxRepository.findAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -65,7 +65,7 @@ public class CheckboxManager extends ResponseManager<CheckboxResponsePutReqDto, 
     @Override
     @Async
     public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        checkboxRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+        checkboxRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(null);
     }

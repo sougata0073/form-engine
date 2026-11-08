@@ -16,6 +16,7 @@ import com.sougata.form_service.model.formSchema.ShortAnswer;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.repository.formSchema.ShortAnswerRepository;
 import com.sougata.form_service.service.formSchema.FormService;
+import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.QuestionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,8 +28,8 @@ public class ShortAnswerManager extends QuestionManager<ShortAnswer, ShortAnswer
 
     private final ShortAnswerRepository shortAnswerRepository;
 
-    public ShortAnswerManager(ShortAnswerRepository shortAnswerRepository, FormService formService, QuestionRepository questionRepository) {
-        super(questionRepository, formService);
+    public ShortAnswerManager(ShortAnswerRepository shortAnswerRepository, FormService formService, QuestionRepository questionRepository, FormServiceCached formServiceCached) {
+        super(questionRepository, formService, formServiceCached);
         this.shortAnswerRepository = shortAnswerRepository;
     }
 
@@ -39,12 +40,12 @@ public class ShortAnswerManager extends QuestionManager<ShortAnswer, ShortAnswer
 
     @Override
     @Transactional
-    public ShortAnswerDetailsDto create(UUID formId, ShortAnswerAddReqDto crudDto) {
+    public ShortAnswerDetailsDto create(UUID formId, UUID userId,ShortAnswerAddReqDto questionAddReq) {
         var newS = new ShortAnswer();
 
-        var question = createQuestion(crudDto, formId);
+        var question = createQuestion(questionAddReq,formId, userId);
 
-        setPropertiesForNew(crudDto, newS, question);
+        setPropertiesForNew(questionAddReq, newS, question);
 
         var saved = shortAnswerRepository.save(newS);
 
@@ -101,7 +102,7 @@ public class ShortAnswerManager extends QuestionManager<ShortAnswer, ShortAnswer
     }
 
     @Override
-    public ShortAnswerAddReqDto toQuestionAddUpdateReq(ShortAnswerDetailsDto questionRes) {
+    public ShortAnswerAddReqDto toQuestionAddReq(ShortAnswerDetailsDto questionRes) {
         var sa = new ShortAnswerAddReqDto();
 
         populateCommonFields(questionRes, sa);

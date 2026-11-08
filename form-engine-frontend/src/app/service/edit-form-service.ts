@@ -4,7 +4,7 @@ import { AnyQuestionRes } from '../type/any-question-res';
 import { AnyQuestionAddReq } from '../type/any-question-add-req';
 import { FormDetails } from '../model/form/form-details';
 import { SuccessMessage } from '../model/common/success-message';
-import { debounce, mergeWith } from 'lodash';
+import { mergeWith } from 'lodash';
 import { FormInfo } from '../model/form/form-info';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { QuestionOrderUpdateReq } from '../model/edit-form/question/updatereq/question-order-update-req';
@@ -20,6 +20,8 @@ import { MultipleChoiceUpdateReq } from '../model/edit-form/question/updatereq/m
 import { MultipleChoiceGridUpdateReq } from '../model/edit-form/question/updatereq/multiple-choice-grid-update-req';
 import { TickBoxGridUpdateReq } from '../model/edit-form/question/updatereq/tick-box-grid-update-req';
 import { FormInfoUpdateReq } from '../model/form/form-info-update-req';
+import { FormDefaultSettings } from '../model/form/form-default-settings';
+import { FormDefaultSettingsUpdateReq } from '../model/form/form-default-settings-update-req';
 
 @Injectable({
   providedIn: 'root',
@@ -47,6 +49,13 @@ export class EditFormService {
   private updateFormInfoTimer?: ReturnType<typeof setTimeout>;
   private updateFormInfoDebounceWait: number = 1000;
 
+  private updateFormDefaultSettingsRequestStore: {
+    req: FormDefaultSettingsUpdateReq;
+    onCompleteCallbacks: (((res: FormDefaultSettings) => void) | undefined)[];
+  } | null = null;
+  private updateFormDefaultSettingsTimer?: ReturnType<typeof setTimeout>;
+  private updateFormDefaultSettingsDebounceWait: number = 1000;
+
   updateFormInfo(
     formId: string,
     formInfoUpdateReq: FormInfoUpdateReq,
@@ -56,11 +65,7 @@ export class EditFormService {
       const prevReq = this.updateFormInfoRequestStore.req;
 
       const newReq = mergeWith({}, prevReq, formInfoUpdateReq, (finalValue, srcValue, key) => {
-        if (
-          finalValue &&
-          srcValue &&
-          key === ('updateFields' satisfies keyof AnyQuestionUpdateReq)
-        ) {
+        if (finalValue && srcValue && key === ('updateFields' satisfies keyof FormInfoUpdateReq)) {
           return [...new Set([...finalValue, ...srcValue])];
         }
 
@@ -270,5 +275,75 @@ export class EditFormService {
         },
       });
     }
+  }
+
+  getFormDefaultSettings(onComplete: (res: FormDefaultSettings) => void) {
+    const url = 'forms/default-settings';
+
+    this.http.get<FormDefaultSettings>(url).subscribe((res) => {
+      onComplete(res);
+    });
+  }
+
+  updateFormDefaultSettings(
+    formDefaultSettingsUpdateReq: FormDefaultSettingsUpdateReq,
+    onComplete?: (res: FormDefaultSettings) => void,
+  ) {
+    if (this.updateFormDefaultSettingsRequestStore !== null) {
+      const prevReq = this.updateFormDefaultSettingsRequestStore.req;
+
+      const newReq = mergeWith(
+        {},
+        prevReq,
+        formDefaultSettingsUpdateReq,
+        (finalValue, srcValue, key) => {
+          if (
+            finalValue &&
+            srcValue &&
+            key === ('updateFields' satisfies keyof FormDefaultSettingsUpdateReq)
+          ) {
+            return [...new Set([...finalValue, ...srcValue])];
+          }
+
+          return undefined;
+        },
+      );
+
+      const newOnCompleteCallbacks = this.updateFormDefaultSettingsRequestStore.onCompleteCallbacks;
+      newOnCompleteCallbacks.push(onComplete);
+
+      this.updateFormDefaultSettingsRequestStore = {
+        req: newReq,
+        onCompleteCallbacks: newOnCompleteCallbacks,
+      };
+    } else {
+      this.updateFormDefaultSettingsRequestStore = {
+        req: formDefaultSettingsUpdateReq,
+        onCompleteCallbacks: [onComplete],
+      };
+    }
+
+    const updateReqFun: () => void = () => {
+      const onCompleteCallbacksSnapshot =
+        this.updateFormDefaultSettingsRequestStore?.onCompleteCallbacks;
+      const url = `forms/default-settings`;
+
+      this.http
+        .patch<FormDefaultSettings>(url, this.updateFormDefaultSettingsRequestStore?.req)
+        .subscribe((res) => {
+          onCompleteCallbacksSnapshot?.forEach((callBack) => callBack?.(res));
+        });
+
+      this.updateFormDefaultSettingsRequestStore = null;
+    };
+
+    if (this.updateFormDefaultSettingsTimer) {
+      clearTimeout(this.updateFormDefaultSettingsTimer);
+    }
+
+    this.updateFormDefaultSettingsTimer = setTimeout(
+      updateReqFun,
+      this.updateFormDefaultSettingsDebounceWait,
+    );
   }
 }

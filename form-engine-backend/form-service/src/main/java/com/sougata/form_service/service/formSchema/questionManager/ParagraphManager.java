@@ -16,6 +16,7 @@ import com.sougata.form_service.model.formSchema.Question;
 import com.sougata.form_service.repository.formSchema.ParagraphRepository;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.service.formSchema.FormService;
+import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.QuestionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,8 +28,8 @@ public class ParagraphManager extends QuestionManager<Paragraph, ParagraphAddReq
 
     private final ParagraphRepository paragraphRepository;
 
-    public ParagraphManager(ParagraphRepository paragraphRepository, FormService formService, QuestionRepository questionRepository) {
-        super(questionRepository, formService);
+    public ParagraphManager(ParagraphRepository paragraphRepository, FormService formService, QuestionRepository questionRepository, FormServiceCached formServiceCached) {
+        super(questionRepository, formService, formServiceCached);
         this.paragraphRepository = paragraphRepository;
     }
 
@@ -39,12 +40,12 @@ public class ParagraphManager extends QuestionManager<Paragraph, ParagraphAddReq
 
     @Override
     @Transactional
-    public ParagraphDetailsDto create(UUID formId, ParagraphAddReqDto crudDto) {
+    public ParagraphDetailsDto create(UUID formId,UUID userId, ParagraphAddReqDto questionAddReq) {
         var newP = new Paragraph();
 
-        var question = createQuestion(crudDto, formId);
+        var question = createQuestion(questionAddReq, formId, userId);
 
-        setPropertiesForNew(crudDto, newP, question);
+        setPropertiesForNew(questionAddReq, newP, question);
 
         var saved = paragraphRepository.save(newP);
 
@@ -101,7 +102,7 @@ public class ParagraphManager extends QuestionManager<Paragraph, ParagraphAddReq
     }
 
     @Override
-    public ParagraphAddReqDto toQuestionAddUpdateReq(ParagraphDetailsDto questionRes) {
+    public ParagraphAddReqDto toQuestionAddReq(ParagraphDetailsDto questionRes) {
         var p = new ParagraphAddReqDto();
 
         populateCommonFields(questionRes, p);

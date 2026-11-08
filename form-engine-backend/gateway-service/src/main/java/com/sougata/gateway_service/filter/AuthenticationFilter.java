@@ -59,6 +59,9 @@ public class AuthenticationFilter implements WebFilter {
                 .getRequest()
                 .mutate()
                 .header(HttpHeaderConstant.X_USER_ID, userId)
+//                .headers(httpHeaders -> {
+//                    httpHeaders.add();
+//                })
                 .build();
 
         var newExchange = exchange.mutate().request(newRequest).build();

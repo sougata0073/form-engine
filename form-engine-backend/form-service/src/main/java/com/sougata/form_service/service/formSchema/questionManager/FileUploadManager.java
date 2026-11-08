@@ -16,6 +16,7 @@ import com.sougata.form_service.repository.FileTypeRepository;
 import com.sougata.form_service.repository.formSchema.FileUploadRepository;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.service.formSchema.FormService;
+import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.QuestionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,8 +32,8 @@ public class FileUploadManager extends QuestionManager<FileUpload, FileUploadAdd
     private final FileUploadRepository fileUploadRepository;
     private final FileTypeRepository fileTypeRepository;
 
-    public FileUploadManager(FileUploadRepository fileUploadRepository, FileTypeRepository fileTypeRepository, FormService formService, QuestionRepository questionRepository) {
-        super(questionRepository, formService);
+    public FileUploadManager(FileUploadRepository fileUploadRepository, FileTypeRepository fileTypeRepository, FormService formService, QuestionRepository questionRepository, FormServiceCached formServiceCached) {
+        super(questionRepository, formService, formServiceCached);
         this.fileUploadRepository = fileUploadRepository;
         this.fileTypeRepository = fileTypeRepository;
     }
@@ -44,12 +45,12 @@ public class FileUploadManager extends QuestionManager<FileUpload, FileUploadAdd
 
     @Override
     @Transactional
-    public FileUploadDetailsDto create(UUID formId, FileUploadAddReqDto crudDto) {
+    public FileUploadDetailsDto create(UUID formId,UUID userId, FileUploadAddReqDto questionAddReq) {
         var newFu = new FileUpload();
 
-        var question = createQuestion(crudDto, formId);
+        var question = createQuestion(questionAddReq, formId, userId);
 
-        setPropertiesForNew(crudDto, newFu, question);
+        setPropertiesForNew(questionAddReq, newFu, question);
 
         var saved = fileUploadRepository.save(newFu);
 
@@ -120,7 +121,7 @@ public class FileUploadManager extends QuestionManager<FileUpload, FileUploadAdd
     }
 
     @Override
-    public FileUploadAddReqDto toQuestionAddUpdateReq(FileUploadDetailsDto questionRes) {
+    public FileUploadAddReqDto toQuestionAddReq(FileUploadDetailsDto questionRes) {
         var f = new FileUploadAddReqDto();
 
         populateCommonFields(questionRes, f);

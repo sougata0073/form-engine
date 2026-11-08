@@ -1,17 +1,19 @@
+BEGIN;
+
 INSERT INTO form_schema.forms (id, name, title, description, user_id, last_opened_on, created_at)
 VALUES ('8e48be64-1f98-43ab-bda1-b80c6f0c5f76',
         'Untitled form',
         'All 14 questions',
         'All 14 questions description',
-        'b4140412-81ae-4918-8dd5-3744e96ded31',
+        '9427f317-8b2f-4990-ba25-ba1922983613',
         '2026-10-24 12:30:52.498311+00',
         '2026-10-20 12:30:53.306338+00') ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO form_schema.form_default_settings (form_id, default_email_collection_option,
+INSERT INTO form_schema.form_default_settings (user_id, default_email_collection_option,
                                                make_questions_required_by_default)
-VALUES ('8e48be64-1f98-43ab-bda1-b80c6f0c5f76',
-        'RESPONDER_INPUT',
-        false) ON CONFLICT (form_id) DO NOTHING;
+VALUES ('9427f317-8b2f-4990-ba25-ba1922983613',
+        'OFF',
+        false) ON CONFLICT (user_id) DO NOTHING;
 
 INSERT INTO form_schema.form_general_settings (form_id, published, accepting_response)
 VALUES ('8e48be64-1f98-43ab-bda1-b80c6f0c5f76',
@@ -45,7 +47,7 @@ VALUES ('8e48be64-1f98-43ab-bda1-b80c6f0c5f76',
 INSERT INTO form_schema.form_response_settings (form_id, email_collection_option, response_copy_send_option,
                                                 is_response_editable, single_response_only)
 VALUES ('8e48be64-1f98-43ab-bda1-b80c6f0c5f76',
-        'RESPONDER_INPUT',
+        'OFF',
         'OFF',
         FALSE,
         FALSE) ON CONFLICT (form_id) DO NOTHING;
@@ -236,3 +238,5 @@ VALUES (901811445186619133, 4, 'Row 5', 901811412437493473) ON CONFLICT (id) DO 
 
 INSERT INTO form_schema.times
 VALUES (901811485972031230) ON CONFLICT (question_id) DO NOTHING;
+
+COMMIT;

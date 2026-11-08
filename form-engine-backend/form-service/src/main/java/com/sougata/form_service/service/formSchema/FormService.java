@@ -28,4 +28,5 @@ public interface FormService {
 
     Form createFromTemplate(TemplateDetails template, UUID userId);
 
+    FormDefaultSettingsDto updateDefaultFormSettings(UUID userId, FormDefaultSettingsUpdateReqDto req);
 }

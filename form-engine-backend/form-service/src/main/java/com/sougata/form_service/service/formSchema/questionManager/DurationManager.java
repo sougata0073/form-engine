@@ -12,6 +12,7 @@ import com.sougata.form_service.model.formSchema.Question;
 import com.sougata.form_service.repository.formSchema.DurationRepository;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.service.formSchema.FormService;
+import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.QuestionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +24,8 @@ public class DurationManager extends QuestionManager<Duration, DurationAddReqDto
 
     private final DurationRepository durationRepository;
 
-    public DurationManager(DurationRepository durationRepository, FormService formService, QuestionRepository questionRepository) {
-        super(questionRepository, formService);
+    public DurationManager(DurationRepository durationRepository, FormService formService, QuestionRepository questionRepository, FormServiceCached formServiceCached) {
+        super(questionRepository, formService, formServiceCached);
         this.durationRepository = durationRepository;
     }
 
@@ -35,10 +36,10 @@ public class DurationManager extends QuestionManager<Duration, DurationAddReqDto
 
     @Override
     @Transactional
-    public DurationDetailsDto create(UUID formId, DurationAddReqDto crudDto) {
+    public DurationDetailsDto create(UUID formId, UUID userId,DurationAddReqDto questionAddReq) {
         var newD = new Duration();
 
-        var question = createQuestion(crudDto, formId);
+        var question = createQuestion(questionAddReq, formId, userId);
 
         newD.setQuestion(question);
 
@@ -97,7 +98,7 @@ public class DurationManager extends QuestionManager<Duration, DurationAddReqDto
     }
 
     @Override
-    public DurationAddReqDto toQuestionAddUpdateReq(DurationDetailsDto questionRes) {
+    public DurationAddReqDto toQuestionAddReq(DurationDetailsDto questionRes) {
         var d = new DurationAddReqDto();
 
         populateCommonFields(questionRes, d);

@@ -65,7 +65,6 @@ export class EditFormQuestions implements OnInit {
     const questionAddUpdateReq: QuestionAddReq = {
       question: null,
       description: null,
-      required: this.formRes()!.formInfo.defaultSettings.makeQuestionsRequiredByDefault,
       questionType: 'SHORT_ANSWER',
     };
     const onlyQuestionAddUpdateReq: AnyOnlyQuestionAddUpdateReq =

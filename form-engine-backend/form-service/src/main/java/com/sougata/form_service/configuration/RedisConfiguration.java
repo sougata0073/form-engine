@@ -1,7 +1,6 @@
 package com.sougata.form_service.configuration;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.sougata.form_engine.constant.cache.CommonCacheNames;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SocketOptions;
 import io.lettuce.core.TimeoutOptions;
@@ -9,18 +8,15 @@ import io.lettuce.core.api.StatefulConnection;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CachingConfigurer;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.cache.RedisCacheConfiguration;
-import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
-import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import tools.jackson.databind.DefaultTyping;
 import tools.jackson.databind.ObjectMapper;
@@ -28,11 +24,8 @@ import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
 
 @Configuration
-@EnableCaching
 public class RedisConfiguration implements CachingConfigurer {
 
     @Value("${spring.data.redis.host}")
@@ -55,9 +48,6 @@ public class RedisConfiguration implements CachingConfigurer {
 
     @Value("${spring.data.redis.timeout}")
     private long commandTimeoutMs;
-
-    @Value("${app.cache.default-ttl-minutes}")
-    private long defaultTtlMinutes;
 
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
@@ -118,28 +108,6 @@ public class RedisConfiguration implements CachingConfigurer {
         return new GenericJacksonJsonRedisSerializer(mapper);
     }
 
-    @Bean
-    public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory, GenericJacksonJsonRedisSerializer redisSerializer) {
-        RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
-                .disableCachingNullValues()
-                .entryTtl(Duration.ofMinutes(defaultTtlMinutes))
-                .prefixCacheNameWith(CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR)
-                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(redisSerializer));
-
-        Map<String, RedisCacheConfiguration> perCacheConfig = new HashMap<>();
-//        perCacheConfig.put(CacheNames.USERS, defaultConfig.entryTtl(Duration.ofMinutes(30)));
-//        perCacheConfig.put(CacheNames.PRODUCTS, defaultConfig.entryTtl(Duration.ofHours(2)));
-//        perCacheConfig.put(CacheNames.SEARCH_RESULTS, defaultConfig.entryTtl(Duration.ofMinutes(2)));
-//        perCacheConfig.put(CacheNames.STATIC_LOOKUPS, defaultConfig.entryTtl(Duration.ofHours(24)));
-
-        return RedisCacheManager.builder(connectionFactory)
-                .cacheDefaults(defaultConfig)
-                .withInitialCacheConfigurations(perCacheConfig)
-                .transactionAware()
-                .build();
-    }
-
 //    @Bean
 //    @Override
 //    public CacheErrorHandler errorHandler() {
@@ -159,21 +127,11 @@ public class RedisConfiguration implements CachingConfigurer {
     }
 
     @Bean
-    public RedisTemplate<String, String> redisTemplateString(
-            RedisConnectionFactory connectionFactory
-    ) {
-        RedisTemplate<String, String> template = new RedisTemplate<>();
-        var stringSerializer = new StringRedisSerializer();
+    public RedisMessageListenerContainer redisMessageListenerContainer(RedisConnectionFactory connectionFactory) {
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
 
-        template.setConnectionFactory(connectionFactory);
+        container.setConnectionFactory(connectionFactory);
 
-        template.setKeySerializer(stringSerializer);
-        template.setValueSerializer(stringSerializer);
-        template.setHashKeySerializer(stringSerializer);
-        template.setHashValueSerializer(stringSerializer);
-
-        template.afterPropertiesSet();
-
-        return template;
+        return container;
     }
 }

@@ -2,7 +2,7 @@ package com.sougata.form_service.util;
 
 import com.sougata.form_engine.constant.cache.CommonCacheNames;
 
-public class CacheUtil {
+public final class CacheUtil {
 
     public static String buildKey(Object... names) {
         StringBuilder str = new StringBuilder(CommonCacheNames.FORM_SERVICE_PREFIX + CommonCacheNames.SEPARATOR);

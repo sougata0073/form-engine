@@ -47,7 +47,7 @@ public class TimeManager extends ResponseManager<TimeResponsePutReqDto, TimeResp
     @Override
     @Async
     public CompletableFuture<List<TimeResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        var responses = timeRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
+        var responses = timeRepository.findAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -65,7 +65,7 @@ public class TimeManager extends ResponseManager<TimeResponsePutReqDto, TimeResp
     @Override
     @Async
     public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        timeRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+        timeRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(null);
     }

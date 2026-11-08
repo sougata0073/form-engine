@@ -8,7 +8,6 @@ import io.lettuce.core.api.StatefulConnection;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CachingConfigurer;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -27,7 +26,6 @@ import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import java.time.Duration;
 
 @Configuration
-@EnableCaching
 public class RedisConfiguration implements CachingConfigurer {
 
     @Value("${spring.data.redis.host}")

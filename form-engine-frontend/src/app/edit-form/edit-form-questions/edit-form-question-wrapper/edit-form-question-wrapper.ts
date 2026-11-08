@@ -144,7 +144,6 @@ export class EditFormQuestionWrapper implements OnInit, OnChanges, AfterViewInit
               question: val.question ?? null,
               description: val.description ?? null,
               questionType: val.questionType!,
-              required: val.required ?? false,
             },
 
             updateFields: ['questionType' satisfies keyof QuestionUpdateReq],
@@ -215,7 +214,6 @@ export class EditFormQuestionWrapper implements OnInit, OnChanges, AfterViewInit
     const questionAddUpdateReq: QuestionAddReq = {
       question: this.question().question,
       description: this.question().description,
-      required: this.question().required,
       questionType: this.question().questionType,
     };
 

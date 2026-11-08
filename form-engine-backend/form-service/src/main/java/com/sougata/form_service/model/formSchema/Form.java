@@ -47,9 +47,6 @@ public class Form extends Auditable {
     private FormGeneralSettings formGeneralSettings;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "form")
-    private FormDefaultSettings formDefaultSettings;
-
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "form")
     private FormPresentationSettings formPresentationSettings;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "form")

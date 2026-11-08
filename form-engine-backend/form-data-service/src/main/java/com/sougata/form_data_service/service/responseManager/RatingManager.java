@@ -47,7 +47,7 @@ public class RatingManager extends ResponseManager<RatingResponsePutReqDto, Rati
     @Override
     @Async
     public CompletableFuture<List<RatingResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        var responses = ratingRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
+        var responses = ratingRepository.findAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -65,7 +65,7 @@ public class RatingManager extends ResponseManager<RatingResponsePutReqDto, Rati
     @Override
     @Async
     public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        ratingRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+        ratingRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(null);
     }

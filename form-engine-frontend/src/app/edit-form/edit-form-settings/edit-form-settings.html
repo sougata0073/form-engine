@@ -356,88 +356,91 @@
     </mat-card-content>
   </mat-card>
 
-  <mat-card appearance="raised" class="settings-card defaults-card">
-    <mat-card-content class="no-padding-card">
-      <div class="card-title">Defaults</div>
+  @if (formDefaultSettings()) {
+    <mat-card appearance="raised" class="settings-card defaults-card">
+      <mat-card-content class="no-padding-card">
+        <div class="card-title">Defaults</div>
 
-      <mat-divider></mat-divider>
+        <mat-divider></mat-divider>
 
-      <mat-expansion-panel
-        class="settings-expansion"
-        [expanded]="formGroup.controls.formDefaultsExpanded.value"
-        (opened)="updateExpansionControl(formGroup.controls.formDefaultsExpanded, true)"
-        (closed)="updateExpansionControl(formGroup.controls.formDefaultsExpanded, false)"
-        hideToggle
-        formGroupName="defaultSettings"
-      >
-        <mat-expansion-panel-header>
-          <div class="expansion-header">
-            <div>
-              <div class="setting-title">Form defaults</div>
+        <mat-expansion-panel
+          class="settings-expansion"
+          [expanded]="formGroup.controls.formDefaultsExpanded.value"
+          (opened)="updateExpansionControl(formGroup.controls.formDefaultsExpanded, true)"
+          (closed)="updateExpansionControl(formGroup.controls.formDefaultsExpanded, false)"
+          hideToggle
+          formGroupName="defaultSettings"
+        >
+          <mat-expansion-panel-header>
+            <div class="expansion-header">
+              <div>
+                <div class="setting-title">Form defaults</div>
 
-              <div class="setting-description">Settings applied to this form and new forms</div>
-            </div>
-
-            <mat-icon class="expand-icon"> expand_more </mat-icon>
-          </div>
-        </mat-expansion-panel-header>
-
-        <div class="expansion-content">
-          <div class="setting-row select-row form-default-row">
-            <div class="setting-content">
-              <div class="setting-title">Collect email addresses by default</div>
-
-              <div class="setting-description">
-                Respondents will manually enter their email response
+                <div class="setting-description">Settings applied to this form and new forms</div>
               </div>
+
+              <mat-icon class="expand-icon"> expand_more </mat-icon>
             </div>
+          </mat-expansion-panel-header>
 
-            <mat-form-field appearance="outline" class="select-field">
-              <mat-select
-                formControlName="defaultEmailCollectionOption"
-                panelClass="decorated-select-option"
-              >
-                <mat-option value="RESPONDER_INPUT"> Responder input </mat-option>
+          <div class="expansion-content">
+            <div class="setting-row select-row form-default-row">
+              <div class="setting-content">
+                <div class="setting-title">Collect email addresses by default</div>
 
-                <mat-option value="VERIFIED"> Verified </mat-option>
+                <div class="setting-description">
+                  Respondents will manually enter their email response
+                </div>
+              </div>
 
-                <mat-option value="OFF"> Off </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-        </div>
-      </mat-expansion-panel>
+              <mat-form-field appearance="outline" class="select-field">
+                <mat-select
+                  formControlName="defaultEmailCollectionOption"
+                  panelClass="decorated-select-option"
+                >
+                  <mat-option value="RESPONDER_INPUT"> Responder input </mat-option>
 
-      <mat-expansion-panel
-        class="settings-expansion"
-        [expanded]="formGroup.controls.questionDefaultsExpanded.value"
-        (opened)="updateExpansionControl(formGroup.controls.questionDefaultsExpanded, true)"
-        (closed)="updateExpansionControl(formGroup.controls.questionDefaultsExpanded, false)"
-        hideToggle
-        formGroupName="defaultSettings"
-      >
-        <mat-expansion-panel-header>
-          <div class="expansion-header">
-            <div>
-              <div class="setting-title">Question defaults</div>
+                  <mat-option value="VERIFIED"> Verified </mat-option>
 
-              <div class="setting-description">Settings applied to all new questions</div>
+                  <mat-option value="OFF"> Off </mat-option>
+                </mat-select>
+              </mat-form-field>
             </div>
-
-            <mat-icon class="expand-icon"> expand_more </mat-icon>
           </div>
-        </mat-expansion-panel-header>
+        </mat-expansion-panel>
 
-        <div class="expansion-content">
-          <div class="setting-row compact">
-            <div class="setting-content">
-              <div class="setting-title">Make questions required by default</div>
+        <mat-expansion-panel
+          class="settings-expansion"
+          [expanded]="formGroup.controls.questionDefaultsExpanded.value"
+          (opened)="updateExpansionControl(formGroup.controls.questionDefaultsExpanded, true)"
+          (closed)="updateExpansionControl(formGroup.controls.questionDefaultsExpanded, false)"
+          hideToggle
+          formGroupName="defaultSettings"
+        >
+          <mat-expansion-panel-header>
+            <div class="expansion-header">
+              <div>
+                <div class="setting-title">Question defaults</div>
+
+                <div class="setting-description">Settings applied to all new questions</div>
+              </div>
+
+              <mat-icon class="expand-icon"> expand_more </mat-icon>
             </div>
+          </mat-expansion-panel-header>
 
-            <mat-slide-toggle formControlName="makeQuestionsRequiredByDefault"> </mat-slide-toggle>
+          <div class="expansion-content">
+            <div class="setting-row compact">
+              <div class="setting-content">
+                <div class="setting-title">Make questions required by default</div>
+              </div>
+
+              <mat-slide-toggle formControlName="makeQuestionsRequiredByDefault">
+              </mat-slide-toggle>
+            </div>
           </div>
-        </div>
-      </mat-expansion-panel>
-    </mat-card-content>
-  </mat-card>
+        </mat-expansion-panel>
+      </mat-card-content>
+    </mat-card>
+  }
 </div>

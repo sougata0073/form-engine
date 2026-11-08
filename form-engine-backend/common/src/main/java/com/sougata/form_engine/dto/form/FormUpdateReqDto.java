@@ -17,7 +17,6 @@ public class FormUpdateReqDto extends PatchReqDto {
     private String name;
     private String title;
     private String description;
-    private @Valid FormDefaultSettingsUpdateReqDto defaultSettingsUpdateReq;
     private @Valid FormGeneralSettingsUpdateReqDto generalSettingsUpdateReq;
     private @Valid FormPresentationSettingsUpdateReqDto presentationSettingsUpdateReq;
     private @Valid FormQuizSettingsUpdateReqDto quizSettingsUpdateReq;

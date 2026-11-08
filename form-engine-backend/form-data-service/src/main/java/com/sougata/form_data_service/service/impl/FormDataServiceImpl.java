@@ -108,7 +108,7 @@ public class FormDataServiceImpl implements FormDataService {
             throw new FormSubmitException("This form has reached its maximum response limit and is no longer accepting responses.");
         }
 
-        var formResponseUserRedisLockKey = DistributedLockNames.FORM_RESPONSE_USER + formId + CommonCacheNames.SEPARATOR + responderId;
+        var formResponseUserRedisLockKey = DistributedLockNames.formMultipleResponse(formId, responderId);
         var formResponseUserRedisLock = redissonClient.getLock(formResponseUserRedisLockKey);
 
         try {

@@ -6,19 +6,18 @@ import org.springframework.data.cassandra.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Repository("DATE_RESPONSE_REPOSITORY")
 public interface DateRepository extends AnyTypeQuestionResponseRepository<Date, AnyTypeQuestionResponse.PartitionKey> {
 
     @Query("delete from dates where form_id = :formId and form_response_id = :formResponseId and question_id in :questionIds")
-    void deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds);
+    void deleteAllByQuestionIds(UUID formId, UUID formResponseId, List<Long> questionIds);
 
     @Query("delete from dates where form_id = :formId")
     void deleteAllByFormId(UUID formId);
 
     @Query("select * from dates where form_id = :formId and form_response_id = :formResponseId and question_id in :questionIds")
-    List<Date> findAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds);
+    List<Date> findAllByQuestionIds(UUID formId, UUID formResponseId, List<Long> questionIds);
 
 }

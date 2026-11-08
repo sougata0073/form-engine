@@ -3,11 +3,7 @@ package com.sougata.form_service.controller;
 import com.sougata.form_engine.constant.HttpHeaderConstant;
 import com.sougata.form_engine.constant.cache.FormCacheNames;
 import com.sougata.form_engine.constant.cache.QuestionCacheNames;
-import com.sougata.form_engine.dto.form.CopyFormReqDto;
-import com.sougata.form_engine.dto.form.FormDetailsDto;
-import com.sougata.form_engine.dto.form.FormInfoDto;
-import com.sougata.form_engine.dto.form.FormSummariesDto;
-import com.sougata.form_engine.dto.form.FormUpdateReqDto;
+import com.sougata.form_engine.dto.form.*;
 import com.sougata.form_engine.dto.others.SuccessMessageDto;
 import com.sougata.form_engine.dto.question.details.MultipleQuestionDetailsDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
@@ -141,9 +137,10 @@ public class FormController {
     @PostMapping(path = "{formId}/questions")
     public ResponseEntity<QuestionDetailsDto> addQuestion(
             @PathVariable("formId") UUID formId,
+            @RequestHeader(HttpHeaderConstant.X_USER_ID) UUID userId,
             @Valid @RequestBody QuestionAddReqDto body
     ) {
-        var res = questionService.createQuestion(formId, body);
+        var res = questionService.createQuestion(formId, userId, body);
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
@@ -182,5 +179,18 @@ public class FormController {
             @RequestBody @Valid QuestionOrderUpdateReqDto req
     ) {
         return questionService.updateOrderIndex(formId, questionId, req);
+    }
+
+    @GetMapping(path = "default-settings")
+    public FormDefaultSettingsDto getFormDefaultSettings(@RequestHeader(HttpHeaderConstant.X_USER_ID) UUID userId) {
+        return formServiceCached.getDefaultFormSettings(userId);
+    }
+
+    @PatchMapping(path = "default-settings")
+    public FormDefaultSettingsDto updateFormDefaultSettings(
+            @RequestHeader(HttpHeaderConstant.X_USER_ID) UUID userId,
+            @RequestBody @Valid FormDefaultSettingsUpdateReqDto req
+    ) {
+        return formService.updateDefaultFormSettings(userId, req);
     }
 }

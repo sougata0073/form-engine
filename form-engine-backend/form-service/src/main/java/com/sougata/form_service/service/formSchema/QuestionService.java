@@ -12,7 +12,7 @@ import com.sougata.form_engine.dto.question.summary.QuestionSummaryDto;
 import java.util.UUID;
 
 public interface QuestionService {
-    QuestionDetailsDto createQuestion(UUID formId, QuestionAddReqDto dto);
+    QuestionDetailsDto createQuestion(UUID formId, UUID userId, QuestionAddReqDto dto);
 
     MultipleQuestionDetailsDto updateQuestions(UUID formId, MultipleQuestionUpdateReqDto dto);
 

@@ -11,6 +11,7 @@ import com.sougata.form_service.model.formSchema.*;
 import com.sougata.form_service.repository.formSchema.MultipleChoiceGridRepository;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.service.formSchema.FormService;
+import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.QuestionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,8 +25,8 @@ public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGri
 
     private final MultipleChoiceGridRepository multipleChoiceGridRepository;
 
-    public MultipleChoiceGridManager(MultipleChoiceGridRepository multipleChoiceGridRepository, FormService formService, QuestionRepository questionRepository) {
-        super(questionRepository, formService);
+    public MultipleChoiceGridManager(MultipleChoiceGridRepository multipleChoiceGridRepository, FormService formService, QuestionRepository questionRepository, FormServiceCached formServiceCached) {
+        super(questionRepository, formService, formServiceCached);
         this.multipleChoiceGridRepository = multipleChoiceGridRepository;
     }
 
@@ -36,12 +37,12 @@ public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGri
 
     @Override
     @Transactional
-    public MultipleChoiceGridDetailsDto create(UUID formId, MultipleChoiceGridAddReqDto crudDto) {
+    public MultipleChoiceGridDetailsDto create(UUID formId,UUID userId, MultipleChoiceGridAddReqDto questionAddReq) {
         var newMcg = new MultipleChoiceGrid();
 
-        var question = createQuestion(crudDto, formId);
+        var question = createQuestion(questionAddReq,formId, userId);
 
-        setPropertiesForNew(crudDto, newMcg, question);
+        setPropertiesForNew(questionAddReq, newMcg, question);
 
         var saved = multipleChoiceGridRepository.save(newMcg);
 
@@ -215,7 +216,7 @@ public class MultipleChoiceGridManager extends QuestionManager<MultipleChoiceGri
     }
 
     @Override
-    public MultipleChoiceGridAddReqDto toQuestionAddUpdateReq(MultipleChoiceGridDetailsDto questionRes) {
+    public MultipleChoiceGridAddReqDto toQuestionAddReq(MultipleChoiceGridDetailsDto questionRes) {
         var mcg = new MultipleChoiceGridAddReqDto();
 
         populateCommonFields(questionRes, mcg);

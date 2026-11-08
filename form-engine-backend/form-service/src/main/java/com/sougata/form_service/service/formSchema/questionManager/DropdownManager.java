@@ -11,10 +11,10 @@ import com.sougata.form_service.model.formSchema.Dropdown;
 import com.sougata.form_service.model.formSchema.DropdownOption;
 import com.sougata.form_service.model.formSchema.Form;
 import com.sougata.form_service.model.formSchema.Question;
-import com.sougata.form_service.repository.formSchema.DropdownOptionRepository;
 import com.sougata.form_service.repository.formSchema.DropdownRepository;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.service.formSchema.FormService;
+import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.QuestionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,12 +27,10 @@ import java.util.UUID;
 public class DropdownManager extends QuestionManager<Dropdown, DropdownAddReqDto, DropdownUpdateReqDto, DropdownDetailsDto, DropdownTemplateDetails> {
 
     private final DropdownRepository dropdownRepository;
-    private final DropdownOptionRepository dropdownOptionRepository;
 
-    public DropdownManager(DropdownRepository dropdownRepository, FormService formService, QuestionRepository questionRepository, DropdownOptionRepository dropdownOptionRepository) {
-        super(questionRepository, formService);
+    public DropdownManager(DropdownRepository dropdownRepository, FormService formService, QuestionRepository questionRepository, FormServiceCached formServiceCached) {
+        super(questionRepository, formService, formServiceCached);
         this.dropdownRepository = dropdownRepository;
-        this.dropdownOptionRepository = dropdownOptionRepository;
     }
 
     @Override
@@ -42,12 +40,12 @@ public class DropdownManager extends QuestionManager<Dropdown, DropdownAddReqDto
 
     @Override
     @Transactional
-    public DropdownDetailsDto create(UUID formId, DropdownAddReqDto crudDto) {
+    public DropdownDetailsDto create(UUID formId, UUID userId,DropdownAddReqDto questionAddReq) {
         var newDd = new Dropdown();
 
-        var question = createQuestion(crudDto, formId);
+        var question = createQuestion(questionAddReq, formId, userId);
 
-        setPropertiesForNew(crudDto, newDd, question);
+        setPropertiesForNew(questionAddReq, newDd, question);
 
         var saved = dropdownRepository.save(newDd);
 
@@ -164,7 +162,7 @@ public class DropdownManager extends QuestionManager<Dropdown, DropdownAddReqDto
     }
 
     @Override
-    public DropdownAddReqDto toQuestionAddUpdateReq(DropdownDetailsDto questionRes) {
+    public DropdownAddReqDto toQuestionAddReq(DropdownDetailsDto questionRes) {
         var dd = new DropdownAddReqDto();
 
         populateCommonFields(questionRes, dd);

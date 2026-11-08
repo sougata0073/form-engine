@@ -10,7 +10,6 @@ export interface FormInfo {
   title: string | null;
   description: string | null;
   lastOpenedOn: string;
-  defaultSettings: FormDefaultSettings;
   generalSettings: FormGeneralSettings;
   presentationSettings: FormPresentationSettings;
   quizSettings: FormQuizSettings;

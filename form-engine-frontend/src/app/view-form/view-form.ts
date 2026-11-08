@@ -72,7 +72,7 @@ export class ViewForm implements OnInit, OnDestroy {
   protected formProgress = signal(100);
 
   protected formGroup = new FormGroup({
-    sendResponseCopy: new FormControl<boolean>(false, { nonNullable: true }),
+    sendResponseCopy: new FormControl<boolean | null>(null, { nonNullable: true }),
   });
 
   ngOnInit() {

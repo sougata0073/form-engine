@@ -47,7 +47,7 @@ public class LinearScaleManager extends ResponseManager<LinearScaleResponsePutRe
     @Override
     @Async
     public CompletableFuture<List<LinearScaleResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        var responses = linearScaleRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
+        var responses = linearScaleRepository.findAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -65,7 +65,7 @@ public class LinearScaleManager extends ResponseManager<LinearScaleResponsePutRe
     @Override
     @Async
     public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        linearScaleRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+        linearScaleRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(null);
     }

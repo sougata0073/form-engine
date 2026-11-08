@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, Signal } from '@angular/core';
 import { MatCard, MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -23,6 +23,8 @@ import { EditFormService } from '../../service/edit-form-service';
 import { PatchReq } from '../../model/common/patch-req';
 import { EditFormStateService } from '../../service/edit-form-state-service';
 import { FormInfoUpdateReq } from '../../model/form/form-info-update-req';
+import { FormDefaultSettings } from '../../model/form/form-default-settings';
+import { FormDefaultSettingsUpdateReq } from '../../model/form/form-default-settings-update-req';
 
 @Component({
   selector: 'app-edit-form-settings',
@@ -61,6 +63,7 @@ export class EditFormSettings implements OnInit {
   private editFormStateService = inject(EditFormStateService);
 
   protected formInfo = computed(() => this.editFormService.formInfo()!);
+  protected formDefaultSettings = signal<FormDefaultSettings | null>(null);
 
   protected formGroup = this.formBuilder.nonNullable.group({
     quizSettings: this.formBuilder.nonNullable.group({
@@ -99,7 +102,20 @@ export class EditFormSettings implements OnInit {
   private prevFormValues: typeof this.formGroup.value = {};
 
   ngOnInit(): void {
-    const defaultSettings = this.formInfo().defaultSettings;
+    this.editFormService.getFormDefaultSettings((res) => {
+      this.formDefaultSettings.set(res);
+
+      this.formGroup.patchValue(
+        {
+          defaultSettings: {
+            defaultEmailCollectionOption: res.defaultEmailCollectionOption,
+            makeQuestionsRequiredByDefault: res.makeQuestionsRequiredByDefault,
+          },
+        },
+        { emitEvent: false },
+      );
+    });
+
     const presentationSettings = this.formInfo().presentationSettings;
     const quizSettings = this.formInfo().quizSettings;
     const responseSettings = this.formInfo().responseSettings;
@@ -127,14 +143,10 @@ export class EditFormSettings implements OnInit {
         shareResponseSummaryWithResponders: presentationSettings.shareResponseSummaryWithResponders,
         disableAutoSaveForAllRespondents: presentationSettings.disableAutoSaveForAllRespondents,
       },
-      defaultSettings: {
-        defaultEmailCollectionOption: defaultSettings.defaultEmailCollectionOption,
-        makeQuestionsRequiredByDefault: defaultSettings.makeQuestionsRequiredByDefault,
-      },
     });
 
     if (responseSettings.emailCollectionOption === 'OFF') {
-      this.formGroup.controls.responseSettings.controls.responseCopySendOption.disable()
+      this.formGroup.controls.responseSettings.controls.responseCopySendOption.disable();
     }
 
     this.prevFormValues = this.formGroup.getRawValue();
@@ -211,15 +223,13 @@ export class EditFormSettings implements OnInit {
 
       this.editFormStateService.isFormGettingModified.set(true);
 
-      const req: FormInfoUpdateReq = {
-        defaultSettingsUpdateReq: this.getFormInfoUpdateReq(
-          val,
-          this.prevFormValues.defaultSettings,
-        ),
-        updateFields: ['defaultSettingsUpdateReq' satisfies keyof FormInfoUpdateReq],
-      };
+      const req: FormDefaultSettingsUpdateReq = this.getFormInfoUpdateReq(
+        val,
+        this.prevFormValues.defaultSettings,
+      );
 
-      this.editFormService.updateFormInfo(this.formInfo().id, req, (res) => {
+      this.editFormService.updateFormDefaultSettings(req, (res) => {
+        this.formDefaultSettings.set(res);
         this.editFormStateService.isFormGettingModified.set(false);
       });
 

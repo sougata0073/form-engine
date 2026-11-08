@@ -12,6 +12,7 @@ import com.sougata.form_service.model.formSchema.Question;
 import com.sougata.form_service.repository.formSchema.DateRepository;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.service.formSchema.FormService;
+import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.QuestionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +24,8 @@ public class DateManager extends QuestionManager<Date, DateAddReqDto, DateUpdate
 
     private final DateRepository dateRepository;
 
-    public DateManager(DateRepository dateRepository, FormService formService, QuestionRepository questionRepository, QuestionRepository questionRepository1) {
-        super(questionRepository, formService);
+    public DateManager(DateRepository dateRepository, FormService formService, QuestionRepository questionRepository, FormServiceCached formServiceCached) {
+        super(questionRepository, formService, formServiceCached);
         this.dateRepository = dateRepository;
     }
 
@@ -36,10 +37,10 @@ public class DateManager extends QuestionManager<Date, DateAddReqDto, DateUpdate
 
     @Override
     @Transactional
-    public DateDetailsDto create(UUID formId, DateAddReqDto crudDto) {
+    public DateDetailsDto create(UUID formId, UUID userId, DateAddReqDto questionAddReq) {
         var newDate = new Date();
 
-        var question = createQuestion(crudDto, formId);
+        var question = createQuestion(questionAddReq,formId, userId);
 
         newDate.setQuestion(question);
 
@@ -98,7 +99,7 @@ public class DateManager extends QuestionManager<Date, DateAddReqDto, DateUpdate
     }
 
     @Override
-    public DateAddReqDto toQuestionAddUpdateReq(DateDetailsDto questionRes) {
+    public DateAddReqDto toQuestionAddReq(DateDetailsDto questionRes) {
         var d = new DateAddReqDto();
 
         populateCommonFields(questionRes, d);

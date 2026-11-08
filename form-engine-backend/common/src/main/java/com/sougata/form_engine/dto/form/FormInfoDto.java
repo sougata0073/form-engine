@@ -19,7 +19,6 @@ public class FormInfoDto {
     private String title;
     private String description;
     private Instant lastOpenedOn;
-    private FormDefaultSettingsDto defaultSettings;
     private FormGeneralSettingsDto generalSettings;
     private FormPresentationSettingsDto presentationSettings;
     private FormQuizSettingsDto quizSettings;
@@ -34,7 +33,6 @@ public class FormInfoDto {
                 && Objects.equals(title, that.title)
                 && Objects.equals(description, that.description)
                 && Objects.equals(lastOpenedOn, that.lastOpenedOn)
-                && Objects.equals(defaultSettings, that.defaultSettings)
                 && Objects.equals(generalSettings, that.generalSettings)
                 && Objects.equals(presentationSettings, that.presentationSettings)
                 && Objects.equals(quizSettings, that.quizSettings)

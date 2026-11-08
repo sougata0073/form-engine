@@ -11,6 +11,7 @@ import com.sougata.form_service.model.formSchema.*;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.repository.formSchema.TickBoxGridRepository;
 import com.sougata.form_service.service.formSchema.FormService;
+import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.QuestionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,8 +25,8 @@ public class TickBoxGridManager extends QuestionManager<TickBoxGrid, TickBoxGrid
 
     private final TickBoxGridRepository tickBoxGridRepository;
 
-    public TickBoxGridManager(TickBoxGridRepository tickBoxGridRepository, FormService formService, QuestionRepository questionRepository) {
-        super(questionRepository, formService);
+    public TickBoxGridManager(TickBoxGridRepository tickBoxGridRepository, FormService formService, QuestionRepository questionRepository, FormServiceCached formServiceCached) {
+        super(questionRepository, formService, formServiceCached);
         this.tickBoxGridRepository = tickBoxGridRepository;
     }
 
@@ -36,12 +37,12 @@ public class TickBoxGridManager extends QuestionManager<TickBoxGrid, TickBoxGrid
 
     @Override
     @Transactional
-    public TickBoxGridDetailsDto create(UUID formId, TickBoxGridAddReqDto crudDto) {
+    public TickBoxGridDetailsDto create(UUID formId,UUID userId, TickBoxGridAddReqDto questionAddReq) {
         var newTbg = new TickBoxGrid();
 
-        var question = createQuestion(crudDto, formId);
+        var question = createQuestion(questionAddReq,formId, userId);
 
-        setPropertiesForNew(crudDto, newTbg, question);
+        setPropertiesForNew(questionAddReq, newTbg, question);
 
         var savedTbg = tickBoxGridRepository.save(newTbg);
 
@@ -219,7 +220,7 @@ public class TickBoxGridManager extends QuestionManager<TickBoxGrid, TickBoxGrid
     }
 
     @Override
-    public TickBoxGridAddReqDto toQuestionAddUpdateReq(TickBoxGridDetailsDto questionRes) {
+    public TickBoxGridAddReqDto toQuestionAddReq(TickBoxGridDetailsDto questionRes) {
         var tbg = new TickBoxGridAddReqDto();
 
         populateCommonFields(questionRes, tbg);

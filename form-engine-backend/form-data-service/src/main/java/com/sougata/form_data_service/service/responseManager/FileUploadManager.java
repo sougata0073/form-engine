@@ -50,7 +50,7 @@ public class FileUploadManager extends ResponseManager<FileUploadResponsePutReqD
     @Override
     @Async
     public CompletableFuture<List<FileUploadResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        var responses = fileUploadRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
+        var responses = fileUploadRepository.findAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -70,7 +70,7 @@ public class FileUploadManager extends ResponseManager<FileUploadResponsePutReqD
     @Override
     @Async
     public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        fileUploadRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+        fileUploadRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(null);
     }

@@ -12,6 +12,7 @@ import com.sougata.form_service.model.formSchema.Rating;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.repository.formSchema.RatingRepository;
 import com.sougata.form_service.service.formSchema.FormService;
+import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.QuestionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +24,8 @@ public class RatingManager extends QuestionManager<Rating, RatingAddReqDto, Rati
 
     private final RatingRepository ratingRepository;
 
-    public RatingManager(RatingRepository ratingRepository, FormService formService, QuestionRepository questionRepository) {
-        super(questionRepository, formService);
+    public RatingManager(RatingRepository ratingRepository, FormService formService, QuestionRepository questionRepository, FormServiceCached formServiceCached) {
+        super(questionRepository, formService, formServiceCached);
         this.ratingRepository = ratingRepository;
     }
 
@@ -35,12 +36,12 @@ public class RatingManager extends QuestionManager<Rating, RatingAddReqDto, Rati
 
     @Override
     @Transactional
-    public RatingDetailsDto create(UUID formId, RatingAddReqDto crudDto) {
+    public RatingDetailsDto create(UUID formId,UUID userId, RatingAddReqDto questionAddReq) {
         var newR = new Rating();
 
-        var question = createQuestion(crudDto, formId);
+        var question = createQuestion(questionAddReq, formId, userId);
 
-        setPropertiesForNew(crudDto, newR, question);
+        setPropertiesForNew(questionAddReq, newR, question);
 
         var saved = ratingRepository.save(newR);
 
@@ -98,7 +99,7 @@ public class RatingManager extends QuestionManager<Rating, RatingAddReqDto, Rati
     }
 
     @Override
-    public RatingAddReqDto toQuestionAddUpdateReq(RatingDetailsDto questionRes) {
+    public RatingAddReqDto toQuestionAddReq(RatingDetailsDto questionRes) {
         var r = new RatingAddReqDto();
 
         populateCommonFields(questionRes, r);

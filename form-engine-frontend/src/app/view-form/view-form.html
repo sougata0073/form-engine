@@ -5,10 +5,7 @@
         <div class="main-content" [class.loading]="isFormSubmitInProgress()">
           <app-view-form-info [formRes]="formRes()!" />
           <ul class="question-list">
-            @if (
-              formRes()?.formInfo?.responseSettings?.emailCollectionOption !== 'OFF' ||
-              formRes()?.formInfo?.defaultSettings?.defaultEmailCollectionOption !== 'OFF'
-            ) {
+            @if (formRes()?.formInfo?.responseSettings?.emailCollectionOption !== 'OFF') {
               <li>
                 <app-view-form-collect-email [formRes]="formRes()!" />
               </li>

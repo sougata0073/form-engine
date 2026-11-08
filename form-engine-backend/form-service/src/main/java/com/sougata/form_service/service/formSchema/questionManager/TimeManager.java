@@ -12,6 +12,7 @@ import com.sougata.form_service.model.formSchema.Time;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.repository.formSchema.TimeRepository;
 import com.sougata.form_service.service.formSchema.FormService;
+import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.QuestionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +24,8 @@ public class TimeManager extends QuestionManager<Time, TimeAddReqDto, TimeUpdate
 
     private final TimeRepository timeRepository;
 
-    public TimeManager(TimeRepository timeRepository, FormService formService, QuestionRepository questionRepository) {
-        super(questionRepository, formService);
+    public TimeManager(TimeRepository timeRepository, FormService formService, QuestionRepository questionRepository, FormServiceCached formServiceCached) {
+        super(questionRepository, formService, formServiceCached);
         this.timeRepository = timeRepository;
     }
 
@@ -35,10 +36,10 @@ public class TimeManager extends QuestionManager<Time, TimeAddReqDto, TimeUpdate
 
     @Override
     @Transactional
-    public TimeDetailsDto create(UUID formId, TimeAddReqDto crudDto) {
+    public TimeDetailsDto create(UUID formId, UUID userId, TimeAddReqDto questionAddReq) {
         var newTime = new Time();
 
-        var question = createQuestion(crudDto, formId);
+        var question = createQuestion(questionAddReq, formId, userId);
 
         newTime.setQuestion(question);
 
@@ -87,7 +88,7 @@ public class TimeManager extends QuestionManager<Time, TimeAddReqDto, TimeUpdate
     }
 
     @Override
-    public TimeAddReqDto toQuestionAddUpdateReq(TimeDetailsDto questionRes) {
+    public TimeAddReqDto toQuestionAddReq(TimeDetailsDto questionRes) {
         var t = new TimeAddReqDto();
 
         populateCommonFields(questionRes, t);

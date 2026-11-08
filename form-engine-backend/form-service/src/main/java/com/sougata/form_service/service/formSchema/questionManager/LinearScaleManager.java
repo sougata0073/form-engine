@@ -12,6 +12,7 @@ import com.sougata.form_service.model.formSchema.Question;
 import com.sougata.form_service.repository.formSchema.LinearScaleRepository;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.service.formSchema.FormService;
+import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.QuestionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +24,8 @@ public class LinearScaleManager extends QuestionManager<LinearScale, LinearScale
 
     private final LinearScaleRepository linearScaleRepository;
 
-    public LinearScaleManager(LinearScaleRepository linearScaleRepository, FormService formService, QuestionRepository questionRepository) {
-        super(questionRepository, formService);
+    public LinearScaleManager(LinearScaleRepository linearScaleRepository, FormService formService, QuestionRepository questionRepository, FormServiceCached formServiceCached) {
+        super(questionRepository, formService, formServiceCached);
         this.linearScaleRepository = linearScaleRepository;
     }
 
@@ -35,12 +36,12 @@ public class LinearScaleManager extends QuestionManager<LinearScale, LinearScale
 
     @Override
     @Transactional
-    public LinearScaleDetailsDto create(UUID formId, LinearScaleAddReqDto crudDto) {
+    public LinearScaleDetailsDto create(UUID formId, UUID userId,LinearScaleAddReqDto questionAddReq) {
         var newLs = new LinearScale();
 
-        var question = createQuestion(crudDto, formId);
+        var question = createQuestion(questionAddReq,formId, userId);
 
-        setPropertiesForNew(crudDto, newLs, question);
+        setPropertiesForNew(questionAddReq, newLs, question);
 
         var saved = linearScaleRepository.save(newLs);
 
@@ -98,7 +99,7 @@ public class LinearScaleManager extends QuestionManager<LinearScale, LinearScale
     }
 
     @Override
-    public LinearScaleAddReqDto toQuestionAddUpdateReq(LinearScaleDetailsDto questionRes) {
+    public LinearScaleAddReqDto toQuestionAddReq(LinearScaleDetailsDto questionRes) {
         var ls = new LinearScaleAddReqDto();
 
         populateCommonFields(questionRes, ls);

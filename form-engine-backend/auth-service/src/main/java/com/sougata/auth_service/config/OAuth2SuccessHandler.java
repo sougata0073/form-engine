@@ -4,10 +4,13 @@ import com.sougata.auth_service.constant.AuthProvider;
 import com.sougata.auth_service.model.User;
 import com.sougata.auth_service.repository.UserRepository;
 import com.sougata.auth_service.service.JwtService;
+import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
+import com.sougata.form_engine.dto.messaging.UserCreatedMessage;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 @Component
+@RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     @Value("${frontend-url}")
@@ -24,12 +28,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
-
-    @Autowired
-    public OAuth2SuccessHandler(JwtService jwtService, UserRepository userRepository) {
-        this.jwtService = jwtService;
-        this.userRepository = userRepository;
-    }
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public void onAuthenticationSuccess(
@@ -50,6 +49,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         var prevUser = userRepository.findBySocialAuthIdAndAuthProvider(extractedUser.getSocialAuthId(), authProvider);
 
         var savedUser = prevUser.orElseGet(() -> userRepository.save(extractedUser));
+
+        if (prevUser.isEmpty()) {
+            redisTemplate.convertAndSend(MessagingChannelNames.USER_CREATED, new UserCreatedMessage(savedUser.getId()));
+        }
 
         String jwt = jwtService.generateJwtToken(
                 savedUser.getId().toString(), savedUser.getUsername(), savedUser.getEmail(), savedUser.getAvatarUrl()

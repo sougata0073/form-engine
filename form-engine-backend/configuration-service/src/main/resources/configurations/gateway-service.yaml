@@ -37,6 +37,11 @@ spring:
               predicates:
                 - Path=/oauth2/authorization/**
 
+            - id: oauth2-redirect
+              uri: lb://AUTH-SERVICE
+              predicates:
+                - Path=/login/oauth2/code/**
+
             - id: form-data-service
               uri: lb://FORM-DATA-SERVICE
               predicates:
@@ -90,6 +95,7 @@ app:
     public-urls:
       - "/api/v1/auth/**"
       - "/oauth2/authorization/**"
+      - "/login/oauth2/code/**"
       - "/actuator/**"
   cache:
     default-ttl-minutes: ${CACHE_DEFAULT_TTL_MINUTES}

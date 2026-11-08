@@ -55,7 +55,7 @@ public class TickBoxGridManager extends ResponseManager<TickBoxGridResponsePutRe
     @Override
     @Async
     public CompletableFuture<List<TickBoxGridResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        var responses = tickBoxGridRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
+        var responses = tickBoxGridRepository.findAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -81,7 +81,7 @@ public class TickBoxGridManager extends ResponseManager<TickBoxGridResponsePutRe
     @Override
     @Async
     public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        tickBoxGridRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+        tickBoxGridRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(null);
     }

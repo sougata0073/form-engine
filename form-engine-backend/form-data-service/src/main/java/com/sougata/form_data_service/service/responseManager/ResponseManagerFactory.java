@@ -9,9 +9,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Component
 @RequiredArgsConstructor
 public class ResponseManagerFactory {
@@ -29,23 +26,6 @@ public class ResponseManagerFactory {
         } catch (BeansException e) {
             throw new NoResponseManagerFoundException(questionType);
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    public <QR extends QuestionResponsePutReqDto, QRID extends QuestionResponseIndividualDto>
-    List<ResponseManager<QR, QRID>> getAll() {
-        List<ResponseManager<QR, QRID>> repos = new ArrayList<>();
-
-        for (QuestionType questionType : QuestionType.values()) {
-            var repo = applicationContext.getBean(
-                    String.format("%s_RESPONSE_MANAGER", questionType.name()),
-                    ResponseManager.class
-            );
-
-            repos.add(repo);
-        }
-
-        return repos;
     }
 
 }

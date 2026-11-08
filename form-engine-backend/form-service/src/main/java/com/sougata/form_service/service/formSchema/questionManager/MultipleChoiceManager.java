@@ -14,6 +14,7 @@ import com.sougata.form_service.model.formSchema.Question;
 import com.sougata.form_service.repository.formSchema.MultipleChoiceRepository;
 import com.sougata.form_service.repository.formSchema.QuestionRepository;
 import com.sougata.form_service.service.formSchema.FormService;
+import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.QuestionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,8 +28,8 @@ public class MultipleChoiceManager extends QuestionManager<MultipleChoice, Multi
 
     private final MultipleChoiceRepository multipleChoiceRepository;
 
-    public MultipleChoiceManager(MultipleChoiceRepository multipleChoiceRepository, FormService formService, QuestionRepository questionRepository) {
-        super(questionRepository, formService);
+    public MultipleChoiceManager(MultipleChoiceRepository multipleChoiceRepository, FormService formService, QuestionRepository questionRepository, FormServiceCached formServiceCached) {
+        super(questionRepository, formService, formServiceCached);
         this.multipleChoiceRepository = multipleChoiceRepository;
     }
 
@@ -39,12 +40,12 @@ public class MultipleChoiceManager extends QuestionManager<MultipleChoice, Multi
 
     @Override
     @Transactional
-    public MultipleChoiceDetailsDto create(UUID formId, MultipleChoiceAddReqDto crudDto) {
+    public MultipleChoiceDetailsDto create(UUID formId, UUID userId,MultipleChoiceAddReqDto questionAddReq) {
         var newMc = new MultipleChoice();
 
-        var question = createQuestion(crudDto, formId);
+        var question = createQuestion(questionAddReq, formId, userId);
 
-        setPropertiesForNew(crudDto, newMc, question);
+        setPropertiesForNew(questionAddReq, newMc, question);
 
         var saved = multipleChoiceRepository.save(newMc);
 
@@ -152,7 +153,7 @@ public class MultipleChoiceManager extends QuestionManager<MultipleChoice, Multi
     }
 
     @Override
-    public MultipleChoiceAddReqDto toQuestionAddUpdateReq(MultipleChoiceDetailsDto questionRes) {
+    public MultipleChoiceAddReqDto toQuestionAddReq(MultipleChoiceDetailsDto questionRes) {
         var mc = new MultipleChoiceAddReqDto();
 
         populateCommonFields(questionRes, mc);

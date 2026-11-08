@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-@EnableCaching
 public class RedisConfiguration implements CachingConfigurer {
 
     @Value("${spring.data.redis.host}")
@@ -157,25 +156,6 @@ public class RedisConfiguration implements CachingConfigurer {
         template.setHashKeySerializer(new StringRedisSerializer());
         template.setHashValueSerializer(redisSerializer);
         template.afterPropertiesSet();
-        return template;
-    }
-
-    @Bean
-    public RedisTemplate<String, String> redisTemplateString(
-            RedisConnectionFactory connectionFactory
-    ) {
-        RedisTemplate<String, String> template = new RedisTemplate<>();
-        var stringSerializer = new StringRedisSerializer();
-
-        template.setConnectionFactory(connectionFactory);
-
-        template.setKeySerializer(stringSerializer);
-        template.setValueSerializer(stringSerializer);
-        template.setHashKeySerializer(stringSerializer);
-        template.setHashValueSerializer(stringSerializer);
-
-        template.afterPropertiesSet();
-
         return template;
     }
 

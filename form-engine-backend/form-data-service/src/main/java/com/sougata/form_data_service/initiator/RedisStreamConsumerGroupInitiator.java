@@ -26,15 +26,14 @@ public class RedisStreamConsumerGroupInitiator implements ApplicationRunner {
     @Override
     public void run(@NonNull ApplicationArguments args) {
 
-        STREAM_NAME_AND_GROUPS.forEach((streamName, consumerGroups) -> {
-            consumerGroups.forEach(consumerGroup -> {
-                try {
-                    redisTemplate.opsForStream().createGroup(streamName, consumerGroup);
-                } catch (RuntimeException ignored) {
+        STREAM_NAME_AND_GROUPS.forEach((streamName, consumerGroups) ->
+                consumerGroups.forEach(consumerGroup -> {
+                    try {
+                        redisTemplate.opsForStream().createGroup(streamName, consumerGroup);
+                    } catch (RuntimeException ignored) {
 
-                }
-            });
-        });
+                    }
+                }));
 
     }
 }

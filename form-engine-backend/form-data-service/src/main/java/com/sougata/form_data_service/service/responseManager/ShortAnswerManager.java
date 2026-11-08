@@ -47,7 +47,7 @@ public class ShortAnswerManager extends ResponseManager<ShortAnswerResponsePutRe
     @Override
     @Async
     public CompletableFuture<List<ShortAnswerResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        var responses = shortAnswerRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
+        var responses = shortAnswerRepository.findAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -65,7 +65,7 @@ public class ShortAnswerManager extends ResponseManager<ShortAnswerResponsePutRe
     @Override
     @Async
     public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        shortAnswerRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+        shortAnswerRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(null);
     }

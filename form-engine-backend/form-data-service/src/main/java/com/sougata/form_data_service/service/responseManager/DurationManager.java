@@ -49,7 +49,7 @@ public class DurationManager extends ResponseManager<DurationResponsePutReqDto, 
     @Override
     @Async
     public CompletableFuture<List<DurationResponseIndividualDto>> getResponses(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        var responses = durationRepository.findAllByQuestionIds(formId, formResponseId, questionIds);
+        var responses = durationRepository.findAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(
                 responses.stream().map(res -> {
@@ -69,7 +69,7 @@ public class DurationManager extends ResponseManager<DurationResponsePutReqDto, 
     @Override
     @Async
     public CompletableFuture<Void> deleteAllByQuestionIds(UUID formId, UUID formResponseId, Set<Long> questionIds) {
-        durationRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds);
+        durationRepository.deleteAllByQuestionIds(formId, formResponseId, questionIds.stream().toList());
 
         return CompletableFuture.completedFuture(null);
     }
