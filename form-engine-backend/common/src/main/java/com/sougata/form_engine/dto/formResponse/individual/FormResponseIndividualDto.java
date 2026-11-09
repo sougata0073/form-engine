@@ -21,7 +21,7 @@ public class FormResponseIndividualDto {
     @JsonSerialize(using = ToStringSerializer.class)
     private Long page;
 
-    private UUID userId;
+    private String userId;
 
     private List<QuestionResponseIndividualDto> responses;
 }

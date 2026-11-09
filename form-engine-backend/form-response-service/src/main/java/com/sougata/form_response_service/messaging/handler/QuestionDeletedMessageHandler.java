@@ -18,8 +18,6 @@ import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializ
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @Component(MessagingChannelNames.QUESTION_DELETED + "_" + CommonMessagingNames.MESSAGE_HANDLER_SUFFIX)
@@ -68,10 +66,10 @@ public class QuestionDeletedMessageHandler implements MessageListener {
                 CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_SUMMARY, "formId=" + messageData.getFormId(), "questionId=" + messageData.getQuestionId()) + "::*"
         );
         redissonKeys.deleteByPattern(
-                CacheUtil.buildKey(FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE, "formId=" + messageData.getFormId()) + "::*"
+                CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE, "formId=" + messageData.getFormId()) + "::*"
         );
         redissonKeys.deleteByPattern(
-                CacheUtil.buildKey(FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE_BY_PAGE, "formId=" + messageData.getFormId()) + "::*"
+                CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_BY_PAGE, "formId=" + messageData.getFormId()) + "::*"
         );
     }
 }

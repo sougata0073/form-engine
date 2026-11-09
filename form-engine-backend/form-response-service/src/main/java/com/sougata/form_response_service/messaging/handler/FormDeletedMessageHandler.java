@@ -42,10 +42,10 @@ public class FormDeletedMessageHandler implements MessageListener {
                 CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_SUMMARIES, "formId=" + messageData.getFormId()) + "::*"
         );
         redissonKeys.deleteByPattern(
-                CacheUtil.buildKey(FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE, "formId=" + messageData.getFormId()) + "::*"
+                CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE, "formId=" + messageData.getFormId()) + "::*"
         );
         redissonKeys.deleteByPattern(
-                CacheUtil.buildKey(FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE_BY_PAGE, "formId=" + messageData.getFormId()) + "::*"
+                CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_BY_PAGE, "formId=" + messageData.getFormId()) + "::*"
         );
         redissonKeys.deleteByPattern(
                 CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_BY_QUESTION, "formId=" + messageData.getFormId()) + "::*"

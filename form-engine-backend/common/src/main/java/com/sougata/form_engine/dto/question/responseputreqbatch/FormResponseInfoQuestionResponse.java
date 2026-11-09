@@ -12,6 +12,6 @@ import java.util.UUID;
 @Setter
 public class FormResponseInfoQuestionResponse<TQuestionResponsePutReq extends QuestionResponsePutReqDto> {
     private UUID formResponseId;
-    private UUID userId;
+    private String userId;
     private TQuestionResponsePutReq questionResponsePutReq;
 }

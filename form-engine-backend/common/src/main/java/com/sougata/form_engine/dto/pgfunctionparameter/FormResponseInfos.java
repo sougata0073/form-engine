@@ -22,6 +22,6 @@ public class FormResponseInfos {
     public static class FormResponseInfo {
         private UUID formResponseId;
         private UUID formId;
-        private UUID userId;
+        private String responderId;
     }
 }

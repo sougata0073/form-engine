@@ -35,7 +35,7 @@ public class FormResponseDeletedMessageHandler implements MessageListener {
         var isResponseAlreadySubmittedCacheKey = CacheUtil.buildKey(
                 FormDataCacheNames.IS_RESPONSE_ALREADY_SUBMITTED,
                 "formId=" + messageData.getFormId(),
-                "userId=" + messageData.getUserId()
+                "userId=" + messageData.getResponderId()
         );
 
         var formResponseCountRedisKey = CommonCacheNames.FORM_RESPONSE_COUNT + "::" + messageData.getFormId();

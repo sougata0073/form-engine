@@ -26,8 +26,11 @@ public class FormResponse {
     @Column("responded_question_map")
     private Map<Long, QuestionType> respondedQuestionMap;
 
-    @Column("user_id")
-    private UUID userId;
+    @Column("responder_id")
+    private String responderId;
+
+    @Column("responder_email")
+    private String responderEmail;
 
     @Column("submitted_on")
     private Instant submittedOn = Instant.now();

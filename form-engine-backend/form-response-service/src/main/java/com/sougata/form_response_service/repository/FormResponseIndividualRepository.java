@@ -1,6 +1,6 @@
 package com.sougata.form_response_service.repository;
 
-import com.sougata.form_response_service.model.FormResponseIndividual;
+import com.sougata.form_response_service.model.FormResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface FormResponseIndividualRepository extends JpaRepository<FormResponseIndividual, UUID> {
+public interface FormResponseIndividualRepository extends JpaRepository<FormResponse, UUID> {
 
     @Query(value = """
             select
@@ -17,7 +17,7 @@ public interface FormResponseIndividualRepository extends JpaRepository<FormResp
               select
               fri.form_response_id,
               row_number() over (order by fri.form_response_id) rn
-              from form_response_individuals fri
+              from form_responses fri
               where fri.form_response_summary_form_id = :formId
             ) x
             where x.form_response_id = :formResponseId
@@ -31,7 +31,7 @@ public interface FormResponseIndividualRepository extends JpaRepository<FormResp
               select
               fri.form_response_id,
               row_number() over (order by fri.form_response_id) rn
-              from form_response_individuals fri
+              from form_responses fri
               where fri.form_response_summary_form_id = :formId
             ) x
             where (x.rn - 1) = :formResponsePage

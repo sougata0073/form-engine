@@ -26,10 +26,10 @@ public interface CheckboxResponseRepository extends AnyTypeQuestionResponseRepos
                 select
                 array_agg(cr.option_id order by cr.option_id) option_ids
                 from checkbox_responses cr
-                join question_response_form_response_individual qrfri
+                join question_response_form_response qrfri
                 on cr.question_response_id = qrfri.question_response_id
                 and cr.question_id = :questionId
-                group by qrfri.form_response_individual_id
+                group by qrfri.form_response_id
             ) x
             group by x.option_ids
             order by responseCount desc, optionIds
@@ -43,11 +43,11 @@ public interface CheckboxResponseRepository extends AnyTypeQuestionResponseRepos
             fri.user_id userId
             from
             checkbox_responses cr
-            join question_response_form_response_individual qrfri
+            join question_response_form_response qrfri
             on cr.question_response_id = qrfri.question_response_id
             and cr.question_id = :questionId
-            join form_response_individuals fri
-            on qrfri.form_response_individual_id = fri.form_response_id
+            join form_responses fri
+            on qrfri.form_response_id = fri.form_response_id
             group by fri.form_response_id
             having array_agg(cr.option_id order by cr.option_id) = :groupedResponse
             order by fri.form_response_id

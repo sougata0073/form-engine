@@ -12,7 +12,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(
       withInterceptors([
-        HttpInterceptors.baseUrlInterceptor(CommonConstant.SERVER_URL),
+        HttpInterceptors.baseUrlInterceptor(CommonConstant.SERVER_URL + 'api/v1/'),
         HttpInterceptors.AuthJwtInterceptor,
       ]),
     ),

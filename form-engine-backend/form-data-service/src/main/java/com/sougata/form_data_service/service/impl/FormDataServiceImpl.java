@@ -2,6 +2,7 @@ package com.sougata.form_data_service.service.impl;
 
 import com.sougata.form_data_service.configuration.AppConfiguration;
 import com.sougata.form_data_service.exception.FormSubmitException;
+import com.sougata.form_data_service.feignClient.AuthServiceFeignClient;
 import com.sougata.form_data_service.feignClient.FormResponseServiceFeignClient;
 import com.sougata.form_data_service.feignClient.FormServiceFeignClient;
 import com.sougata.form_data_service.formValidation.service.FormSchemaService;
@@ -13,10 +14,7 @@ import com.sougata.form_data_service.service.FormDataService;
 import com.sougata.form_data_service.service.FormDataServiceCached;
 import com.sougata.form_data_service.service.responseManager.ResponseManagerFactory;
 import com.sougata.form_data_service.util.CacheUtil;
-import com.sougata.form_engine.constant.DistributedLockNames;
-import com.sougata.form_engine.constant.FormConstant;
-import com.sougata.form_engine.constant.RedisStreamKeys;
-import com.sougata.form_engine.constant.RedisStreamNames;
+import com.sougata.form_engine.constant.*;
 import com.sougata.form_engine.constant.cache.CommonCacheNames;
 import com.sougata.form_engine.constant.cache.FormDataCacheNames;
 import com.sougata.form_engine.constant.messaging.MessagingChannelNames;
@@ -57,11 +55,20 @@ public class FormDataServiceImpl implements FormDataService {
     private final AppConfiguration appConfiguration;
     private final RedissonClient redissonClient;
     private final FormDataServiceCached formDataServiceCached;
+    private final AuthServiceFeignClient authServiceFeignClient;
 
     @Override
-    public FormResponsePutResDto saveResponse(UUID formId, FormResponsePutReqDto req, UUID responderId) {
+    public FormResponsePutResDto saveFormResponse(final UUID formId, final FormResponsePutReqDto req, final UUID responderId, final String clientIps) {
 
         var formDetails = formServiceFeignClient.getFormDetails(formId);
+
+        if (formDetails.getFormInfo().getResponseSettings().getEmailCollectionOption() == FormEmailCollectionOption.RESPONDER_INPUT && req.getEmail() == null) {
+            throw new RuntimeException("Email is required for responder input email collection.");
+        }
+
+        if (formDetails.getFormInfo().getResponseSettings().getEmailCollectionOption() == FormEmailCollectionOption.VERIFIED && responderId == null) {
+            throw new RuntimeException("User ID is required for verified email collection.");
+        }
 
         if (!formDetails.getFormInfo().getGeneralSettings().getPublished()) {
             throw new FormSubmitException("This form is not published yet.");
@@ -108,7 +115,9 @@ public class FormDataServiceImpl implements FormDataService {
             throw new FormSubmitException("This form has reached its maximum response limit and is no longer accepting responses.");
         }
 
-        var formResponseUserRedisLockKey = DistributedLockNames.formMultipleResponse(formId, responderId);
+        var formResponseUserRedisLockKey = DistributedLockNames.formMultipleResponse(
+                formId, responderId == null ? clientIps : responderId.toString()
+        );
         var formResponseUserRedisLock = redissonClient.getLock(formResponseUserRedisLockKey);
 
         try {
@@ -120,7 +129,7 @@ public class FormDataServiceImpl implements FormDataService {
             formResponseUserRedisLock.lock();
 
             if (formDetails.getFormInfo().getResponseSettings().getSingleResponseOnly()
-                    && formDataServiceCached.getIsResponseAlreadySubmitted(formId, responderId).getIsSubmitted()
+                    && formDataServiceCached.getIsResponseAlreadySubmitted(formId, responderId == null ? clientIps : responderId.toString()).getIsSubmitted()
             ) {
                 throw new FormSubmitException("You have already submitted a response for this form.");
             }
@@ -130,18 +139,25 @@ public class FormDataServiceImpl implements FormDataService {
 
             var formResponse = new FormResponse();
             formResponse.setKey(formResponsePartitionKey);
-            formResponse.setUserId(responderId);
+            formResponse.setResponderId(responderId == null ? clientIps : responderId.toString());
             formResponse.setRespondedQuestionMap(
                     req.getResponses()
                             .stream()
                             .collect(Collectors.toMap(QuestionResponsePutReqDto::getQuestionId, QuestionResponsePutReqDto::getQuestionType))
             );
 
+
+            if (formDetails.getFormInfo().getResponseSettings().getEmailCollectionOption() == FormEmailCollectionOption.RESPONDER_INPUT) {
+                formResponse.setResponderEmail(req.getEmail());
+            } else if (formDetails.getFormInfo().getResponseSettings().getEmailCollectionOption() == FormEmailCollectionOption.VERIFIED) {
+                formResponse.setResponderEmail(authServiceFeignClient.getUserSummary(responderId).getEmail());
+            }
+
             var savedFormResponse = formResponseRepository.save(formResponse);
 
             var formResponseUserPartitionKey = new FormResponseUser.PartitionKey();
             formResponseUserPartitionKey.setFormId(formId);
-            formResponseUserPartitionKey.setUserId(responderId);
+            formResponseUserPartitionKey.setResponderId(responderId == null ? clientIps : responderId.toString());
 
             var formResponseUser = new FormResponseUser(formResponseUserPartitionKey);
             var savedFormResponseUser = formResponseUserRepository.save(formResponseUser);
@@ -168,7 +184,8 @@ public class FormDataServiceImpl implements FormDataService {
                             .ofMap(Map.of(RedisStreamKeys.FORM_RESPONSE, new FormResponseSavedMessage(
                                     formId,
                                     savedFormResponse.getKey().getFormResponseId(),
-                                    responderId,
+                                    savedFormResponse.getResponderId(),
+                                    savedFormResponse.getResponderEmail(),
                                     req.getResponses()
                             )))
                             .withStreamKey(RedisStreamNames.FORM_RESPONSE_STREAM)
@@ -177,7 +194,7 @@ public class FormDataServiceImpl implements FormDataService {
             var isResponseAlreadySubmittedCacheKey = CacheUtil.buildKey(
                     FormDataCacheNames.IS_RESPONSE_ALREADY_SUBMITTED,
                     "formId=" + formId,
-                    "userId=" + responderId
+                    "userId=" + savedFormResponse.getResponderId()
             );
 
             redisTemplate.opsForValue().set(
@@ -230,7 +247,7 @@ public class FormDataServiceImpl implements FormDataService {
 
         redisTemplate.convertAndSend(
                 MessagingChannelNames.FORM_RESPONSE_DELETED,
-                new FormResponseDeleteMessage(formId, formResponseId, savedFormResponse.getUserId(), formResponses.getResponses())
+                new FormResponseDeleteMessage(formId, formResponseId, savedFormResponse.getResponderId(), formResponses.getResponses())
         );
 
         return SuccessMessageDto.create("Response deleted successfully. Form id: " + formId + " Form response ID: " + formResponseId);

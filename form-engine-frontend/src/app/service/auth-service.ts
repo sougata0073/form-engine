@@ -6,7 +6,7 @@ import { CommonConstant } from '../constant/common-contant';
   providedIn: 'root',
 })
 export class AuthService {
-  static GOOGLE_AUTH_URL = `http://localhost:8083/oauth2/authorization/google`;
+  static GOOGLE_AUTH_URL = `${CommonConstant.SERVER_URL}oauth2/authorization/google`;
 
   getJwt(): string | null {
     return localStorage.getItem('jwt');

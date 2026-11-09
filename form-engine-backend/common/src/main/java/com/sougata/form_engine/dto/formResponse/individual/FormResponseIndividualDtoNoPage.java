@@ -16,7 +16,7 @@ public class FormResponseIndividualDtoNoPage {
 
     private UUID formResponseId;
 
-    private UUID userId;
+    private String userId;
 
     private List<QuestionResponseIndividualDto> responses;
 

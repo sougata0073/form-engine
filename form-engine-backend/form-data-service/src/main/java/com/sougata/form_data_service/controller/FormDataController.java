@@ -27,12 +27,13 @@ public class FormDataController {
     private final FormDataServiceCached formDataServiceCached;
 
     @PostMapping(path = "{formId}/responses")
-    public ResponseEntity<FormResponsePutResDto> addFormResponse(
+    public ResponseEntity<FormResponsePutResDto> saveFormResponse(
             @PathVariable("formId") UUID formId,
             @Valid @RequestBody FormResponsePutReqDto dto,
-            @RequestHeader(HttpHeaderConstant.X_USER_ID) UUID responderId
+            @RequestHeader(value = HttpHeaderConstant.X_USER_ID, required = false) UUID responderId,
+            @RequestHeader(HttpHeaderConstant.X_FORWARDED_FOR) String clientIps
     ) {
-        var res = formDataService.saveResponse(formId, dto, responderId);
+        var res = formDataService.saveFormResponse(formId, dto, responderId, clientIps);
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
@@ -56,12 +57,12 @@ public class FormDataController {
         return formDataService.deleteFormResponse(formId, formResponseId);
     }
 
-    @GetMapping(path = "{formId}/responders/{userId}/is-response-submitted")
+    @GetMapping(path = "{formId}/responders/{responderId}/is-response-submitted")
     public IsResponseSubmittedDto getIsResponseAlreadySubmitted(
             @PathVariable("formId") UUID formId,
-            @PathVariable("userId") UUID userId
+            @PathVariable("responderId") String responderId
     ) {
-        return formDataServiceCached.getIsResponseAlreadySubmitted(formId, userId);
+        return formDataServiceCached.getIsResponseAlreadySubmitted(formId, responderId);
     }
 
 }

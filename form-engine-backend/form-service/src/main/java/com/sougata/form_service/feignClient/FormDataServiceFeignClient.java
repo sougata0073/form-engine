@@ -10,10 +10,10 @@ import java.util.UUID;
 @FeignClient(value = "form-data-service", path = "api/v1/form-data")
 public interface FormDataServiceFeignClient {
 
-    @GetMapping(path = "{formId}/responders/{userId}/is-response-submitted")
+    @GetMapping(path = "{formId}/responders/{responderId}/is-response-submitted")
     IsResponseSubmittedDto getIsResponseAlreadySubmitted(
             @PathVariable("formId") UUID formId,
-            @PathVariable("userId") UUID userId
+            @PathVariable("responderId") String responderId
     );
 
 }

@@ -31,7 +31,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-@EnableCaching
 public class RedisConfiguration implements CachingConfigurer {
 
     @Value("${spring.data.redis.host}")

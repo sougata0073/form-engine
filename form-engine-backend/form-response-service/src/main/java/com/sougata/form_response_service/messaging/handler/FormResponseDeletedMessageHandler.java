@@ -28,7 +28,7 @@ public class FormResponseDeletedMessageHandler implements MessageListener {
 
         var formResponseCountCacheKey = CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_COUNT, messageData.getFormId());
         var responseSummariesCacheKey = CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_SUMMARIES, messageData.getFormId());
-        var individualFormResponseCacheKey = CacheUtil.buildKey(FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE, "formId=" + messageData.getFormId(), "formResponseId=" + messageData.getFormResponseId());
+        var individualFormResponseCacheKey = CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE, "formId=" + messageData.getFormId(), "formResponseId=" + messageData.getFormResponseId());
 
         var redissonKeys = redissonClient.getKeys();
 
@@ -48,7 +48,7 @@ public class FormResponseDeletedMessageHandler implements MessageListener {
                 CacheUtil.buildKey(FormResponseCacheNames.RESPONSE_SUMMARY, "formId=" + messageData.getFormId()) + "::*"
         );
         redissonKeys.deleteByPattern(
-                CacheUtil.buildKey(FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE_BY_PAGE, "formId=" + messageData.getFormId(), "formResponseId=" + messageData.getFormResponseId()) + "::*"
+                CacheUtil.buildKey(FormResponseCacheNames.FORM_RESPONSE_BY_PAGE, "formId=" + messageData.getFormId(), "formResponseId=" + messageData.getFormResponseId()) + "::*"
         );
 
     }

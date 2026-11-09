@@ -7,7 +7,7 @@ public final class FormResponseCacheNames {
     public static final String RESPONSE_BY_QUESTION = "responseByQuestion";
     public static final String FORM_RESPONSE_SUMMARIES = "formResponseSummaries";
     public static final String RESPONSE_SUMMARY = "responseSummary";
-    public static final String INDIVIDUAL_FORM_RESPONSE = "individualFormResponse";
-    public static final String INDIVIDUAL_FORM_RESPONSE_BY_PAGE = "individualFormResponseByPage";
+    public static final String FORM_RESPONSE = "formResponse";
+    public static final String FORM_RESPONSE_BY_PAGE = "FormResponseByPage";
 
 }

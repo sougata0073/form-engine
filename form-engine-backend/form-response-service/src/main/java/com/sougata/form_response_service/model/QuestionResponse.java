@@ -31,21 +31,21 @@ public class QuestionResponse {
 
     @ManyToMany
     @JoinTable(
-            name = "question_response_form_response_individual",
+            name = "question_response_form_response",
             joinColumns = @JoinColumn(
                     name = "question_response_id", nullable = false
             ),
             inverseJoinColumns = @JoinColumn(
-                    name = "form_response_individual_id", nullable = false
+                    name = "form_response_id", nullable = false
             ),
             uniqueConstraints = {
                     @UniqueConstraint(
-                            name = "unique_question_response_id_form_response_individual_id",
-                            columnNames = {"question_response_id", "form_response_individual_id"}
+                            name = "unique_question_response_id_form_response_id",
+                            columnNames = {"question_response_id", "form_response_id"}
                     )
             }
     )
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private List<FormResponseIndividual> formResponseIndividuals = new ArrayList<>();
+    private List<FormResponse> formResponses = new ArrayList<>();
 
 }

@@ -156,7 +156,7 @@ public class FormResponseServiceImpl implements FormResponseService {
         );
 
         var individualFormResponseByPageCacheKey = CacheUtil.buildKey(
-                FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE_BY_PAGE, "formId=" + formId, "formResponseId=" + formResponseId, "page=" + page
+                FormResponseCacheNames.FORM_RESPONSE_BY_PAGE, "formId=" + formId, "formResponseId=" + formResponseId, "page=" + page
         );
 
         redisTemplate.opsForValue().set(

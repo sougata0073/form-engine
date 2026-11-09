@@ -30,7 +30,7 @@ public class FormResponseSummary implements Persistable<UUID> {
     private List<QuestionResponseSummary> questionResponseSummaries = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "formResponseSummary")
-    private List<FormResponseIndividual> formResponseIndividuals = new ArrayList<>();
+    private List<FormResponse> formResponses = new ArrayList<>();
 
     @Transient
     private boolean isNew = true;

@@ -15,12 +15,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "form_response_individuals")
+@Table(name = "form_responses")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class FormResponseIndividual implements Persistable<UUID> {
+public class FormResponse implements Persistable<UUID> {
 
     @Id
     private UUID formResponseId;
@@ -30,10 +30,11 @@ public class FormResponseIndividual implements Persistable<UUID> {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private FormResponseSummary formResponseSummary;
 
-    @Column(nullable = false)
-    private UUID userId;
+    private String responderId;
 
-    @ManyToMany(mappedBy = "formResponseIndividuals")
+    private String responderEmail;
+
+    @ManyToMany(mappedBy = "formResponses")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private List<QuestionResponse> questionResponses = new ArrayList<>();
 

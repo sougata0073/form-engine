@@ -1,6 +1,6 @@
 -- Indexes
-create index if not exists idx_form_response_individuals_form_id
-    on form_response_individuals(form_response_summary_form_id)@@
+create index if not exists idx_form_responses_form_id
+    on form_responses(form_response_summary_form_id)@@
 
 create index if not exists idx_question_response_summaries_form_response_summary_form_id
     on question_response_summaries(form_response_summary_form_id)@@
@@ -8,11 +8,11 @@ create index if not exists idx_question_response_summaries_form_response_summary
 create index if not exists idx_question_responses_question_response_summary_question_id
     on question_responses(question_response_summary_question_id)@@
 
-create index if not exists idx_question_response_form_response_individual_form_response_individual_id
-    on question_response_form_response_individual(form_response_individual_id)@@
+create index if not exists idx_question_response_form_response_form_response_id
+    on question_response_form_response(form_response_id)@@
 
-create index if not exists idx_question_response_form_response_individual_question_response_id
-    on question_response_form_response_individual(question_response_id)@@
+create index if not exists idx_question_response_form_response_question_response_id
+    on question_response_form_response(question_response_id)@@
 
 create index if not exists idx_checkbox_responses_question_id
     on checkbox_responses(question_id)@@
@@ -94,7 +94,7 @@ if v_updated_question_response_id != v_question_response_id then
 delete from public.question_responses qr where qr.id = v_question_response_id;
 end if;
 
-insert into public.question_response_form_response_individual (question_response_id, form_response_individual_id)
+insert into public.question_response_form_response (question_response_id, form_response_id)
 select v_updated_question_response_id, form_response_id::uuid
 from jsonb_array_elements_text(v_response -> 'formResponseIds') as form_response_id;
 
@@ -143,7 +143,7 @@ if v_updated_question_response_id != v_question_response_id then
 delete from public.question_responses qr where qr.id = v_question_response_id;
 end if;
 
-insert into public.question_response_form_response_individual (question_response_id, form_response_individual_id)
+insert into public.question_response_form_response (question_response_id, form_response_id)
 select v_updated_question_response_id, form_response_id::uuid
 from jsonb_array_elements_text(v_response -> 'formResponseIds') as form_response_id;
 
@@ -192,7 +192,7 @@ if v_updated_question_response_id != v_question_response_id then
 delete from public.question_responses qr where qr.id = v_question_response_id;
 end if;
 
-insert into public.question_response_form_response_individual (question_response_id, form_response_individual_id)
+insert into public.question_response_form_response (question_response_id, form_response_id)
 select v_updated_question_response_id, form_response_id::uuid
 from jsonb_array_elements_text(v_response -> 'formResponseIds') as form_response_id;
 
@@ -241,7 +241,7 @@ if v_updated_question_response_id != v_question_response_id then
 delete from public.question_responses qr where qr.id = v_question_response_id;
 end if;
 
-insert into public.question_response_form_response_individual (question_response_id, form_response_individual_id)
+insert into public.question_response_form_response (question_response_id, form_response_id)
 select v_updated_question_response_id, form_response_id::uuid
 from jsonb_array_elements_text(v_response -> 'formResponseIds') as form_response_id;
 
@@ -292,7 +292,7 @@ if v_updated_question_response_id != v_question_response_id then
 delete from public.question_responses qr where qr.id = v_question_response_id;
 end if;
 
-insert into public.question_response_form_response_individual (question_response_id, form_response_individual_id)
+insert into public.question_response_form_response (question_response_id, form_response_id)
 select v_updated_question_response_id, form_response_id::uuid
 from jsonb_array_elements_text(v_response -> 'formResponseIds') as form_response_id;
 
@@ -343,7 +343,7 @@ if v_updated_question_response_id != v_question_response_id then
 delete from public.question_responses qr where qr.id = v_question_response_id;
 end if;
 
-insert into public.question_response_form_response_individual (question_response_id, form_response_individual_id)
+insert into public.question_response_form_response (question_response_id, form_response_id)
 select v_updated_question_response_id, form_response_id::uuid
 from jsonb_array_elements_text(v_response -> 'formResponseIds') as form_response_id;
 
@@ -392,7 +392,7 @@ if v_updated_question_response_id != v_question_response_id then
 delete from public.question_responses qr where qr.id = v_question_response_id;
 end if;
 
-insert into public.question_response_form_response_individual (question_response_id, form_response_individual_id)
+insert into public.question_response_form_response (question_response_id, form_response_id)
 select v_updated_question_response_id, form_response_id::uuid
 from jsonb_array_elements_text(v_response -> 'formResponseIds') as form_response_id;
 
@@ -442,7 +442,7 @@ if v_updated_question_response_id != v_question_response_id then
 delete from public.question_responses qr where qr.id = v_question_response_id;
 end if;
 
-insert into public.question_response_form_response_individual (question_response_id, form_response_individual_id)
+insert into public.question_response_form_response (question_response_id, form_response_id)
 select v_updated_question_response_id, form_response_id::uuid
 from jsonb_array_elements_text(v_response -> 'formResponseIds') as form_response_id;
 
@@ -491,7 +491,7 @@ if v_updated_question_response_id != v_question_response_id then
 delete from public.question_responses qr where qr.id = v_question_response_id;
 end if;
 
-insert into public.question_response_form_response_individual (question_response_id, form_response_individual_id)
+insert into public.question_response_form_response (question_response_id, form_response_id)
 select v_updated_question_response_id, form_response_id::uuid
 from jsonb_array_elements_text(v_response -> 'formResponseIds') as form_response_id;
 
@@ -540,7 +540,7 @@ if v_updated_question_response_id != v_question_response_id then
 delete from public.question_responses qr where qr.id = v_question_response_id;
 end if;
 
-insert into public.question_response_form_response_individual (question_response_id, form_response_individual_id)
+insert into public.question_response_form_response (question_response_id, form_response_id)
 select v_updated_question_response_id, form_response_id::uuid
 from jsonb_array_elements_text(v_response -> 'formResponseIds') as form_response_id;
 
@@ -589,7 +589,7 @@ if v_updated_question_response_id != v_question_response_id then
 delete from public.question_responses qr where qr.id = v_question_response_id;
 end if;
 
-insert into public.question_response_form_response_individual (question_response_id, form_response_individual_id)
+insert into public.question_response_form_response (question_response_id, form_response_id)
 select v_updated_question_response_id, form_response_id::uuid
 from jsonb_array_elements_text(v_response -> 'formResponseIds') as form_response_id;
 
@@ -638,7 +638,7 @@ if v_updated_question_response_id != v_question_response_id then
 delete from public.question_responses qr where qr.id = v_question_response_id;
 end if;
 
-insert into public.question_response_form_response_individual (question_response_id, form_response_individual_id)
+insert into public.question_response_form_response (question_response_id, form_response_id)
 select v_updated_question_response_id, form_response_id::uuid
 from jsonb_array_elements_text(v_response -> 'formResponseIds') as form_response_id;
 
@@ -687,7 +687,7 @@ if v_updated_question_response_id != v_question_response_id then
 delete from public.question_responses qr where qr.id = v_question_response_id;
 end if;
 
-insert into public.question_response_form_response_individual (question_response_id, form_response_individual_id)
+insert into public.question_response_form_response (question_response_id, form_response_id)
 select v_updated_question_response_id, form_response_id::uuid
 from jsonb_array_elements_text(v_response -> 'formResponseIds') as form_response_id;
 
@@ -736,7 +736,7 @@ if v_updated_question_response_id != v_question_response_id then
 delete from public.question_responses qr where qr.id = v_question_response_id;
 end if;
 
-insert into public.question_response_form_response_individual (question_response_id, form_response_individual_id)
+insert into public.question_response_form_response (question_response_id, form_response_id)
 select v_updated_question_response_id, form_response_id::uuid
 from jsonb_array_elements_text(v_response -> 'formResponseIds') as form_response_id;
 
@@ -767,8 +767,8 @@ from jsonb_array_elements(p_question_response_counts -> 'counts')
     on conflict (question_id) do update
                                      set response_count = public.question_response_summaries.response_count + excluded.response_count;
 
-insert into public.form_response_individuals (form_response_id, form_response_summary_form_id, user_id)
-select (value ->> 'formResponseId')::uuid, (value ->> 'formId')::uuid, (value ->> 'userId')::uuid
+insert into public.form_responses (form_response_id, form_response_summary_form_id, responder_id)
+select (value ->> 'formResponseId')::uuid, (value ->> 'formId')::uuid, (value ->> 'responderId')::uuid
 from jsonb_array_elements(p_form_response_infos -> 'formResponseInfos');
 
 end;

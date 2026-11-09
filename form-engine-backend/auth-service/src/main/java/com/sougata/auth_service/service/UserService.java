@@ -2,6 +2,7 @@ package com.sougata.auth_service.service;
 
 import com.sougata.auth_service.config.AppConfiguration;
 import com.sougata.auth_service.dto.UserSummariesShortDto;
+import com.sougata.auth_service.dto.UserSummaryDto;
 import com.sougata.auth_service.dto.UserSummaryShortDto;
 import com.sougata.auth_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -75,5 +76,10 @@ public class UserService {
         var users = userIds.stream().map(combinedMap::get).filter(Objects::nonNull).toList();
 
         return new UserSummariesShortDto(users);
+    }
+
+    public UserSummaryDto getUserSummary(UUID userId) {
+        return userRepository.findUserSummaryById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
     }
 }

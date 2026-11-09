@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public final class DistributedLockNames {
 
-    public static String formMultipleResponse(UUID formId, UUID responderId) {
+    public static String formMultipleResponse(UUID formId, String responderId) {
         return "formMultipleResponseLock" + CommonCacheNames.SEPARATOR + formId + CommonCacheNames.SEPARATOR + responderId;
     }
 

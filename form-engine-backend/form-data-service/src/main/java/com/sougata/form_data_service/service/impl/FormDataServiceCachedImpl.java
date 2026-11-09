@@ -62,7 +62,7 @@ public class FormDataServiceCachedImpl implements FormDataServiceCached {
 
         return new FormResponseIndividualDtoNoPage(
                 formResponse.getKey().getFormResponseId(),
-                formResponse.getUserId(),
+                formResponse.getResponderId(),
                 responses
         );
     }
@@ -70,11 +70,11 @@ public class FormDataServiceCachedImpl implements FormDataServiceCached {
     @Override
     @Cacheable(
             cacheNames = {FormDataCacheNames.IS_RESPONSE_ALREADY_SUBMITTED},
-            key = "'formId=' + #formId + '::userId=' + #userId"
+            key = "'formId=' + #formId + '::responderId=' + #responderId"
     )
-    public IsResponseSubmittedDto getIsResponseAlreadySubmitted(UUID formId, UUID userId) {
+    public IsResponseSubmittedDto getIsResponseAlreadySubmitted(UUID formId, String responderId) {
         return new IsResponseSubmittedDto(
-                formResponseUserRepository.existsById(new FormResponseUser.PartitionKey(formId, userId))
+                formResponseUserRepository.existsById(new FormResponseUser.PartitionKey(formId, responderId))
         );
     }
 

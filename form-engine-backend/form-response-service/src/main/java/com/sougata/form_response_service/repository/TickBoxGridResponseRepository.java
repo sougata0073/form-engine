@@ -18,34 +18,18 @@ public interface TickBoxGridResponseRepository extends AnyTypeQuestionResponseRe
             """, nativeQuery = true)
     void createOrIncrement(String batchResponses);
 
-//    select
-//    x.column_ids columnIds,
-//    count(x.column_ids) responseCount
-//    from (
-//            select
-//                    array_agg(tbgr.column_id order by tbgr.column_id) column_ids
-//    from tick_box_grid_responses tbgr
-//    join question_response_form_response_individual qrfri
-//    on tbgr.question_response_id = qrfri.question_response_id
-//    and tbgr.question_id = 876457279894633527
-//    and tbgr.row_id = 876457310940870756
-//    group by qrfri.form_response_individual_id
-//  ) x
-//    group by x.column_ids
-//    order by responseCount desc, columnIds;
-
     @Query(value = """
             select
             fri.form_response_id responseId,
             fri.user_id userId
             from
             tick_box_grid_responses tbgr
-            join question_response_form_response_individual qrfri
+            join question_response_form_response qrfri
             on tbgr.question_response_id = qrfri.question_response_id
             and tbgr.question_id = :questionId
             and tbgr.row_id = :rowIdResponse
-            join form_response_individuals fri
-            on qrfri.form_response_individual_id = fri.form_response_id
+            join form_responses fri
+            on qrfri.form_response_id = fri.form_response_id
             group by fri.form_response_id
             having array_agg(tbgr.column_id order by tbgr.column_id) = :columnIdsResponse
             order by fri.form_response_id
@@ -60,11 +44,11 @@ public interface TickBoxGridResponseRepository extends AnyTypeQuestionResponseRe
               select
               array_agg(tbgr.column_id order by tbgr.column_id) column_ids
               from tick_box_grid_responses tbgr
-              join question_response_form_response_individual qrfri
+              join question_response_form_response qrfri
               on tbgr.question_response_id = qrfri.question_response_id
               and tbgr.question_id = :questionId
               and tbgr.row_id = :rowId
-              group by qrfri.form_response_individual_id
+              group by qrfri.form_response_id
               ) x
             group by x.column_ids
             order by responseCount desc, columnIds;

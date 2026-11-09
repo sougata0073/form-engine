@@ -16,6 +16,6 @@ import java.util.UUID;
 public class FormResponseDeleteMessage {
     private UUID formId;
     private UUID formResponseId;
-    private UUID userId;
+    private String responderId;
     private List<QuestionResponseIndividualDto> responses;
 }

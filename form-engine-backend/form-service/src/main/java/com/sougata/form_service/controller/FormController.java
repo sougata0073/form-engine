@@ -94,9 +94,10 @@ public class FormController {
     @GetMapping(path = "{formId}/view")
     public FormDetailsDto viewForm(
             @PathVariable("formId") UUID formId,
-            @RequestHeader(HttpHeaderConstant.X_USER_ID) UUID userId
+            @RequestHeader(value = HttpHeaderConstant.X_USER_ID, required = false) UUID userId,
+            @RequestHeader(HttpHeaderConstant.X_FORWARDED_FOR) String clientIps
     ) {
-        return formService.viewForm(formId, userId);
+        return formService.viewForm(formId, userId, clientIps);
     }
 
     @GetMapping(path = "{formId}/info")

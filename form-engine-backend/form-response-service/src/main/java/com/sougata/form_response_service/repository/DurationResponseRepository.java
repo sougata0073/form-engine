@@ -48,14 +48,14 @@ public interface DurationResponseRepository extends AnyTypeQuestionResponseRepos
             fri.form_response_id responseId,
             fri.user_id userId
             from duration_responses dr
-            join question_response_form_response_individual qrfri
+            join question_response_form_response qrfri
             on dr.question_response_id = qrfri.question_response_id
             and dr.question_id = :questionId
             and dr.hours = :h
             and dr.minutes = :m
             and dr.seconds = :s
-            join form_response_individuals fri
-            on fri.form_response_id = qrfri.form_response_individual_id
+            join form_responses fri
+            on fri.form_response_id = qrfri.form_response_id
             order by fri.form_response_id
             """, nativeQuery = true)
     List<Tuple> getResponseIdsByGroupedResponse(Long questionId, Integer h, Integer m, Integer s, Pageable pageable);

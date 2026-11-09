@@ -18,7 +18,6 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: update
-    defer-datasource-initialization: true
     show-sql: true
     properties:
       hibernate:
@@ -28,9 +27,6 @@ spring:
           batch_size: 100
         order_inserts: true
         order_updates: true
-  sql:
-    init:
-      mode: always
   devtools:
     restart:
       enabled: true
@@ -43,9 +39,6 @@ spring:
           google:
             client-id: ${OAUTH2_GOOGLE_CLIENT_ID}
             client-secret: ${OAUTH2_GOOGLE_CLIENT_SECRET}
-          github:
-            client-id: ${OAUTH2_GITHUB_CLIENT_ID}
-            client-secret: ${OAUTH2_GITHUB_CLIENT_SECRET}
   data:
     redis:
       host: ${REDIS_HOST}

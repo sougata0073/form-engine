@@ -329,7 +329,7 @@ public class FormServiceImpl implements FormService {
     }
 
     @Override
-    public FormDetailsDto viewForm(UUID formId, UUID userId) {
+    public FormDetailsDto viewForm(UUID formId, UUID userId, String clientIps) {
         var formDetails = formServiceCached.getFormDetails(formId);
 
         if (!formDetails.getFormInfo().getGeneralSettings().getPublished()) {
@@ -377,7 +377,7 @@ public class FormServiceImpl implements FormService {
         }
 
         if (formDetails.getFormInfo().getResponseSettings().getSingleResponseOnly()
-                && formDataServiceFeignClient.getIsResponseAlreadySubmitted(formId, userId).getIsSubmitted()
+                && formDataServiceFeignClient.getIsResponseAlreadySubmitted(formId, userId == null ? clientIps : userId.toString()).getIsSubmitted()
         ) {
             throw new FormResponseAlreadySubmittedException(
                     new ViewFormErrorResDto(

@@ -9,5 +9,5 @@ public interface FormDataServiceCached {
 
     FormResponseIndividualDtoNoPage getFormResponse(UUID formId, UUID formResponseId);
 
-    IsResponseSubmittedDto getIsResponseAlreadySubmitted(UUID formId, UUID userId);
+    IsResponseSubmittedDto getIsResponseAlreadySubmitted(UUID formId, String responderId);
 }

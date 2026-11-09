@@ -70,7 +70,7 @@ public class FormResponseController {
 
     @GetMapping(path = "{formId}/responses/{formResponseId}")
     @Cacheable(
-            cacheNames = {FormResponseCacheNames.INDIVIDUAL_FORM_RESPONSE},
+            cacheNames = {FormResponseCacheNames.FORM_RESPONSE},
             key = "'formId=' + #formId + '::formResponseId=' + #formResponseId"
     )
     public FormResponseIndividualDto getIndividualFormResponse(

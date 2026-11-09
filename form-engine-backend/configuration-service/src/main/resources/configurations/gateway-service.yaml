@@ -4,6 +4,8 @@ server:
 spring:
   cloud:
     gateway:
+      forwarded:
+        enabled: true
       server:
         webflux:
           discovery:

@@ -16,7 +16,7 @@ public interface FormService {
 
     FormDetailsDto getForm(UUID formId, UUID userId);
 
-    FormDetailsDto viewForm(UUID id, UUID userId);
+    FormDetailsDto viewForm(UUID id, UUID userId, String clientIps);
 
     FormSummariesDto getFormsSummaries(UUID userId);
 

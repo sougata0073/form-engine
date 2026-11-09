@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface FormDataService {
 
-    FormResponsePutResDto saveResponse(UUID formId, FormResponsePutReqDto req, UUID responderId);
+    FormResponsePutResDto saveFormResponse(UUID formId, FormResponsePutReqDto req, UUID responderId, String clientIps);
 
     SuccessMessageDto deleteFormResponse(UUID formId, UUID formResponseId);
 

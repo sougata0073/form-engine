@@ -32,8 +32,8 @@ public class FormResponseUser {
         @PrimaryKeyColumn(name = "form_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
         private UUID formId;
 
-        @PrimaryKeyColumn(name = "user_id", ordinal = 1, type = PrimaryKeyType.CLUSTERED)
-        private UUID userId;
+        @PrimaryKeyColumn(name = "responder_id", ordinal = 1, type = PrimaryKeyType.CLUSTERED)
+        private String responderId;
 
     }
 

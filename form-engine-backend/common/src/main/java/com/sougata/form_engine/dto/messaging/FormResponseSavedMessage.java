@@ -16,6 +16,7 @@ import java.util.UUID;
 public class FormResponseSavedMessage {
     private UUID formId;
     private UUID formResponseId;
-    private UUID responderId;
+    private String responderId;
+    private String responderEmail;
     private List<QuestionResponsePutReqDto> responses;
 }
