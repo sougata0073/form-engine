@@ -3,8 +3,3 @@ spring:
     name: auth-service
   config:
     import: configserver:${CONFIGURATION_SERVICE_URL}
-
-#logging:
-#  level:
-#    org.springframework.security: TRACE
-#    org.springframework.security.oauth2: TRACE
