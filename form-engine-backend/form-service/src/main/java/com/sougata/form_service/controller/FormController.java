@@ -15,21 +15,14 @@ import com.sougata.form_engine.dto.question.summary.QuestionSummaryDto;
 import com.sougata.form_service.service.formSchema.FormService;
 import com.sougata.form_service.service.formSchema.FormServiceCached;
 import com.sougata.form_service.service.formSchema.QuestionService;
+import com.sougata.form_service.service.formSchema.QuestionServiceCached;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -41,6 +34,7 @@ public class FormController {
     private final FormService formService;
     private final FormServiceCached formServiceCached;
     private final QuestionService questionService;
+    private final QuestionServiceCached questionServiceCached;
 
     @PostMapping
     public ResponseEntity<FormInfoDto> addForm(
@@ -108,31 +102,23 @@ public class FormController {
 
     @GetMapping(path = "{formId}/question-summaries")
     public QuestionSummariesDto getQuestionSummaries(@PathVariable("formId") UUID formId) {
-        return questionService.getQuestionSummaries(formId);
+        return questionServiceCached.getQuestionSummaries(formId);
     }
 
     @GetMapping(path = "{formId}/questions/{questionId}/summary")
-    @Cacheable(
-            cacheNames = {QuestionCacheNames.QUESTION_SUMMARY},
-            key = "'formId=' + #formId + '::questionId=' + #questionId"
-    )
     public QuestionSummaryDto getQuestionSummary(
             @PathVariable("formId") UUID formId,
             @PathVariable("questionId") Long questionId
     ) {
-        return questionService.getQuestionSummary(formId, questionId);
+        return questionServiceCached.getQuestionSummary(formId, questionId);
     }
 
     @GetMapping(path = "{formId}/questions/{questionId}")
-    @Cacheable(
-            cacheNames = {QuestionCacheNames.QUESTION_DETAILS},
-            key = "'formId=' + #formId + '::questionId=' + #questionId"
-    )
     public QuestionDetailsDto getQuestionDetails(
             @PathVariable("formId") UUID formId,
             @PathVariable("questionId") Long questionId
     ) {
-        return questionService.getQuestionDetails(formId, questionId);
+        return questionServiceCached.getQuestionDetails(formId, questionId);
     }
 
     @PostMapping(path = "{formId}/questions")
@@ -151,6 +137,14 @@ public class FormController {
             @Valid @RequestBody MultipleQuestionUpdateReqDto body
     ) {
         return questionService.updateQuestions(formId, body);
+    }
+
+    @PostMapping(path = "{formId}/questions/{questionId}/copy")
+    public QuestionDetailsDto copyQuestion(
+            @PathVariable("formId") UUID formId,
+            @PathVariable("questionId") Long questionId
+    ) {
+        return questionService.copyQuestion(formId, questionId);
     }
 
     @DeleteMapping(path = "{formId}/questions/{questionId}")

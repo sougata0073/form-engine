@@ -27,4 +27,22 @@ public class MultipleChoice extends AnyTypeQuestion {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "multipleChoice")
     private List<MultipleChoiceOption> options = new ArrayList<>();
 
+    @Override
+    public MultipleChoice copy() {
+        var copy = new MultipleChoice();
+
+        copy.setQuestion(getQuestion());
+
+        var newOptions = options.stream().map(op -> {
+            var opCopy = op.copy();
+            opCopy.setMultipleChoice(copy);
+
+            return opCopy;
+        }).toList();
+
+        copy.setOptions(newOptions);
+
+        return copy;
+    }
+
 }

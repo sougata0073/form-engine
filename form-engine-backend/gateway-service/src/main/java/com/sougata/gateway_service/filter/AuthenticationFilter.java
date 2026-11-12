@@ -26,43 +26,15 @@ public class AuthenticationFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
 
-        var uri = exchange.getRequest().getURI();
+        var authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-        var processedExchange = exchange.mutate()
-                .request(request -> request.headers(headers -> {
-
-                    headers.set(
-                            HttpHeaderConstant.X_FORWARDED_PROTO,
-                            uri.getScheme()
-                    );
-
-                    headers.set(
-                            HttpHeaderConstant.X_FORWARDED_HOST,
-                            uri.getRawAuthority()
-                    );
-
-                    int port = uri.getPort();
-
-                    if (port == -1) {
-                        headers.remove(HttpHeaderConstant.X_FORWARDED_PORT);
-                    } else {
-                        headers.set(
-                                HttpHeaderConstant.X_FORWARDED_PORT,
-                                String.valueOf(port)
-                        );
-                    }
-                }))
-                .build();
-
-        var authHeader = processedExchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-
-        if (processedExchange.getRequest().getMethod() == HttpMethod.OPTIONS || authHeader == null) {
-            return chain.filter(processedExchange);
+        if (exchange.getRequest().getMethod() == HttpMethod.OPTIONS || authHeader == null) {
+            return chain.filter(exchange);
         }
 
         if (!authHeader.startsWith(AuthConstant.AUTH_HEADER_PREFIX) || authHeader.length() == AuthConstant.AUTH_HEADER_PREFIX.length()) {
-            processedExchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            return processedExchange.getResponse().setComplete();
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
         }
 
         var jwt = authHeader.substring(AuthConstant.AUTH_HEADER_PREFIX.length());
@@ -76,21 +48,21 @@ public class AuthenticationFilter implements WebFilter {
                     Claims::getSubject
             );
         } catch (Exception e) {
-            processedExchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            return processedExchange.getResponse().setComplete();
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
         }
 
         var usernamePassAuthToken = UsernamePasswordAuthenticationToken.authenticated(
                 userId, null, Collections.emptyList()
         );
 
-        var newRequest = processedExchange
+        var newRequest = exchange
                 .getRequest()
                 .mutate()
                 .header(HttpHeaderConstant.X_USER_ID, userId)
                 .build();
 
-        var newExchange = processedExchange.mutate().request(newRequest).build();
+        var newExchange = exchange.mutate().request(newRequest).build();
 
         var contextHolder = ReactiveSecurityContextHolder.withAuthentication(usernamePassAuthToken);
 

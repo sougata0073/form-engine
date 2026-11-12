@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.FieldNameConstants;
 import org.hibernate.annotations.DynamicUpdate;
 
 import java.util.ArrayList;
@@ -20,11 +19,28 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-@FieldNameConstants
 @DynamicUpdate
 public class Dropdown extends AnyTypeQuestion {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "dropdown")
     private List<DropdownOption> options = new ArrayList<>();
+
+    @Override
+    public Dropdown copy() {
+        var copy = new Dropdown();
+
+        copy.setQuestion(getQuestion());
+
+        var newOptions = options.stream().map(op -> {
+            var opCopy = op.copy();
+            opCopy.setDropdown(copy);
+
+            return opCopy;
+        }).toList();
+
+        copy.setOptions(newOptions);
+
+        return copy;
+    }
 
 }

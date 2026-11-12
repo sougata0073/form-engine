@@ -4,10 +4,15 @@ server:
 spring:
   cloud:
     gateway:
-      forwarded:
-        enabled: true
       server:
         webflux:
+          trusted-proxies: ".*"
+          x-forwarded:
+            enabled: true
+            for-enabled: true
+            host-enabled: true
+            port-enabled: true
+            proto-enabled: true
           discovery:
             locator:
               enabled: true

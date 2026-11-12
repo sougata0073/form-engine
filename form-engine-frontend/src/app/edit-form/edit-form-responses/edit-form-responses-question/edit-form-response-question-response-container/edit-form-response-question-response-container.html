@@ -1,10 +1,13 @@
 <mat-card appearance="raised" class="card-container">
   <mat-card-content class="response-card-content no-padding-card">
-    <ng-content/>
+    <ng-content />
     <div class="response-count">
-      <button matButton class="square-text-button" [matMenuTriggerFor]="responseIdsMenu"
-              (menuOpened)="isMenuOpened.set(true)"
-              (menuClosed)="isMenuOpened.set(false)"
+      <button
+        matButton
+        class="square-text-button"
+        [matMenuTriggerFor]="responseIdsMenu"
+        (menuOpened)="isMenuOpened.set(true)"
+        (menuClosed)="isMenuOpened.set(false)"
       >
         {{ response().responseCount + ' responses' }}
       </button>
@@ -18,7 +21,9 @@
         >
           @for (summary of formResponseSummaries()?.responses; track summary.responseId) {
             <button mat-menu-item (click)="onResponseIdClick(summary.responseId)">
-              <span>{{ summary.responderId === null ? 'User not found' : summary.responderUserName }}</span>
+              <span>{{
+                summary.responderEmail === null ? `Response ${$index + 1}` : summary.responderEmail
+              }}</span>
             </button>
           }
         </app-infinite-scroll-list>

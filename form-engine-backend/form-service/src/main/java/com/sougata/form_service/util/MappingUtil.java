@@ -21,7 +21,8 @@ public final class MappingUtil {
                         generalSettings.getAcceptingResponse(),
                         generalSettings.getNotAcceptingResponseMessage(),
                         generalSettings.getStopAcceptingResponseOn(),
-                        generalSettings.getResponseLimit()
+                        generalSettings.getResponseLimit(),
+                        generalSettings.getResponderNeedsToBeAuthenticated()
                 ),
                 new FormPresentationSettingsDto(
                         presentationSettings.getShowProgressBar(),

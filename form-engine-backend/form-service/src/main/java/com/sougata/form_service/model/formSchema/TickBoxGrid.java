@@ -30,4 +30,31 @@ public class TickBoxGrid extends AnyTypeQuestion {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "tickBoxGrid")
     private List<TickBoxGridColumn> columns = new ArrayList<>();
 
+    @Override
+    public TickBoxGrid copy() {
+        var copy = new TickBoxGrid();
+
+        copy.setQuestion(getQuestion());
+        copy.setEachRowRequired(eachRowRequired);
+
+        var newRows = rows.stream().map(row -> {
+            var rowCopy = row.copy();
+            rowCopy.setTickBoxGrid(copy);
+
+            return rowCopy;
+        }).toList();
+
+        var newColumns = columns.stream().map(column -> {
+            var columnCopy = column.copy();
+            columnCopy.setTickBoxGrid(copy);
+
+            return columnCopy;
+        }).toList();
+
+        copy.setRows(newRows);
+        copy.setColumns(newColumns);
+
+        return copy;
+    }
+
 }

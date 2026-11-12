@@ -18,6 +18,7 @@ public class FormGeneralSettingsDto {
     private String notAcceptingResponseMessage;
     private Instant stopAcceptingResponseOn;
     private Integer responseLimit;
+    private Boolean responderNeedsToBeAuthenticated;
 
     @Override
     public boolean equals(Object o) {
@@ -27,7 +28,8 @@ public class FormGeneralSettingsDto {
                 && Objects.equals(acceptingResponse, that.acceptingResponse)
                 && Objects.equals(notAcceptingResponseMessage, that.notAcceptingResponseMessage)
                 && Objects.equals(stopAcceptingResponseOn, that.stopAcceptingResponseOn)
-                && Objects.equals(responseLimit, that.responseLimit);
+                && Objects.equals(responseLimit, that.responseLimit)
+                && Objects.equals(responderNeedsToBeAuthenticated, that.responderNeedsToBeAuthenticated);
     }
 
 }

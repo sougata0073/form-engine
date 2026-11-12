@@ -25,4 +25,15 @@ public class LinearScale extends AnyTypeQuestion {
 
     @Column(nullable = false)
     private Integer toNumber;
+
+    @Override
+    public LinearScale copy() {
+        var copy = new LinearScale();
+
+        copy.setQuestion(getQuestion());
+        copy.setFromNumber(fromNumber);
+        copy.setToNumber(toNumber);
+
+        return copy;
+    }
 }

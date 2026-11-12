@@ -95,7 +95,8 @@ public class ProcessFormResponseTask {
                                             new FormResponseInfos.FormResponseInfo(
                                                     formResponse.getFormResponseId(),
                                                     formId,
-                                                    formResponse.getResponderId()
+                                                    formResponse.getResponderId(),
+                                                    formResponse.getResponderEmail()
                                             )
                                     )
                                     .toList()

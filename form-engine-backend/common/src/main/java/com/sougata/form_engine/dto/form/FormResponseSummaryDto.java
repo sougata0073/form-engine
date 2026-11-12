@@ -14,5 +14,5 @@ import java.util.UUID;
 public class FormResponseSummaryDto {
     private UUID responseId;
     private UUID responderId;
-    private String responderUserName;
+    private String responderEmail;
 }

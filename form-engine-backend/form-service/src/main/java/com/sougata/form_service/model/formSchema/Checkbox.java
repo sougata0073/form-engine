@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.FieldNameConstants;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.Type;
 
@@ -20,7 +19,6 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-@FieldNameConstants
 @DynamicUpdate
 public class Checkbox extends AnyTypeQuestion {
 
@@ -30,4 +28,23 @@ public class Checkbox extends AnyTypeQuestion {
     @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb")
     private JsonNode validationConfig;
+
+    @Override
+    public Checkbox copy() {
+        var copy = new Checkbox();
+
+        copy.setQuestion(getQuestion());
+        copy.setValidationConfig(validationConfig);
+
+        var newOptions = options.stream().map(op -> {
+            var opCopy = op.copy();
+            opCopy.setCheckbox(copy);
+
+            return opCopy;
+        }).toList();
+
+        copy.setOptions(newOptions);
+
+        return copy;
+    }
 }

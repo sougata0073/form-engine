@@ -1,12 +1,12 @@
 package com.sougata.form_service.model.formSchema;
 
+import com.sougata.form_engine.common.Copyable;
 import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.FieldNameConstants;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -17,9 +17,8 @@ import org.hibernate.annotations.OnDeleteAction;
 @NoArgsConstructor
 @Getter
 @Setter
-@FieldNameConstants
 @DynamicUpdate
-public class CheckboxOption {
+public class CheckboxOption implements Copyable<CheckboxOption> {
 
     @Id
     @Tsid
@@ -36,4 +35,14 @@ public class CheckboxOption {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Checkbox checkbox;
 
+    @Override
+    public CheckboxOption copy() {
+        var copy = new CheckboxOption();
+
+        copy.setOption(option);
+        copy.setOrderIndex(orderIndex);
+        copy.setCheckbox(checkbox);
+
+        return copy;
+    }
 }

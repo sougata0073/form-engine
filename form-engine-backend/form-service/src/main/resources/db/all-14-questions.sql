@@ -15,10 +15,13 @@ VALUES ('9427f317-8b2f-4990-ba25-ba1922983613',
         'OFF',
         false) ON CONFLICT (user_id) DO NOTHING;
 
-INSERT INTO form_schema.form_general_settings (form_id, published, accepting_response)
+INSERT INTO form_schema.form_general_settings (form_id, published,
+                                                accepting_response,
+                                                responder_needs_to_be_authenticated)
 VALUES ('8e48be64-1f98-43ab-bda1-b80c6f0c5f76',
         TRUE,
-        TRUE) ON CONFLICT (form_id) DO NOTHING;
+        TRUE,
+        FALSE) ON CONFLICT (form_id) DO NOTHING;
 
 INSERT INTO form_schema.form_presentation_settings (form_id, show_progress_bar, shuffle_question_order,
                                                     show_link_to_submit_another_response,

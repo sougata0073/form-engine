@@ -1,5 +1,6 @@
 package com.sougata.form_service.model.formSchema;
 
+import com.sougata.form_engine.common.Copyable;
 import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -19,7 +20,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @Setter
 @FieldNameConstants
 @DynamicUpdate
-public class TickBoxGridRow {
+public class TickBoxGridRow implements Copyable<TickBoxGridRow> {
 
     @Id
     @Tsid
@@ -35,5 +36,16 @@ public class TickBoxGridRow {
     @JoinColumn(nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private TickBoxGrid tickBoxGrid;
+
+    @Override
+    public TickBoxGridRow copy() {
+        var copy = new TickBoxGridRow();
+
+        copy.setRowName(rowName);
+        copy.setOrderIndex(orderIndex);
+        copy.setTickBoxGrid(tickBoxGrid);
+
+        return copy;
+    }
 
 }

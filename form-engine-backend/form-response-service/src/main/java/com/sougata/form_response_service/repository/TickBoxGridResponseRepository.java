@@ -21,7 +21,8 @@ public interface TickBoxGridResponseRepository extends AnyTypeQuestionResponseRe
     @Query(value = """
             select
             fri.form_response_id responseId,
-            fri.user_id userId
+            fri.responder_id responderId,
+            fri.responder_email responderEmail
             from
             tick_box_grid_responses tbgr
             join question_response_form_response qrfri

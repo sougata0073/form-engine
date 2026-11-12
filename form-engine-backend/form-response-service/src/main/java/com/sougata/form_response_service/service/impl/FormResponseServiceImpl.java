@@ -10,9 +10,7 @@ import com.sougata.form_engine.dto.formResponse.question.ResponseQuestionDto;
 import com.sougata.form_engine.dto.formResponse.summary.ResponseSummaryDto;
 import com.sougata.form_engine.dto.formResponse.summary.ResponseSummaryResDto;
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
-import com.sougata.form_engine.dto.user.UserSummaryShortDto;
 import com.sougata.form_response_service.configuration.AppConfiguration;
-import com.sougata.form_response_service.feignClient.AuthServiceFeignClient;
 import com.sougata.form_response_service.feignClient.FormDataServiceFeignClient;
 import com.sougata.form_response_service.feignClient.FormServiceFeignClient;
 import com.sougata.form_response_service.repository.FormResponseIndividualRepository;
@@ -31,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,7 +37,6 @@ public class FormResponseServiceImpl implements FormResponseService {
 
     private final FormResponseSummaryRepository formResponseSummaryRepository;
     private final FormServiceFeignClient formServiceFeignClient;
-    private final AuthServiceFeignClient authServiceFeignClient;
     private final ResponseManagerFactory responseManagerFactory;
     private final FormDataServiceFeignClient formDataServiceFeignClient;
     private final FormResponseIndividualRepository formResponseIndividualRepository;
@@ -94,25 +90,26 @@ public class FormResponseServiceImpl implements FormResponseService {
 
         var resAndUserIds = manager.getFormResponseAndUserIds(formId, questionId, formResponsesIdentifier, pageable);
 
-        var userIds = resAndUserIds.stream().map(tuple -> tuple.get("userId", UUID.class)).toList();
-
-        var userSummaries = authServiceFeignClient.userSummaries(userIds).getUsers();
-
-        var userSummariesMap = userSummaries.stream().collect(Collectors.toMap(UserSummaryShortDto::getId, Function.identity()));
-
         var formResponseSummaries = new ArrayList<FormResponseSummaryDto>();
 
         resAndUserIds.forEach(tuple -> {
-            var resId = tuple.get("responseId", UUID.class);
-            var userId = tuple.get("userId", UUID.class);
+            var responseId = tuple.get("responseId", UUID.class);
+            var responderId = tuple.get("responderId", String.class);
+            var responderEmail = tuple.get("responderEmail", String.class);
 
-            var user = userSummariesMap.getOrDefault(userId, new UserSummaryShortDto(null, null));
+            UUID responderIdUUID = null;
+
+            try {
+                responderIdUUID = UUID.fromString(responderId);
+            } catch (RuntimeException ignored) {
+
+            }
 
             formResponseSummaries.add(
                     new FormResponseSummaryDto(
-                            resId,
-                            user.getId(),
-                            user.getUserName()
+                            responseId,
+                            responderIdUUID,
+                            responderIdUUID == null ? null : responderEmail
                     )
             );
         });

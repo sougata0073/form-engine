@@ -1,17 +1,20 @@
 const FORM_IDS = ["8e48be64-1f98-43ab-bda1-b80c6f0c5f76"];
 
-const REGISTER_URL = "http://localhost:8083/api/v1/auth/register/email-pass";
+const JWT_TOKEN =
+  "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJmNzEwNjIzNi03Yjg2LTQyMzktOGE4My05NDQ3NTNjMDVhOTkiLCJhdmF0YXJVcmwiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NKVl9heDBZMnlZazlHTFotVHBILTBYbW9aYkVDQXJ4ODdoQ3lhbFZtdGpOWUpuN1E9czk2LWMiLCJuYW1lIjoiU291Z2F0YSBTYWhhIiwiZW1haWwiOiJzYWhhc291Z2F0YTU1OUBnbWFpbC5jb20iLCJpYXQiOjE3OTQ1MTUzNTksImV4cCI6MTc5ODExNTM1OX0.hf5RT9vjn9bT33HlHNz8B01V3OLnkAUs-4gfFHQfIn8";
+
 const VIEW_URL = "http://localhost:8083/api/v1/forms";
 const RESPONSE_URL = "http://localhost:8083/api/v1/form-data";
 
 const NUMBER_OF_REQUESTS = 1000;
-const CONCURRENCY = 2000;
+const CONCURRENCY = 1000;
 
 const RESPOND_TO_ALL_QUESTIONS = true;
 const OPTIONAL_RESPONSE_PROBABILITY = 0.5;
 
 const HEADERS = {
   "Content-Type": "application/json",
+  Authorization: `Bearer ${JWT_TOKEN}`,
 };
 
 // ============================================================
@@ -72,63 +75,16 @@ function isoTime() {
   return d.toISOString();
 }
 
-function uuid() {
-  return crypto.randomUUID();
-}
-
-// ============================================================
-// REGISTER A UNIQUE USER AND GET JWT
-// ============================================================
-
-async function registerLoadTestUser() {
-  const uniqueId = `${Date.now()}-${uuid()}`;
-
-  const payload = {
-    username: `loadtest-${uniqueId}`,
-    email: `loadtest-${uniqueId}@example.invalid`,
-    password: "12345",
-    avatarUrl: null,
-  };
-
-  const response = await fetch(REGISTER_URL, {
-    method: "POST",
-    headers: HEADERS,
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const message = (await response.text())
-      .replace(/\s+/g, " ")
-      .trim()
-      .substring(0, 120);
-
-    throw new Error(
-      `Registration failed. Status: ${response.status}. Response: ${message}`,
-    );
-  }
-
-  const result = await response.json();
-
-  if (!result.jwtToken) {
-    throw new Error("Registration response did not contain jwtToken.");
-  }
-
-  return result.jwtToken;
-}
-
 // ============================================================
 // FETCH FORM SCHEMA
 // ============================================================
 
-async function fetchFormSchema(formId, jwtToken) {
+async function fetchFormSchema(formId) {
   const url = `${VIEW_URL}/${formId}/view`;
 
   const response = await fetch(url, {
     method: "GET",
-    headers: {
-      ...HEADERS,
-      Authorization: `Bearer ${jwtToken}`,
-    },
+    headers: HEADERS,
   });
 
   if (!response.ok) {
@@ -314,44 +270,36 @@ function generatePayload(form, index) {
 
   return {
     formDetailsResponseSubmittedOn: form,
-    responses,
+    responses: responses,
+    email: "sahasougata559@gmail.com",
   };
 }
 
 // ============================================================
 // SUBMIT ONE RESPONSE
 //
-// 1. Register a unique user.
-// 2. Extract JWT.
-// 3. GET form schema using JWT.
-// 4. Generate response payload.
-// 5. POST response using the same JWT.
+// 1. Fetch form schema using hardcoded JWT.
+// 2. Generate response payload.
+// 3. POST response using the same JWT.
 // ============================================================
 
 async function submitOneResponse(formId, requestIndex) {
   try {
-    // 1. Register user and obtain JWT.
+    // 1. Fetch form schema.
 
-    const jwtToken = await registerLoadTestUser();
+    const form = await fetchFormSchema(formId);
 
-    // 2. Fetch form schema using the registered user's JWT.
-
-    const form = await fetchFormSchema(formId, jwtToken);
-
-    // 3. Generate response payload.
+    // 2. Generate response payload.
 
     const payload = generatePayload(form, requestIndex);
 
-    // 4. Submit form response using the same JWT.
+    // 3. Submit form response.
 
     const postUrl = `${RESPONSE_URL}/${formId}/responses`;
 
     const response = await fetch(postUrl, {
       method: "POST",
-      headers: {
-        ...HEADERS,
-        Authorization: `Bearer ${jwtToken}`,
-      },
+      headers: HEADERS,
       body: JSON.stringify(payload),
     });
 
@@ -442,6 +390,11 @@ async function main() {
   console.log("==============================================");
 
   const numberOfForms = FORM_IDS.length;
+
+  if (!JWT_TOKEN || JWT_TOKEN === "PASTE_YOUR_JWT_HERE") {
+    console.error("Please configure a valid JWT_TOKEN.");
+    return;
+  }
 
   if (numberOfForms === 0) {
     console.error("No form IDs configured.");

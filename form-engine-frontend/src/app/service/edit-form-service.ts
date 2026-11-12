@@ -233,7 +233,35 @@ export class EditFormService {
 
     this.http.post<AnyQuestionRes>(url, question).subscribe((res) => {
       this._formRes.update((prev) => {
-        return { ...prev!, questions: [...prev!.questions, res] };
+        if (!prev) return prev;
+
+        return { ...prev, questions: [...prev.questions, res] };
+      });
+
+      onComplete?.(res);
+    });
+  }
+
+  copyQuestion(questionId: string, onComplete?: (res: AnyQuestionRes) => void) {
+    const url = `forms/${this._formRes()!.formInfo.id}/questions/${questionId}/copy`;
+
+    this.http.post<AnyQuestionRes>(url, {}).subscribe((res) => {
+      this._formRes.update((prev) => {
+        if (!prev) return prev;
+
+        const parentQuestion = prev.questions.find((q) => q.id === questionId);
+
+        prev.questions.forEach((q) => {
+          if (q.orderIndex > (parentQuestion?.orderIndex ?? Number.MAX_VALUE)) {
+            q.orderIndex = q.orderIndex + 1;
+          }
+        });
+
+        prev.questions.push(res);
+
+        prev.questions.sort((a, b) => a.orderIndex - b.orderIndex);
+
+        return prev;
       });
 
       onComplete?.(res);
@@ -258,7 +286,12 @@ export class EditFormService {
     });
   }
 
-  updateQuestionIndex(questionId: string, prevIndex: number, currIndex: number) {
+  updateQuestionIndex(
+    questionId: string,
+    prevIndex: number,
+    currIndex: number,
+    onComplete?: (res: SuccessMessage) => void,
+  ) {
     if (this._formRes()) {
       moveItemInArray(this._formRes()!.questions, prevIndex, currIndex);
 
@@ -268,7 +301,9 @@ export class EditFormService {
       };
 
       this.http.patch<SuccessMessage>(url, reqBody).subscribe({
-        next: (res) => {},
+        next: (res) => {
+          onComplete?.(res);
+        },
         complete: () => {},
         error: (err: HttpErrorResponse) => {
           moveItemInArray(this._formRes()!.questions, currIndex, prevIndex);

@@ -23,5 +23,6 @@ public class FormResponseInfos {
         private UUID formResponseId;
         private UUID formId;
         private String responderId;
+        private String responderEmail;
     }
 }

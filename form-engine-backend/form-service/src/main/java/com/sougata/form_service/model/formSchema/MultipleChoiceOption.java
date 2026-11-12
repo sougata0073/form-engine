@@ -1,5 +1,6 @@
 package com.sougata.form_service.model.formSchema;
 
+import com.sougata.form_engine.common.Copyable;
 import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -19,7 +20,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @Setter
 @FieldNameConstants
 @DynamicUpdate
-public class MultipleChoiceOption {
+public class MultipleChoiceOption implements Copyable<MultipleChoiceOption> {
 
     @Id
     @Tsid
@@ -35,4 +36,16 @@ public class MultipleChoiceOption {
     @JoinColumn(nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private MultipleChoice multipleChoice;
+
+    @Override
+    public MultipleChoiceOption copy() {
+        var copy = new MultipleChoiceOption();
+
+        copy.setOption(option);
+        copy.setOrderIndex(orderIndex);
+        copy.setMultipleChoice(multipleChoice);
+
+        return copy;
+    }
+
 }

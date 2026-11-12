@@ -43,7 +43,8 @@ public interface DateTimeResponseRepository extends AnyTypeQuestionResponseRepos
     @Query(value = """
             select
             fri.form_response_id responseId,
-            fri.user_id userId
+            fri.responder_id responderId,
+            fri.responder_email responderEmail
             from date_time_responses dtr
             join question_response_form_response qrfri
             on dtr.question_response_id = qrfri.question_response_id

@@ -31,7 +31,8 @@ public interface RatingResponseRepository extends AnyTypeQuestionResponseReposit
     @Query(value = """
             select
             fri.form_response_id responseId,
-            fri.user_id userId
+            fri.responder_id responderId,
+            fri.responder_email responderEmail
             from rating_responses rr
             join question_response_form_response qrfri
             on rr.question_response_id = qrfri.question_response_id

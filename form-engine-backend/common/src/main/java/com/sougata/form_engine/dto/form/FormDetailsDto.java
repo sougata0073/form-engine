@@ -1,6 +1,8 @@
 package com.sougata.form_engine.dto.form;
 
 import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,8 +18,12 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FormDetailsDto {
+    @NotNull
+    @Valid
     private FormInfoDto formInfo;
-    private List<QuestionDetailsDto> questions;
+
+    @NotNull
+    private List<@Valid @NotNull QuestionDetailsDto> questions;
 
     @Override
     public boolean equals(Object o) {

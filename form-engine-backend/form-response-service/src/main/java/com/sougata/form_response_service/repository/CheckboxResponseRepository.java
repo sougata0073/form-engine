@@ -40,7 +40,8 @@ public interface CheckboxResponseRepository extends AnyTypeQuestionResponseRepos
     @Query(value = """
             select
             fri.form_response_id responseId,
-            fri.user_id userId
+            fri.responder_id responderId,
+            fri.responder_email responderEmail
             from
             checkbox_responses cr
             join question_response_form_response qrfri

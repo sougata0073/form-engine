@@ -26,4 +26,14 @@ public class Paragraph extends AnyTypeQuestion {
     @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb")
     private JsonNode validationConfig;
+
+    @Override
+    public Paragraph copy() {
+        var copy = new Paragraph();
+
+        copy.setQuestion(getQuestion());
+        copy.setValidationConfig(validationConfig);
+
+        return copy;
+    }
 }

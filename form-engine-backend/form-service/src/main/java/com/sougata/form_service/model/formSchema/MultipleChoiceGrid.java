@@ -30,4 +30,31 @@ public class MultipleChoiceGrid extends AnyTypeQuestion {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "multipleChoiceGrid")
     private List<MultipleChoiceGridColumn> columns = new ArrayList<>();
 
+    @Override
+    public MultipleChoiceGrid copy() {
+        var copy = new MultipleChoiceGrid();
+
+        copy.setQuestion(getQuestion());
+        copy.setEachRowRequired(eachRowRequired);
+
+        var newRows = rows.stream().map(row -> {
+            var rowCopy = row.copy();
+            rowCopy.setMultipleChoiceGrid(copy);
+
+            return rowCopy;
+        }).toList();
+
+        var newColumns = columns.stream().map(column -> {
+            var columnCopy = column.copy();
+            columnCopy.setMultipleChoiceGrid(copy);
+
+            return columnCopy;
+        }).toList();
+
+        copy.setRows(newRows);
+        copy.setColumns(newColumns);
+
+        return copy;
+    }
+
 }

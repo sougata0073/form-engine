@@ -1,5 +1,6 @@
 package com.sougata.form_service.model.formSchema;
 
+import com.sougata.form_engine.common.Copyable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +14,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @AllArgsConstructor
 @Getter
 @Setter
-public class AnyTypeQuestion {
+public abstract class AnyTypeQuestion implements Copyable<AnyTypeQuestion> {
 
     @Id
     private Long questionId;
@@ -23,5 +24,4 @@ public class AnyTypeQuestion {
     @JoinColumn(nullable = false, unique = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Question question;
-
 }

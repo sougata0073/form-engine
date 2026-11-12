@@ -6,8 +6,6 @@ import com.sougata.form_engine.dto.question.details.QuestionDetailsDto;
 import com.sougata.form_engine.dto.question.schemaaddrequest.QuestionAddReqDto;
 import com.sougata.form_engine.dto.question.schemaupdatereq.MultipleQuestionUpdateReqDto;
 import com.sougata.form_engine.dto.question.schemaupdatereq.QuestionOrderUpdateReqDto;
-import com.sougata.form_engine.dto.question.summary.QuestionSummariesDto;
-import com.sougata.form_engine.dto.question.summary.QuestionSummaryDto;
 
 import java.util.UUID;
 
@@ -16,13 +14,9 @@ public interface QuestionService {
 
     MultipleQuestionDetailsDto updateQuestions(UUID formId, MultipleQuestionUpdateReqDto dto);
 
+    QuestionDetailsDto copyQuestion(UUID formId, Long questionId);
+
     SuccessMessageDto deleteQuestion(UUID formId, Long questionId);
-
-    QuestionDetailsDto getQuestionDetails(UUID formId, Long questionId);
-
-    QuestionSummariesDto getQuestionSummaries(UUID formId);
-
-    QuestionSummaryDto getQuestionSummary(UUID formId, Long questionId);
 
     SuccessMessageDto updateOrderIndex(UUID formId, Long questionId, QuestionOrderUpdateReqDto req);
 }

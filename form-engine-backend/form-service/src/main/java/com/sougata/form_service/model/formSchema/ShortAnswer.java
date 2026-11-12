@@ -26,4 +26,14 @@ public class ShortAnswer extends AnyTypeQuestion {
     @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb")
     private JsonNode validationConfig;
+
+    @Override
+    public ShortAnswer copy() {
+        var copy = new ShortAnswer();
+
+        copy.setQuestion(getQuestion());
+        copy.setValidationConfig(validationConfig);
+
+        return copy;
+    }
 }

@@ -6,8 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.FieldNameConstants;
 import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.List;
 
@@ -17,7 +18,6 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-@FieldNameConstants
 @DynamicUpdate
 public class FileUpload extends AnyTypeQuestion {
 
@@ -38,8 +38,23 @@ public class FileUpload extends AnyTypeQuestion {
                     )
             }
     )
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<FileType> allowedFileTypes;
 
     @Column(nullable = false)
     private Integer maxFileSize;
+
+    @Override
+    public FileUpload copy() {
+        var copy = new FileUpload();
+
+        copy.setQuestion(getQuestion());
+        copy.setMaxFileSize(maxFileSize);
+
+        var newAllowedFileTypes = allowedFileTypes.stream().map(FileType::copy).toList();
+
+        copy.setAllowedFileTypes(newAllowedFileTypes);
+
+        return copy;
+    }
 }

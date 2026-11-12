@@ -36,7 +36,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -62,12 +65,16 @@ public class FormDataServiceImpl implements FormDataService {
 
         var formDetails = formServiceFeignClient.getFormDetails(formId);
 
-        if (formDetails.getFormInfo().getResponseSettings().getEmailCollectionOption() == FormEmailCollectionOption.RESPONDER_INPUT && req.getEmail() == null) {
-            throw new RuntimeException("Email is required for responder input email collection.");
+        if (!Objects.equals(formDetails, req.getFormDetailsResponseSubmittedOn())) {
+            throw new FormDetailsMayChangedException();
         }
 
-        if (formDetails.getFormInfo().getResponseSettings().getEmailCollectionOption() == FormEmailCollectionOption.VERIFIED && responderId == null) {
+        if (formDetails.getFormInfo().getGeneralSettings().getResponderNeedsToBeAuthenticated() && responderId == null) {
             throw new RuntimeException("User ID is required for verified email collection.");
+        }
+
+        if (formDetails.getFormInfo().getResponseSettings().getEmailCollectionOption() == FormEmailCollectionOption.RESPONDER_INPUT && req.getEmail() == null) {
+            throw new RuntimeException("Email is required for responder input email collection.");
         }
 
         if (!formDetails.getFormInfo().getGeneralSettings().getPublished()) {
@@ -84,10 +91,6 @@ public class FormDataServiceImpl implements FormDataService {
 
         if (isAcceptingDateExceeded) {
             throw new FormSubmitException("This form is no longer accepting responses.");
-        }
-
-        if (!Objects.equals(formDetails, req.getFormDetailsResponseSubmittedOn())) {
-            throw new FormDetailsMayChangedException();
         }
 
         var formResponseCountRedisKey = CommonCacheNames.FORM_RESPONSE_COUNT + "::" + formId;
@@ -145,7 +148,6 @@ public class FormDataServiceImpl implements FormDataService {
                             .stream()
                             .collect(Collectors.toMap(QuestionResponsePutReqDto::getQuestionId, QuestionResponsePutReqDto::getQuestionType))
             );
-
 
             if (formDetails.getFormInfo().getResponseSettings().getEmailCollectionOption() == FormEmailCollectionOption.RESPONDER_INPUT) {
                 formResponse.setResponderEmail(req.getEmail());
@@ -212,7 +214,9 @@ public class FormDataServiceImpl implements FormDataService {
 
         } finally {
 
-            formResponseUserRedisLock.unlock();
+            if (formResponseUserRedisLock.isHeldByCurrentThread()) {
+                formResponseUserRedisLock.unlock();
+            }
 
         }
     }

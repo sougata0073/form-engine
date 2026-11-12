@@ -26,7 +26,7 @@ public class User extends Auditable {
     private String googleId;
 
     @Column(nullable = false)
-    private String username;
+    private String userName;
 
     @Column(unique = true, nullable = false)
     private String email;

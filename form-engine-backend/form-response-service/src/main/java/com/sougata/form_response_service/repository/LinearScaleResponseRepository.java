@@ -31,7 +31,8 @@ public interface LinearScaleResponseRepository extends AnyTypeQuestionResponseRe
     @Query(value = """
             select
             fri.form_response_id responseId,
-            fri.user_id userId
+            fri.responder_id responderId,
+            fri.responder_email responderEmail
             from linear_scale_responses ls
             join question_response_form_response qrfri
             on ls.question_response_id = qrfri.question_response_id

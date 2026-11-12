@@ -23,7 +23,7 @@ import com.sougata.form_service.repository.formSchema.FormDefaultSettingsReposit
 import com.sougata.form_service.repository.formSchema.FormRepository;
 import com.sougata.form_service.service.formSchema.FormService;
 import com.sougata.form_service.service.formSchema.FormServiceCached;
-import com.sougata.form_service.service.formSchema.QuestionService;
+import com.sougata.form_service.service.formSchema.QuestionServiceCached;
 import com.sougata.form_service.service.formSchema.questionManager.QuestionManagerFactory;
 import com.sougata.form_service.util.CacheUtil;
 import com.sougata.form_service.util.MappingUtil;
@@ -36,7 +36,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -51,7 +54,7 @@ public class FormServiceImpl implements FormService {
     private final StringRedisTemplate stringRedisTemplate;
     private final AppConfiguration appConfiguration;
     private final RedissonClient redissonClient;
-    private final QuestionService questionService;
+    private final QuestionServiceCached questionServiceCached;
     private final FormDefaultSettingsRepository formDefaultSettingsRepository;
 
     @Override
@@ -248,8 +251,13 @@ public class FormServiceImpl implements FormService {
                 case FormUpdateReqDto.Fields.responseSettingsUpdateReq ->
                         dtoResponseSettings.getUpdateFields().forEach(settingsField -> {
                             switch (settingsField) {
-                                case FormResponseSettingsUpdateReqDto.Fields.emailCollectionOption ->
-                                        formToUpdateResponseSettings.setEmailCollectionOption(dtoResponseSettings.getEmailCollectionOption());
+                                case FormResponseSettingsUpdateReqDto.Fields.emailCollectionOption -> {
+                                    formToUpdateResponseSettings.setEmailCollectionOption(dtoResponseSettings.getEmailCollectionOption());
+
+                                    formToUpdateGeneralSettings.setResponderNeedsToBeAuthenticated(
+                                            dtoResponseSettings.getEmailCollectionOption() == FormEmailCollectionOption.VERIFIED
+                                    );
+                                }
                                 case FormResponseSettingsUpdateReqDto.Fields.responseCopySendOption -> {
 
                                     var emailCollectionOption = dtoResponseSettings.getUpdateFields().contains(FormResponseSettingsUpdateReqDto.Fields.emailCollectionOption)
@@ -421,7 +429,7 @@ public class FormServiceImpl implements FormService {
     @Override
     @Transactional
     public SuccessMessageDto deleteForm(UUID formId, UUID userId) {
-        var questionSummaries = questionService.getQuestionSummaries(formId);
+        var questionSummaries = questionServiceCached.getQuestionSummaries(formId);
 
         formRepo.deleteById(formId);
 

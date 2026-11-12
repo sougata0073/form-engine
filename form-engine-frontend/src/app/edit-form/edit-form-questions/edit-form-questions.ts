@@ -81,8 +81,17 @@ export class EditFormQuestions implements OnInit {
   }
 
   protected handleDropListDropEvent(e: CdkDragDrop<QuestionRes>) {
+    this.editFormStateService.isFormGettingModified.set(true);
+
     if (e.previousIndex !== e.currentIndex) {
-      this.editFormService.updateQuestionIndex(e.item.data.id, e.previousIndex, e.currentIndex);
+      this.editFormService.updateQuestionIndex(
+        e.item.data.id,
+        e.previousIndex,
+        e.currentIndex,
+        (res) => {
+          this.editFormStateService.isFormGettingModified.set(false);
+        },
+      );
     }
   }
 }

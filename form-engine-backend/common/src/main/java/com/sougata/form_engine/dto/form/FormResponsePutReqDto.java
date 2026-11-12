@@ -18,6 +18,7 @@ import java.util.List;
 public class FormResponsePutReqDto {
 
     @NotNull
+    @Valid
     private FormDetailsDto formDetailsResponseSubmittedOn;
 
     @NotNull

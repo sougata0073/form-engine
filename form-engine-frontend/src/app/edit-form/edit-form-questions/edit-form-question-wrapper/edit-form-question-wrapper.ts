@@ -210,27 +210,11 @@ export class EditFormQuestionWrapper implements OnInit, OnChanges, AfterViewInit
 
   protected onCopyQuestionClick() {
     this.editFormStateService.isFormGettingModified.set(true);
+    this.editFormStateService.showGlobalLoader.set(true);
 
-    const questionAddUpdateReq: QuestionAddReq = {
-      question: this.question().question,
-      description: this.question().description,
-      questionType: this.question().questionType,
-    };
-
-    let onlyQuestionAddUpdateReq: AnyOnlyQuestionAddUpdateReq | null = null;
-
-    const instance = this.createdComponentRef?.instance;
-    if (instance instanceof EditFormQuestionComponent) {
-      // onlyQuestionAddUpdateReq = instance.getOnlyQuestionAddUpdateReq()
-    }
-
-    const question: AnyQuestionAddReq = {
-      ...questionAddUpdateReq,
-      // ...onlyQuestionAddUpdateReq
-    };
-
-    this.editFormService.addQuestion(question, () => {
+    this.editFormService.copyQuestion(this.question().id, (res) => {
       this.editFormStateService.isFormGettingModified.set(false);
+      this.editFormStateService.showGlobalLoader.set(false);
     });
   }
 

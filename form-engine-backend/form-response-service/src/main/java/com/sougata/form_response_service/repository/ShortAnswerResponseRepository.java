@@ -39,7 +39,8 @@ public interface ShortAnswerResponseRepository extends AnyTypeQuestionResponseRe
     @Query(value = """
             select
             fri.form_response_id responseId,
-            fri.user_id userId
+            fri.responder_id responderId,
+            fri.responder_email responderEmail
             from short_answer_responses sa
             join question_response_form_response qrfri
             on sa.question_response_id = qrfri.question_response_id

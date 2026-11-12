@@ -42,7 +42,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         var extractedUser = new User();
 
         extractedUser.setGoogleId(oAuth2User.getAttribute("sub").toString());
-        extractedUser.setUsername(oAuth2User.getAttribute("name"));
+        extractedUser.setUserName(oAuth2User.getAttribute("name"));
         extractedUser.setEmail(oAuth2User.getAttribute("email"));
         extractedUser.setIsEmailVerified(oAuth2User.getAttribute("email_verified"));
         extractedUser.setAvatarUrl(oAuth2User.getAttribute("picture"));
@@ -56,7 +56,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         }
 
         String jwt = jwtService.generateJwtToken(
-                savedUser.getId().toString(), savedUser.getUsername(), savedUser.getEmail(), savedUser.getAvatarUrl()
+                savedUser.getId().toString(), savedUser.getUserName(), savedUser.getEmail(), savedUser.getAvatarUrl()
         );
 
         String redirectUrl = this.frontendUrl + "/auth-success?jwt=" + jwt;

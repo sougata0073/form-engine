@@ -83,7 +83,7 @@ export class ViewForm implements OnInit, OnDestroy {
         this.title.setTitle(res.formInfo.title ?? 'Form engine');
 
         if (
-          res.formInfo.responseSettings.emailCollectionOption !== 'OFF' &&
+          res.formInfo.generalSettings.responderNeedsToBeAuthenticated &&
           !this.authService.isLoggedIn()
         ) {
           this.dialog.open(ConfirmationDialog, {

@@ -48,4 +48,16 @@ public class Question extends Auditable {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Form form;
 
+    public Question copy() {
+        var copy = new Question();
+
+        copy.setQuestion(question);
+        copy.setDescription(description);
+        copy.setRequired(required);
+        copy.setOrderIndex(getOrderIndex());
+        copy.setQuestionType(questionType);
+        copy.setForm(form);
+
+        return copy;
+    }
 }

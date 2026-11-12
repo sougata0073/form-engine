@@ -767,8 +767,8 @@ from jsonb_array_elements(p_question_response_counts -> 'counts')
     on conflict (question_id) do update
                                      set response_count = public.question_response_summaries.response_count + excluded.response_count;
 
-insert into public.form_responses (form_response_id, form_response_summary_form_id, responder_id)
-select (value ->> 'formResponseId')::uuid, (value ->> 'formId')::uuid, (value ->> 'responderId')::uuid
+insert into public.form_responses (form_response_id, form_response_summary_form_id, responder_id, responder_email)
+select (value ->> 'formResponseId')::uuid, (value ->> 'formId')::uuid, (value ->> 'responderId'), (value ->> 'responderEmail')
 from jsonb_array_elements(p_form_response_infos -> 'formResponseInfos');
 
 end;

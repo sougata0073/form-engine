@@ -25,4 +25,15 @@ public class Rating extends AnyTypeQuestion {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RatingIcon ratingIcon;
+
+    @Override
+    public Rating copy() {
+        var copy = new Rating();
+
+        copy.setQuestion(getQuestion());
+        copy.setMaxRatingNumber(maxRatingNumber);
+        copy.setRatingIcon(ratingIcon);
+
+        return copy;
+    }
 }

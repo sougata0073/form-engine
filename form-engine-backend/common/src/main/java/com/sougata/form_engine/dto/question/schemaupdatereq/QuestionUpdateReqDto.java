@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.sougata.form_engine.constant.QuestionType;
+import com.sougata.form_engine.dto.common.PatchReqDto;
 import com.sougata.form_engine.dto.question.schemaaddrequest.QuestionAddReqDto;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
@@ -12,8 +13,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
-
-import java.util.Set;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -41,7 +40,7 @@ import java.util.Set;
 @Getter
 @Setter
 @FieldNameConstants
-public class QuestionUpdateReqDto {
+public class QuestionUpdateReqDto extends PatchReqDto {
 
     @NotNull
     private String questionId;
@@ -55,9 +54,6 @@ public class QuestionUpdateReqDto {
     @NotNull
     private QuestionType questionType;
 
-    @NotNull
-    private Set<@NotNull String> updateFields;
-
     private QuestionAddReqDto addReqForQuestionTypeUpdate;
 
     @JsonProperty(value = "@class")
@@ -66,7 +62,7 @@ public class QuestionUpdateReqDto {
     @AssertTrue
     @JsonIgnore
     public boolean isAddReqFormQuestionTypeUpdateValid() {
-        return updateFields.contains(Fields.questionType) && addReqForQuestionTypeUpdate != null;
+        return getUpdateFields().contains(Fields.questionType) && addReqForQuestionTypeUpdate != null;
     }
 
 }

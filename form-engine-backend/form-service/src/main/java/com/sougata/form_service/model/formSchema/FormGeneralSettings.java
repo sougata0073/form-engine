@@ -30,6 +30,9 @@ public class FormGeneralSettings {
     @Column(nullable = false)
     private Boolean acceptingResponse = false;
 
+    @Column(nullable = false)
+    private Boolean responderNeedsToBeAuthenticated = false;
+
     @Column(columnDefinition = "text")
     private String notAcceptingResponseMessage = "This form is not accepting responses.";
 

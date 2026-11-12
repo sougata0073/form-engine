@@ -12,5 +12,4 @@ public interface TimeRepository extends AnyTypeQuestionRepository<Time, Long> {
         return QuestionType.TIME;
     }
 
-
 }
