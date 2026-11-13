@@ -40,9 +40,6 @@ import { EditQuestionMoreMenuItem } from '../../../type/edit-question-more-menu-
 import { EditFormQuestionComponent } from '../../../type/edit-form-question-component';
 import { EditFormService } from '../../../service/edit-form-service';
 import { EditFormQuestionComponentFactory } from '../../../service/edit-form-question-component-factory';
-import { AnyQuestionAddReq } from '../../../type/any-question-add-req';
-import { QuestionAddReq } from '../../../model/edit-form/question/addreq/question-add-req';
-import { AnyOnlyQuestionAddUpdateReq } from '../../../type/any-only-question-add-update-req';
 import { DefaultQuestionAddReq } from '../../../constant/default-question-add-req';
 import { CdkDragHandle } from '@angular/cdk/drag-drop';
 import { AnyQuestionUpdateReq } from '../../../type/any-question-update-req';
@@ -78,6 +75,7 @@ export class EditFormQuestionWrapper implements OnInit, OnChanges, AfterViewInit
 
   question = input.required<AnyQuestionRes>();
   orderIndex = input.required<number>();
+  isDragging = input<boolean>();
 
   questionInput = viewChild<ElementRef<HTMLInputElement>>('questionInput');
 
@@ -195,6 +193,9 @@ export class EditFormQuestionWrapper implements OnInit, OnChanges, AfterViewInit
     if (changes['question']) {
       this.createdComponentRef?.setInput('question', this.question());
     }
+    if (changes['isDragging']) {
+      this.createdComponentRef?.setInput('isDragging', this.isDragging());
+    }
   }
 
   ngAfterViewInit() {
@@ -283,6 +284,7 @@ export class EditFormQuestionWrapper implements OnInit, OnChanges, AfterViewInit
 
       this.createdComponentRef?.setInput('question', question);
       this.createdComponentRef?.setInput('parentComponentId', this.componentId());
+      this.createdComponentRef?.setInput('isDragging', this.isDragging());
 
       const instance = this.createdComponentRef?.instance;
       if (instance instanceof EditFormQuestionComponent) {

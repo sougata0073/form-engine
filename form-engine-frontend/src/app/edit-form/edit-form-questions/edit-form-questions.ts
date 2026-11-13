@@ -42,6 +42,8 @@ export class EditFormQuestions implements OnInit {
 
   protected formRes = this.editFormService.formRes;
 
+  protected draggingQuestionId = signal<string | null>(null);
+
   ngOnInit() {
     this.activatedRoute.parent!.paramMap.subscribe((params) => {
       this.formId.set(params.get('formId'));

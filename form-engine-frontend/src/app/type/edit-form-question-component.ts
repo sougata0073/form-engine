@@ -1,5 +1,14 @@
 import { QuestionRes } from '../model/edit-form/question/response/question-res';
-import { Directive, input, OnChanges, output, SimpleChange, SimpleChanges } from '@angular/core';
+import {
+  Directive,
+  effect,
+  input,
+  OnChanges,
+  OnDestroy,
+  output,
+  SimpleChange,
+  SimpleChanges,
+} from '@angular/core';
 import { AnyOnlyQuestionAddUpdateReq } from './any-only-question-add-update-req';
 import { AnyOnlyQuestionUpdateReq } from './any-onlyquestion-update-req';
 import { OnlyQuestionUpdateReq } from '../model/edit-form/question/updatereq/only-question-update-req';
@@ -12,6 +21,7 @@ export abstract class EditFormQuestionComponent<
 > implements OnChanges {
   question = input.required<Q>();
   parentComponentId = input.required<string>();
+  isDragging = input<boolean>();
   moreMenuItemIds = input<Set<string>>(new Set());
 
   moreMenuItemId = output<string>();

@@ -12,10 +12,6 @@
   box-sizing: border-box;
 }
 
-.question-list {
-
-}
-
 .question-list-item {
   margin: $space-md 0;
   list-style: none;
@@ -27,6 +23,7 @@
 }
 
 .cdk-drag-preview {
+  width: 100%;
   border: none;
   box-sizing: border-box;
   border-radius: 4px;

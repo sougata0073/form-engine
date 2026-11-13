@@ -1,31 +1,38 @@
-<div
-  class="parent-container"
-  [class.with-loader-only]="!formRes()">
-
+{{ draggingQuestionId() }}
+<div class="parent-container" [class.with-loader-only]="!formRes()">
   @if (formRes()) {
-    <app-edit-form-info [formRes]="formRes()!"/>
+    <app-edit-form-info [formRes]="formRes()!" />
 
-    <ul class="question-list" cdkDropList [cdkDropListAutoScrollStep]="10"
-        (cdkDropListDropped)="handleDropListDropEvent($event)">
+    <ul
+      class="question-list"
+      cdkDropList
+      [cdkDropListAutoScrollStep]="10"
+      (cdkDropListDropped)="handleDropListDropEvent($event)"
+    >
       @for (question of formRes()!.questions; track question.id) {
-        <li class="question-list-item" cdkDrag [cdkDragData]="question" cdkDragLockAxis="y"
-            cdkDragBoundary=".question-list">
+        <li
+          class="question-list-item"
+          cdkDrag
+          [cdkDragData]="question"
+          cdkDragLockAxis="y"
+          cdkDragBoundary=".question-list"
+          (cdkDragStarted)="draggingQuestionId.set(question.id)"
+          (cdkDragEnded)="draggingQuestionId.set(null)"
+        >
           <app-edit-form-question-wrapper
             [question]="question"
-            [orderIndex]="$index"/>
+            [orderIndex]="$index"
+            [isDragging]="draggingQuestionId() === question.id"
+          />
         </li>
       }
     </ul>
 
-    <button
-      matFab
-      extended
-      class="component-add-button"
-      (click)="onAddQuestionClick()">
-      <mat-icon fontIcon="add"/>
+    <button matFab extended class="component-add-button" (click)="onAddQuestionClick()">
+      <mat-icon fontIcon="add" />
       Add Question
     </button>
   } @else {
-    <mat-spinner class="loader"/>
+    <mat-spinner class="loader" />
   }
 </div>

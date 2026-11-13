@@ -19,6 +19,7 @@ import com.sougata.form_service.service.formSchema.QuestionServiceCached;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -182,6 +183,7 @@ public class FormController {
     }
 
     @PatchMapping(path = "default-settings")
+    @CachePut(cacheNames = {FormCacheNames.FORM_DEFAULT_SETTINGS}, key = "#userId")
     public FormDefaultSettingsDto updateFormDefaultSettings(
             @RequestHeader(HttpHeaderConstant.X_USER_ID) UUID userId,
             @RequestBody @Valid FormDefaultSettingsUpdateReqDto req
